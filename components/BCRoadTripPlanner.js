@@ -8,6 +8,7 @@ const BCRoadTripPlanner = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [responses, setResponses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [customQuestion, setCustomQuestion] = useState('');
 
   const handleClaude = async (prompt) => {
     setIsLoading(true);
@@ -160,62 +161,98 @@ Your entire response MUST be valid JSON only.`
   );
 
   const renderChat = () => (
-    <div className="space-y-4">
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
-        <h2 className="text-xl font-bold mb-2">🤙 Ask Your BC Guide Anything!</h2>
-        <p>Got questions about your epic road trip? I've got the insider knowledge to make this trip legendary.</p>
-      </div>
+  <div className="space-y-4">
+    <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
+      <h2 className="text-xl font-bold mb-2">🤙 Ask Your BC Guide Anything!</h2>
+      <p>Got questions about your epic road trip? I've got the insider knowledge to make this trip legendary.</p>
+    </div>
 
-      <div className="grid md:grid-cols-2 gap-3">
+    {/* Custom Question Input */}
+    <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+      <h3 className="font-semibold text-gray-800 mb-3">Ask Your Own Question:</h3>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={customQuestion}
+          onChange={(e) => setCustomQuestion(e.target.value)}
+          placeholder="Type your question about the BC road trip..."
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={isLoading}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' && customQuestion.trim()) {
+              handleClaude(customQuestion);
+              setCustomQuestion('');
+            }
+          }}
+        />
+        <button
+          onClick={() => {
+            if (customQuestion.trim()) {
+              handleClaude(customQuestion);
+              setCustomQuestion('');
+            }
+          }}
+          disabled={isLoading || !customQuestion.trim()}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        >
+          Ask
+        </button>
+      </div>
+    </div>
+
+    <div className="bg-gray-100 rounded-lg p-1">
+      <h3 className="text-sm font-medium text-gray-600 mb-2 px-3 pt-2">Or choose a quick question:</h3>
+      <div className="grid md:grid-cols-2 gap-3 p-3">
         {quickQuestions.map((question, idx) => (
           <button
             key={idx}
             onClick={() => handleClaude(question)}
-            className="bg-gray-100 hover:bg-gray-200 rounded-lg p-3 text-left text-sm font-medium transition-colors"
+            className="bg-white hover:bg-gray-50 rounded-lg p-3 text-left text-sm font-medium transition-colors border border-gray-200"
             disabled={isLoading}
           >
             {question}
           </button>
         ))}
       </div>
-
-      {isLoading && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-blue-600 animate-pulse" />
-            <span className="text-blue-800">Getting you the best intel...</span>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {responses.map((response, idx) => (
-          <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="font-semibold text-gray-800 mb-2">❓ {response.question}</div>
-            <div className="text-gray-700 mb-3">{response.response}</div>
-            
-            {response.recommendations && response.recommendations.length > 0 && (
-              <div className="mb-3">
-                <h4 className="font-semibold text-gray-800 mb-1">🎯 Top Recommendations:</h4>
-                <ul className="list-disc list-inside text-sm text-gray-700">
-                  {response.recommendations.map((rec, i) => (
-                    <li key={i}>{rec}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {response.insider_tip && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                <span className="font-semibold text-yellow-800">💡 Insider Tip: </span>
-                <span className="text-yellow-700">{response.insider_tip}</span>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
     </div>
-  );
+
+    {isLoading && (
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center gap-2">
+          <Zap className="w-5 h-5 text-blue-600 animate-pulse" />
+          <span className="text-blue-800">Getting you the best intel...</span>
+        </div>
+      </div>
+    )}
+
+    <div className="space-y-4">
+      {responses.map((response, idx) => (
+        <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="font-semibold text-gray-800 mb-2">❓ {response.question}</div>
+          <div className="text-gray-700 mb-3">{response.response}</div>
+          
+          {response.recommendations && response.recommendations.length > 0 && (
+            <div className="mb-3">
+              <h4 className="font-semibold text-gray-800 mb-1">🎯 Top Recommendations:</h4>
+              <ul className="list-disc list-inside text-sm text-gray-700">
+                {response.recommendations.map((rec, i) => (
+                  <li key={i}>{rec}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {response.insider_tip && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+              <span className="font-semibold text-yellow-800">💡 Insider Tip: </span>
+              <span className="text-yellow-700">{response.insider_tip}</span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
   return (
     <div className="max-w-4xl mx-auto p-4 bg-white">
