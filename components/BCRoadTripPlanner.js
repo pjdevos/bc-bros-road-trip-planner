@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -216,13 +217,29 @@ const BCRoadTripPlanner = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: `You are the ultimate BC road trip guide for 10 guys in their 30s and 40s doing a camper van adventure in July 2026. Be fun, cheeky, and enthusiastic. Focus on outdoor adventures and unexpected places. Here's what they want to know: ${prompt}
+          prompt: `You are the ultimate BC road trip guide for a legendary group of 10 guys doing a camper van adventure in July 2026. This is a 40th birthday trip for Markus (the birthday boy - he's Canadian/German and the whole reason for this epic BC adventure!). 
+
+THE CREW:
+- Markus (the birthday boy - turning 40!) Canadian/German, this is his birthday trip
+- Thomas (Tom) - British but born in Brussels, lived there all his life
+- Ramon - Dutch/Peruvian, speaks Spanish
+- Alex - lives in the Emirates 
+- Emil - Swedish and the most left-wing of the group
+- Henning - lives in Holland
+- Patrick (Paddy) - from Ireland
+- Serban - from Romania 
+- Tudor
+- Pieter (P-J) - the oldest at 46, the wise elder of the group, and he's the real Belgian
+
+Be fun, cheeky, and enthusiastic. Occasionally reference one of the guys by name in a playful way that fits their personality or background. Make gentle fun of them like good friends do. Focus on outdoor adventures and unexpected places perfect for this international crew of legends.
+
+Here's what they want to know: ${prompt}
 
 Respond with a JSON object:
 {
-  "response": "Your fun, detailed response",
+  "response": "Your fun, detailed response with occasional cheeky references to the crew",
   "recommendations": ["specific recommendation 1", "specific recommendation 2", "specific recommendation 3"],
-  "insider_tip": "A cheeky insider tip"
+  "insider_tip": "A cheeky insider tip, maybe mentioning one of the guys"
 }
 
 Your entire response MUST be valid JSON only.`
@@ -245,19 +262,19 @@ Your entire response MUST be valid JSON only.`
   };
 
   const quickQuestions = [
-    "What are the most epic outdoor adventures for our group?",
+    "What are the most epic outdoor adventures for our international crew?",
     "Hidden gems and weird roadside attractions we shouldn't miss?",
     "Best camping spots for camper vans along our route?",
     "What should we pack for entertainment during long drives?",
-    "Local food challenges and craft breweries to hit?",
-    "Emergency backup plans if weather sucks?"
+    "Local food challenges and craft breweries to hit? (Ramon can translate if needed!)",
+    "Emergency backup plans if weather sucks? (Emil probably has socialist solutions)"
   ];
 
   const renderOverview = () => (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 text-white">
         <h2 className="text-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
-        <p className="text-lg">10 legends, 10 days, 1 epic camper van adventure through the most beautiful province in Canada</p>
+        <p className="text-lg">Markus's epic 40th birthday adventure! 10 international legends, 10 days, 1 unforgettable camper van journey through the most beautiful province in Canada</p>
       </div>
       
       <div className="grid md:grid-cols-3 gap-4">
@@ -285,7 +302,7 @@ Your entire response MUST be valid JSON only.`
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div><strong>Distance:</strong> ~2,500km</div>
           <div><strong>Best Time:</strong> July 2026</div>
-          <div><strong>Group Size:</strong> 10 legends</div>
+          <div><strong>Group Size:</strong> 10 international legends</div>
           <div><strong>Vehicle:</strong> Camper vans</div>
         </div>
       </div>
@@ -624,7 +641,7 @@ Your entire response MUST be valid JSON only.`
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
           🚐 BC Bros Road Trip Planner
         </h1>
-        <p className="text-gray-600">July 2026 • 10 Days • 10 Legends • Infinite Memories</p>
+        <p className="text-gray-600">July 2026 • 10 Days • Markus's 40th Birthday • International Legends</p>
       </div>
 
       <div className="flex gap-2 mb-6 bg-gray-100 rounded-lg p-1">
@@ -670,4 +687,4 @@ Your entire response MUST be valid JSON only.`
   );
 };
 
-export default BCRoadTripPlanner; 
+export default BCRoadTripPlanner;
