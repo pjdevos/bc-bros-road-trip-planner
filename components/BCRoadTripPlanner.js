@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -40,7 +41,7 @@ const BCRoadTripPlanner = () => {
       }
 
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&libraries=geometry&callback=initGoogleMaps`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDqBGR6jfw1eatF7DYtpLdnhc-uQBdL40I&libraries=geometry&callback=initGoogleMaps`;
       script.async = true;
       script.defer = true;
       
@@ -52,26 +53,40 @@ const BCRoadTripPlanner = () => {
 
       script.onerror = () => {
         console.error('Failed to load Google Maps');
-        // Show fallback content
-        const mapElement = document.getElementById('trip-map');
-        if (mapElement) {
-          mapElement.innerHTML = `
-            <div class="flex items-center justify-center h-full bg-gray-100 text-gray-600">
-              <div class="text-center">
-                <p class="text-lg font-semibold mb-2">🗺️ Map temporarily unavailable</p>
-                <p class="text-sm">Your epic BC road trip route:</p>
-                <p class="text-sm mt-2">Vancouver → Whistler → Kamloops → Revelstoke → Nelson → Fernie → Calgary → Jasper → Vancouver</p>
-              </div>
-            </div>
-          `;
-        }
+        showMapFallback();
       };
 
       document.head.appendChild(script);
     }
   }, [showMap, mapLoaded]);
 
-  // Initialize the map
+  const showMapFallback = () => {
+    const mapElement = document.getElementById('trip-map');
+    if (mapElement) {
+      mapElement.innerHTML = `
+        <div class="flex items-center justify-center h-full bg-gray-100 text-gray-600">
+          <div class="text-center p-8">
+            <p class="text-lg font-semibold mb-2">🗺️ Your BC Adventure Route</p>
+            <div class="text-left bg-white rounded-lg p-4 shadow-sm max-w-sm">
+              <p class="text-sm text-blue-600 font-medium mb-2">10-Day Journey:</p>
+              <div class="text-xs space-y-1">
+                <div>📍 Day 1-2: Vancouver → Whistler</div>
+                <div>📍 Day 3-4: Whistler → Kamloops</div>
+                <div>📍 Day 5: Kamloops → Revelstoke</div>
+                <div>📍 Day 6: Revelstoke → Nelson</div>
+                <div>📍 Day 7: Nelson → Fernie</div>
+                <div>📍 Day 8: Fernie → Calgary</div>
+                <div>📍 Day 9: Calgary → Jasper</div>
+                <div>📍 Day 10: Jasper → Vancouver</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  };
+
+  // Initialize Google Maps
   const initializeMap = () => {
     if (!window.google || !window.google.maps || !document.getElementById('trip-map')) {
       console.log('Google Maps not ready yet');
@@ -104,7 +119,7 @@ const BCRoadTripPlanner = () => {
         ]
       });
 
-      // Add simple markers first (fallback if directions fail)
+      // Add custom markers for each day
       const currentItinerary = isEditing ? editableItinerary : defaultItinerary;
       currentItinerary.forEach((day) => {
         const coord = coordinates[day.day];
@@ -148,7 +163,7 @@ const BCRoadTripPlanner = () => {
         }
       });
 
-      // Try to add route (optional - if this fails, markers still work)
+      // Add driving directions
       try {
         const directionsService = new window.google.maps.DirectionsService();
         const directionsRenderer = new window.google.maps.DirectionsRenderer({
@@ -188,20 +203,7 @@ const BCRoadTripPlanner = () => {
 
     } catch (error) {
       console.error('Error initializing map:', error);
-      // Show fallback
-      const mapElement = document.getElementById('trip-map');
-      if (mapElement) {
-        mapElement.innerHTML = `
-          <div class="flex items-center justify-center h-full bg-gray-100 text-gray-600">
-            <div class="text-center p-8">
-              <p class="text-lg font-semibold mb-2">🗺️ Interactive map loading...</p>
-              <p class="text-sm">Your BC adventure route:</p>
-              <p class="text-sm mt-2 text-blue-600 font-medium">Vancouver → Whistler → Kamloops → Revelstoke → Nelson → Fernie → Calgary → Jasper → Vancouver</p>
-              <p class="text-xs mt-4 text-gray-500">Refresh page if map doesn't appear</p>
-            </div>
-          </div>
-        `;
-      }
+      showMapFallback();
     }
   };
 
