@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -476,15 +475,47 @@ Your entire response MUST be valid JSON only.`
                 )}
                 
                 {!isEditing && (
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Any hidden gems or unexpected stops? Make it fun and detailed for our group of 10 guys.`);
-                    }}
-                    className="mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                  >
-                    Get Detailed Plans for Day {day.day}
-                  </button>
+                  <div className="mt-3 space-y-3">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Any hidden gems or unexpected stops? Make it fun and detailed for our group of 10 guys.`);
+                      }}
+                      disabled={isLoading}
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isLoading ? 'Getting Plans...' : `Get Detailed Plans for Day ${day.day}`}
+                    </button>
+                    
+                    {/* Show responses for this specific day */}
+                    {responses.filter(response => 
+                      response.question.includes(`Day ${day.day}`) || 
+                      response.question.includes(day.location)
+                    ).map((response, idx) => (
+                      <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-4 mt-3">
+                        <div className="font-semibold text-green-800 mb-2">🗺️ Detailed Plans for Day {day.day}</div>
+                        <div className="text-green-700 mb-3">{response.response}</div>
+                        
+                        {response.recommendations && response.recommendations.length > 0 && (
+                          <div className="mb-3">
+                            <h4 className="font-semibold text-green-800 mb-1">🎯 Top Recommendations:</h4>
+                            <ul className="list-disc list-inside text-sm text-green-700">
+                              {response.recommendations.map((rec, i) => (
+                                <li key={i}>{rec}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {response.insider_tip && (
+                          <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                            <span className="font-semibold text-yellow-800">💡 Insider Tip: </span>
+                            <span className="text-yellow-700">{response.insider_tip}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
@@ -639,4 +670,4 @@ Your entire response MUST be valid JSON only.`
   );
 };
 
-export default BCRoadTripPlanner;
+export default BCRoadTripPlanner; 
