@@ -12,7 +12,7 @@ export async function POST(request) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-sonnet-20240229',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 1000,
         messages: [
           {
@@ -24,7 +24,9 @@ export async function POST(request) {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to get response from Claude')
+      const errorData = await response.text()
+      console.error('Claude API Error:', response.status, errorData)
+      throw new Error(`Claude API failed: ${response.status}`)
     }
 
     const data = await response.json()
@@ -32,7 +34,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error calling Claude API:', error)
     return NextResponse.json(
-      { error: 'Failed to get response' },
+      { error: `Failed to get response: ${error.message}` },
       { status: 500 }
     )
   }
