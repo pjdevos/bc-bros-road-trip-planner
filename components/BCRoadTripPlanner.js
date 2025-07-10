@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -32,117 +33,180 @@ const BCRoadTripPlanner = () => {
   // Load Google Maps when needed
   useEffect(() => {
     if (showMap && !mapLoaded) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&libraries=geometry`;
-      script.onload = () => {
+      // Check if Google Maps is already loaded
+      if (window.google && window.google.maps) {
         setMapLoaded(true);
-        setTimeout(initializeMap, 100);
+        setTimeout(initializeMap, 200);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&libraries=geometry&callback=initGoogleMaps`;
+      script.async = true;
+      script.defer = true;
+      
+      // Create a global callback function
+      window.initGoogleMaps = () => {
+        setMapLoaded(true);
+        setTimeout(initializeMap, 300);
       };
+
+      script.onerror = () => {
+        console.error('Failed to load Google Maps');
+        // Show fallback content
+        const mapElement = document.getElementById('trip-map');
+        if (mapElement) {
+          mapElement.innerHTML = `
+            <div class="flex items-center justify-center h-full bg-gray-100 text-gray-600">
+              <div class="text-center">
+                <p class="text-lg font-semibold mb-2">🗺️ Map temporarily unavailable</p>
+                <p class="text-sm">Your epic BC road trip route:</p>
+                <p class="text-sm mt-2">Vancouver → Whistler → Kamloops → Revelstoke → Nelson → Fernie → Calgary → Jasper → Vancouver</p>
+              </div>
+            </div>
+          `;
+        }
+      };
+
       document.head.appendChild(script);
     }
   }, [showMap, mapLoaded]);
 
   // Initialize the map
   const initializeMap = () => {
-    if (!window.google || !document.getElementById('trip-map')) return;
-
-    const coordinates = {
-      1: { lat: 49.2827, lng: -123.1207, name: "Vancouver" },
-      2: { lat: 50.1163, lng: -122.9574, name: "Whistler" },
-      3: { lat: 50.1163, lng: -122.9574, name: "Whistler" },
-      4: { lat: 50.6745, lng: -120.3273, name: "Kamloops" },
-      5: { lat: 51.0447, lng: -118.2065, name: "Revelstoke" },
-      6: { lat: 49.4928, lng: -117.2948, name: "Nelson" },
-      7: { lat: 49.5047, lng: -115.0631, name: "Fernie" },
-      8: { lat: 51.0447, lng: -114.0719, name: "Calgary" },
-      9: { lat: 52.8737, lng: -118.0814, name: "Jasper" },
-      10: { lat: 49.2827, lng: -123.1207, name: "Vancouver" }
-    };
-
-    const map = new window.google.maps.Map(document.getElementById('trip-map'), {
-      zoom: 6,
-      center: { lat: 50.5, lng: -119.5 },
-      mapTypeId: 'terrain'
-    });
-
-    // Add route
-    const directionsService = new window.google.maps.DirectionsService();
-    const directionsRenderer = new window.google.maps.DirectionsRenderer({
-      suppressMarkers: false,
-      polylineOptions: {
-        strokeColor: '#3B82F6',
-        strokeWeight: 4,
-        strokeOpacity: 0.8
-      }
-    });
-    directionsRenderer.setMap(map);
-
-    // Create waypoints
-    const waypoints = [];
-    for (let i = 2; i <= 9; i++) {
-      waypoints.push({
-        location: coordinates[i],
-        stopover: true
-      });
+    if (!window.google || !window.google.maps || !document.getElementById('trip-map')) {
+      console.log('Google Maps not ready yet');
+      return;
     }
 
-    // Calculate route
-    directionsService.route({
-      origin: coordinates[1],
-      destination: coordinates[10],
-      waypoints: waypoints,
-      optimizeWaypoints: false,
-      travelMode: window.google.maps.TravelMode.DRIVING
-    }, (result, status) => {
-      if (status === 'OK') {
-        directionsRenderer.setDirections(result);
-      }
-    });
+    try {
+      const coordinates = {
+        1: { lat: 49.2827, lng: -123.1207, name: "Vancouver" },
+        2: { lat: 50.1163, lng: -122.9574, name: "Whistler" },
+        3: { lat: 50.1163, lng: -122.9574, name: "Whistler" },
+        4: { lat: 50.6745, lng: -120.3273, name: "Kamloops" },
+        5: { lat: 51.0447, lng: -118.2065, name: "Revelstoke" },
+        6: { lat: 49.4928, lng: -117.2948, name: "Nelson" },
+        7: { lat: 49.5047, lng: -115.0631, name: "Fernie" },
+        8: { lat: 51.0447, lng: -114.0719, name: "Calgary" },
+        9: { lat: 52.8737, lng: -118.0814, name: "Jasper" },
+        10: { lat: 49.2827, lng: -123.1207, name: "Vancouver" }
+      };
 
-    // Add custom markers for each day
-    const currentItinerary = isEditing ? editableItinerary : defaultItinerary;
-    currentItinerary.forEach((day) => {
-      const coord = coordinates[day.day];
-      if (coord) {
-        const marker = new window.google.maps.Marker({
-          position: coord,
-          map: map,
-          title: `Day ${day.day}: ${day.location}`,
-          label: {
-            text: day.day.toString(),
-            color: 'white',
-            fontWeight: 'bold'
-          },
-          icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 20,
-            fillColor: '#3B82F6',
-            fillOpacity: 1,
-            strokeColor: 'white',
-            strokeWeight: 2
+      const map = new window.google.maps.Map(document.getElementById('trip-map'), {
+        zoom: 6,
+        center: { lat: 50.5, lng: -119.5 },
+        mapTypeId: 'terrain',
+        styles: [
+          {
+            featureType: 'poi.business',
+            stylers: [{ visibility: 'off' }]
+          }
+        ]
+      });
+
+      // Add simple markers first (fallback if directions fail)
+      const currentItinerary = isEditing ? editableItinerary : defaultItinerary;
+      currentItinerary.forEach((day) => {
+        const coord = coordinates[day.day];
+        if (coord) {
+          const marker = new window.google.maps.Marker({
+            position: coord,
+            map: map,
+            title: `Day ${day.day}: ${day.location}`,
+            label: {
+              text: day.day.toString(),
+              color: 'white',
+              fontWeight: 'bold'
+            },
+            icon: {
+              path: window.google.maps.SymbolPath.CIRCLE,
+              scale: 20,
+              fillColor: '#3B82F6',
+              fillOpacity: 1,
+              strokeColor: 'white',
+              strokeWeight: 2
+            }
+          });
+
+          const infoWindow = new window.google.maps.InfoWindow({
+            content: `
+              <div style="padding: 10px; max-width: 250px;">
+                <h3 style="margin: 0 0 5px 0; color: #1f2937;">Day ${day.day}</h3>
+                <p style="margin: 0 0 5px 0; font-weight: bold; color: #3B82F6;">${day.location}</p>
+                <p style="margin: 0 0 8px 0; color: #6b7280;">${day.highlight}</p>
+                <div style="font-size: 12px; color: #6b7280;">
+                  <strong>Activities:</strong><br>
+                  • ${day.activities.join('<br>• ')}
+                </div>
+              </div>
+            `
+          });
+
+          marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+          });
+        }
+      });
+
+      // Try to add route (optional - if this fails, markers still work)
+      try {
+        const directionsService = new window.google.maps.DirectionsService();
+        const directionsRenderer = new window.google.maps.DirectionsRenderer({
+          suppressMarkers: true, // We already have custom markers
+          polylineOptions: {
+            strokeColor: '#3B82F6',
+            strokeWeight: 4,
+            strokeOpacity: 0.8
           }
         });
+        directionsRenderer.setMap(map);
 
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `
-            <div style="padding: 10px; max-width: 250px;">
-              <h3 style="margin: 0 0 5px 0; color: #1f2937;">Day ${day.day}</h3>
-              <p style="margin: 0 0 5px 0; font-weight: bold; color: #3B82F6;">${day.location}</p>
-              <p style="margin: 0 0 8px 0; color: #6b7280;">${day.highlight}</p>
-              <div style="font-size: 12px; color: #6b7280;">
-                <strong>Activities:</strong><br>
-                • ${day.activities.join('<br>• ')}
-              </div>
-            </div>
-          `
-        });
+        const waypoints = [];
+        for (let i = 2; i <= 9; i++) {
+          waypoints.push({
+            location: coordinates[i],
+            stopover: true
+          });
+        }
 
-        marker.addListener('click', () => {
-          infoWindow.open(map, marker);
+        directionsService.route({
+          origin: coordinates[1],
+          destination: coordinates[10],
+          waypoints: waypoints,
+          optimizeWaypoints: false,
+          travelMode: window.google.maps.TravelMode.DRIVING
+        }, (result, status) => {
+          if (status === 'OK') {
+            directionsRenderer.setDirections(result);
+          } else {
+            console.log('Directions request failed:', status);
+          }
         });
+      } catch (error) {
+        console.log('Directions service failed, but markers still work:', error);
       }
-    });
+
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      // Show fallback
+      const mapElement = document.getElementById('trip-map');
+      if (mapElement) {
+        mapElement.innerHTML = `
+          <div class="flex items-center justify-center h-full bg-gray-100 text-gray-600">
+            <div class="text-center p-8">
+              <p class="text-lg font-semibold mb-2">🗺️ Interactive map loading...</p>
+              <p class="text-sm">Your BC adventure route:</p>
+              <p class="text-sm mt-2 text-blue-600 font-medium">Vancouver → Whistler → Kamloops → Revelstoke → Nelson → Fernie → Calgary → Jasper → Vancouver</p>
+              <p class="text-xs mt-4 text-gray-500">Refresh page if map doesn't appear</p>
+            </div>
+          </div>
+        `;
+      }
+    }
   };
+  const [showMap, setShowMap] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   // Handle Claude API calls
   const handleClaude = async (prompt) => {
@@ -312,11 +376,6 @@ Your entire response MUST be valid JSON only.`
               className="w-full h-96 rounded-b-xl border border-gray-200"
               style={{ minHeight: '400px' }}
             />
-            {!mapLoaded && showMap && (
-              <div className="absolute inset-0 bg-gray-100 rounded-b-xl flex items-center justify-center">
-                <div className="text-gray-600">Loading map...</div>
-              </div>
-            )}
           </div>
         )}
 
