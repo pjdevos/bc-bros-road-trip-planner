@@ -10,8 +10,7 @@ const BCRoadTripPlanner = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [customQuestion, setCustomQuestion] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-const [editableItinerary, setEditableItinerary] = useState(itinerary);
-
+const [editableItinerary, setEditableItinerary] = useState(defaultItinerary);
   const handleClaude = async (prompt) => {
     setIsLoading(true);
     try {
