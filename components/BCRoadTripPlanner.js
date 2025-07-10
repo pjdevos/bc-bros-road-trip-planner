@@ -199,19 +199,121 @@ Your entire response MUST be valid JSON only.`
       <p className="text-sm opacity-90">Interactive map coming soon!</p>
     </div>
     <div 
-      id="trip-map" 
-      className="w-full h-96 rounded-b-xl border border-gray-200 bg-gray-100 flex items-center justify-center"
-    >
-      {mapLoaded ? (
-        <div className="text-gray-600">Loading map...</div>
-      ) : (
-        <div className="text-gray-600">Click "Show Route Map" to load Google Maps</div>
-      )}
-    </div>
+  id="trip-map" 
+  className="w-full h-96 rounded-b-xl border border-gray-200"
+  style={{ minHeight: '400px' }}
+/>
+{mapLoaded && <MapInitializer />}
   </div>
 )}
       </div>
+const MapInitializer = () => {
+  useEffect(() => {
+    if (window.google) {
+      // Basic coordinates for BC cities
+      const coordinates = {
+        1: { lat: 49.2827, lng: -123.1207, name: "Vancouver" },
+        2: { lat: 50.1163, lng: -122.9574, name: "Whistler" },
+        3: { lat: 50.1163, lng: -122.9574, name: "Whistler" },
+        4: { lat: 50.6745, lng: -120.3273, name: "Kamloops" },
+        5: { lat: 51.0447, lng: -118.2065, name: "Revelstoke" },
+        6: { lat: 49.4928, lng: -117.2948, name: "Nelson" },
+        7: { lat: 49.5047, lng: -115.0631, name: "Fernie" },
+        8: { lat: 51.0447, lng: -114.0719, name: "Calgary" },
+        9: { lat: 52.8737, lng: -118.0814, name: "Jasper" },
+        10: { lat: 49.2827, lng: -123.1207, name: "Vancouver" }
+      };
 
+      const map = new window.google.maps.Map(document.getElementById('trip-map'), {
+        zoom: 6,
+        center: { lat: 50.5, lng: -119.5 },
+        mapTypeId: 'terrain'
+      });
+
+      // Add route
+      const directionsService = new window.google.maps.DirectionsService();
+      const directionsRenderer = new window.google.maps.DirectionsRenderer({
+        suppressMarkers: false,
+        polylineOptions: {
+          strokeColor: '#3B82F6',
+          strokeWeight: 4,
+          strokeOpacity: 0.8
+        }
+      });
+      directionsRenderer.setMap(map);
+
+      // Create waypoints
+      const waypoints = [];
+      for (let i = 2; i <= 9; i++) {
+        waypoints.push({
+          location: coordinates[i],
+          stopover: true
+        });
+      }
+
+      // Calculate and display route
+      directionsService.route({
+        origin: coordinates[1],
+        destination: coordinates[10],
+        waypoints: waypoints,
+        optimizeWaypoints: false,
+        travelMode: window.google.maps.TravelMode.DRIVING
+      }, (result, status) => {
+        if (status === 'OK') {
+          directionsRenderer.setDirections(result);
+        } else {
+          console.error('Directions request failed:', status);
+        }
+      });
+
+      // Add custom markers for each day
+      currentItinerary.forEach((day) => {
+        const coord = coordinates[day.day];
+        if (coord) {
+          const marker = new window.google.maps.Marker({
+            position: coord,
+            map: map,
+            title: `Day ${day.day}: ${day.location}`,
+            label: {
+              text: day.day.toString(),
+              color: 'white',
+              fontWeight: 'bold'
+            },
+            icon: {
+              path: window.google.maps.SymbolPath.CIRCLE,
+              scale: 20,
+              fillColor: '#3B82F6',
+              fillOpacity: 1,
+              strokeColor: 'white',
+              strokeWeight: 2
+            }
+          });
+
+          // Add info window for each marker
+          const infoWindow = new window.google.maps.InfoWindow({
+            content: `
+              <div style="padding: 10px; max-width: 250px;">
+                <h3 style="margin: 0 0 5px 0; color: #1f2937;">Day ${day.day}</h3>
+                <p style="margin: 0 0 5px 0; font-weight: bold; color: #3B82F6;">${day.location}</p>
+                <p style="margin: 0 0 8px 0; color: #6b7280;">${day.highlight}</p>
+                <div style="font-size: 12px; color: #6b7280;">
+                  <strong>Activities:</strong><br>
+                  • ${day.activities.join('<br>• ')}
+                </div>
+              </div>
+            `
+          });
+
+          marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+          });
+        }
+      });
+    }
+  }, []);
+
+  return null;
+};
       {currentItinerary.map((day, dayIndex) => (
         <div 
           key={day.day}
