@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react';
-import { MapPin, Compass, Coffee, Mountain, Waves, Camera, Calendar, Users, Zap, Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Compass, Coffee, Mountain, Waves, Camera, Calendar, Users, Zap, Star, Map } from 'lucide-react';
 
 const BCRoadTripPlanner = () => {
   // Define the default itinerary FIRST
@@ -26,8 +26,16 @@ const BCRoadTripPlanner = () => {
   const [customQuestion, setCustomQuestion] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editableItinerary, setEditableItinerary] = useState(defaultItinerary);
-
-
+const [showMap, setShowMap] = useState(false);
+const [mapLoaded, setMapLoaded] = useState(false);
+useEffect(() => {
+  if (showMap && !mapLoaded) {
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&libraries=geometry`;
+    script.onload = () => setMapLoaded(true);
+    document.head.appendChild(script);
+  }
+}, [showMap, mapLoaded]);
   const handleClaude = async (prompt) => {
     setIsLoading(true);
     try {
@@ -150,33 +158,58 @@ Your entire response MUST be valid JSON only.`
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-800">🗺️ Your 10-Day Adventure Map</h2>
         <div className="flex gap-2">
-          {isEditing ? (
-            <>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-              >
-                Save Changes
-              </button>
-              <button
-                onClick={resetItinerary}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
-              >
-                Reset
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => {
-                setEditableItinerary([...defaultItinerary]);
-                setIsEditing(true);
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-            >
-              Edit Itinerary
-            </button>
-          )}
-        </div>
+  <button
+    onClick={() => setShowMap(!showMap)}
+    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-2"
+  >
+    <Map className="w-4 h-4" />
+    {showMap ? 'Hide Map' : 'Show Route Map'}
+  </button>
+  {isEditing ? (
+    <>
+      <button
+        onClick={() => setIsEditing(false)}
+        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+      >
+        Save Changes
+      </button>
+      <button
+        onClick={resetItinerary}
+        className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+      >
+        Reset
+      </button>
+    </>
+  ) : (
+    <button
+      onClick={() => {
+        setEditableItinerary([...defaultItinerary]);
+        setIsEditing(true);
+      }}
+      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+    >
+      Edit Itinerary
+    </button>
+  )}
+</div>
+    {showMap && (
+  <div className="mb-6">
+    <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-t-xl p-4 text-white">
+      <h3 className="text-lg font-bold">🗺️ Your BC Adventure Route</h3>
+      <p className="text-sm opacity-90">Interactive map coming soon!</p>
+    </div>
+    <div 
+      id="trip-map" 
+      className="w-full h-96 rounded-b-xl border border-gray-200 bg-gray-100 flex items-center justify-center"
+    >
+      {mapLoaded ? (
+        <div className="text-gray-600">Loading map...</div>
+      ) : (
+        <div className="text-gray-600">Click "Show Route Map" to load Google Maps</div>
+      )}
+    </div>
+  </div>
+)}
       </div>
 
       {currentItinerary.map((day, dayIndex) => (
