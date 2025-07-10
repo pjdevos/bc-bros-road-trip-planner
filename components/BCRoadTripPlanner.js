@@ -9,6 +9,8 @@ const BCRoadTripPlanner = () => {
   const [responses, setResponses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [customQuestion, setCustomQuestion] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+const [editableItinerary, setEditableItinerary] = useState(itinerary);
 
   const handleClaude = async (prompt) => {
     setIsLoading(true);
@@ -47,18 +49,18 @@ Your entire response MUST be valid JSON only.`
     setIsLoading(false);
   };
 
-  const itinerary = [
-    { day: 1, location: "Vancouver Start", highlight: "Gear up & get wild", activities: ["Granville Island", "Capilano Suspension Bridge", "Camper van pickup"] },
-    { day: 2, location: "Vancouver → Whistler", highlight: "Mountain madness begins", activities: ["Sea-to-Sky Highway", "Shannon Falls", "Whistler Village"] },
-    { day: 3, location: "Whistler Adventures", highlight: "Adrenaline overdose", activities: ["Mountain biking", "Ziplining", "Alpine slide"] },
-    { day: 4, location: "Whistler → Kamloops", highlight: "Desert vibes", activities: ["Thompson River", "Kamloops Lake", "Sage & desert landscapes"] },
-    { day: 5, location: "Kamloops → Revelstoke", highlight: "Railway town chaos", activities: ["Three Valley Gap", "Crazy Creek Suspension Bridge", "Railway Museum"] },
-    { day: 6, location: "Revelstoke → Nelson", highlight: "Hippie town takeover", activities: ["Kokanee Glacier", "Lakefront lounging", "Historic downtown"] },
-    { day: 7, location: "Nelson → Fernie", highlight: "Rockies entrance", activities: ["Kootenay Lake Ferry", "Mountain views", "Fernie Alpine Resort"] },
-    { day: 8, location: "Fernie → Calgary", highlight: "Cowboy territory", activities: ["Crowsnest Pass", "Frank Slide", "Calgary Stampede vibes"] },
-    { day: 9, location: "Calgary → Jasper", highlight: "Rockies domination", activities: ["Icefields Parkway", "Athabasca Falls", "Jasper townsite"] },
-    { day: 10, location: "Jasper → Vancouver", highlight: "Epic finale", activities: ["Mount Robson", "Kamloops return", "Victory lap"] }
-  ];
+  const defaultItinerary = [
+  { day: 1, location: "Vancouver Start", highlight: "Gear up & get wild", activities: ["Granville Island", "Capilano Suspension Bridge", "Camper van pickup"] },
+  { day: 2, location: "Vancouver → Whistler", highlight: "Mountain madness begins", activities: ["Sea-to-Sky Highway", "Shannon Falls", "Whistler Village"] },
+  { day: 3, location: "Whistler Adventures", highlight: "Adrenaline overdose", activities: ["Mountain biking", "Ziplining", "Alpine slide"] },
+  { day: 4, location: "Whistler → Kamloops", highlight: "Desert vibes", activities: ["Thompson River", "Kamloops Lake", "Sage & desert landscapes"] },
+  { day: 5, location: "Kamloops → Revelstoke", highlight: "Railway town chaos", activities: ["Three Valley Gap", "Crazy Creek Suspension Bridge", "Railway Museum"] },
+  { day: 6, location: "Revelstoke → Nelson", highlight: "Hippie town takeover", activities: ["Kokanee Glacier", "Lakefront lounging", "Historic downtown"] },
+  { day: 7, location: "Nelson → Fernie", highlight: "Rockies entrance", activities: ["Kootenay Lake Ferry", "Mountain views", "Fernie Alpine Resort"] },
+  { day: 8, location: "Fernie → Calgary", highlight: "Cowboy territory", activities: ["Crowsnest Pass", "Frank Slide", "Calgary Stampede vibes"] },
+  { day: 9, location: "Calgary → Jasper", highlight: "Rockies domination", activities: ["Icefields Parkway", "Athabasca Falls", "Jasper townsite"] },
+  { day: 10, location: "Jasper → Vancouver", highlight: "Epic finale", activities: ["Mount Robson", "Kamloops return", "Victory lap"] }
+];
 
   const quickQuestions = [
     "What are the most epic outdoor adventures for our group?",
@@ -108,57 +110,7 @@ Your entire response MUST be valid JSON only.`
     </div>
   );
 
-  const renderItinerary = () => (
-    <div className="space-y-4">
-      <h2 className="text-xl font-bold text-gray-800">🗺️ Your 10-Day Adventure Map</h2>
-      {itinerary.map((day) => (
-        <div 
-          key={day.day}
-          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-            selectedDay === day.day 
-              ? 'border-blue-500 bg-blue-50 shadow-lg' 
-              : 'border-gray-200 hover:border-gray-300'
-          }`}
-          onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                {day.day}
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-800">{day.location}</h3>
-                <p className="text-sm text-gray-600">{day.highlight}</p>
-              </div>
-            </div>
-            <MapPin className="w-5 h-5 text-gray-400" />
-          </div>
-          
-          {selectedDay === day.day && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <h4 className="font-semibold mb-2 text-gray-700">Today's Adventures:</h4>
-              <div className="grid md:grid-cols-3 gap-2">
-                {day.activities.map((activity, idx) => (
-                  <div key={idx} className="bg-white rounded px-3 py-2 text-sm border border-gray-200">
-                    {activity}
-                  </div>
-                ))}
-              </div>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Any hidden gems or unexpected stops? Make it fun and detailed for our group of 10 guys.`);
-                }}
-                className="mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-              >
-                Get Detailed Plans for Day {day.day}
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
+  
 
   const renderChat = () => (
   <div className="space-y-4">
