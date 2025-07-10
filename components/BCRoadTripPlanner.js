@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -37,11 +36,18 @@ const BCRoadTripPlanner = () => {
       script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&libraries=geometry`;
       script.onload = () => {
         setMapLoaded(true);
-        initializeMap();
+        setTimeout(() => initializeMap(), 100);
       };
       document.head.appendChild(script);
     }
   }, [showMap, mapLoaded]);
+
+  // Re-initialize map when itinerary changes
+  useEffect(() => {
+    if (mapLoaded && showMap) {
+      setTimeout(() => initializeMap(), 100);
+    }
+  }, [mapLoaded, showMap, isEditing, editableItinerary]);
 
   // Initialize the map
   const initializeMap = () => {
