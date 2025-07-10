@@ -122,7 +122,53 @@ Your entire response MUST be valid JSON only.`
       </div>
     </div>
   );
+      currentItinerary.forEach((day) => {
+        const coord = coordinates[day.day];
+        if (coord) {
+          const marker = new window.google.maps.Marker({
+            position: coord,
+            map: map,
+            title: `Day ${day.day}: ${day.location}`,
+            label: {
+              text: day.day.toString(),
+              color: 'white',
+              fontWeight: 'bold'
+            },
+            icon: {
+              path: window.google.maps.SymbolPath.CIRCLE,
+              scale: 20,
+              fillColor: '#3B82F6',
+              fillOpacity: 1,
+              strokeColor: 'white',
+              strokeWeight: 2
+            }
+          });
 
+          // Add info window for each marker
+          const infoWindow = new window.google.maps.InfoWindow({
+            content: `
+              <div style="padding: 10px; max-width: 250px;">
+                <h3 style="margin: 0 0 5px 0; color: #1f2937;">Day ${day.day}</h3>
+                <p style="margin: 0 0 5px 0; font-weight: bold; color: #3B82F6;">${day.location}</p>
+                <p style="margin: 0 0 8px 0; color: #6b7280;">${day.highlight}</p>
+                <div style="font-size: 12px; color: #6b7280;">
+                  <strong>Activities:</strong><br>
+                  • ${day.activities.join('<br>• ')}
+                </div>
+              </div>
+            `
+          });
+
+          marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+          });
+        }
+      });
+    }
+  }, []);
+
+  return null;
+};
   const renderItinerary = () => {
   const currentItinerary = isEditing ? editableItinerary : defaultItinerary;
   
@@ -267,53 +313,7 @@ const MapInitializer = () => {
       });
 
       // Add custom markers for each day
-      currentItinerary.forEach((day) => {
-        const coord = coordinates[day.day];
-        if (coord) {
-          const marker = new window.google.maps.Marker({
-            position: coord,
-            map: map,
-            title: `Day ${day.day}: ${day.location}`,
-            label: {
-              text: day.day.toString(),
-              color: 'white',
-              fontWeight: 'bold'
-            },
-            icon: {
-              path: window.google.maps.SymbolPath.CIRCLE,
-              scale: 20,
-              fillColor: '#3B82F6',
-              fillOpacity: 1,
-              strokeColor: 'white',
-              strokeWeight: 2
-            }
-          });
 
-          // Add info window for each marker
-          const infoWindow = new window.google.maps.InfoWindow({
-            content: `
-              <div style="padding: 10px; max-width: 250px;">
-                <h3 style="margin: 0 0 5px 0; color: #1f2937;">Day ${day.day}</h3>
-                <p style="margin: 0 0 5px 0; font-weight: bold; color: #3B82F6;">${day.location}</p>
-                <p style="margin: 0 0 8px 0; color: #6b7280;">${day.highlight}</p>
-                <div style="font-size: 12px; color: #6b7280;">
-                  <strong>Activities:</strong><br>
-                  • ${day.activities.join('<br>• ')}
-                </div>
-              </div>
-            `
-          });
-
-          marker.addListener('click', () => {
-            infoWindow.open(map, marker);
-          });
-        }
-      });
-    }
-  }, []);
-
-  return null;
-};
       {currentItinerary.map((day, dayIndex) => (
         <div 
           key={day.day}
