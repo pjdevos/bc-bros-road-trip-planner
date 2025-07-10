@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -204,8 +205,6 @@ const BCRoadTripPlanner = () => {
       }
     }
   };
-  const [showMap, setShowMap] = useState(false);
-  const [mapLoaded, setMapLoaded] = useState(false);
 
   // Handle Claude API calls
   const handleClaude = async (prompt) => {
