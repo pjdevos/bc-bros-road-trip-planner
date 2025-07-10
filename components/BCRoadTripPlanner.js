@@ -110,7 +110,183 @@ Your entire response MUST be valid JSON only.`
     </div>
   );
 
+  const renderItinerary = () => {
+  const currentItinerary = isEditing ? editableItinerary : defaultItinerary;
   
+  const updateDay = (dayIndex, field, value) => {
+    const updated = [...editableItinerary];
+    if (field === 'activities') {
+      updated[dayIndex].activities = value.split(',').map(a => a.trim()).filter(a => a);
+    } else {
+      updated[dayIndex][field] = value;
+    }
+    setEditableItinerary(updated);
+  };
+
+  const addActivity = (dayIndex) => {
+    const updated = [...editableItinerary];
+    updated[dayIndex].activities.push('New activity');
+    setEditableItinerary(updated);
+  };
+
+  const removeActivity = (dayIndex, activityIndex) => {
+    const updated = [...editableItinerary];
+    updated[dayIndex].activities.splice(activityIndex, 1);
+    setEditableItinerary(updated);
+  };
+
+  const resetItinerary = () => {
+    setEditableItinerary([...defaultItinerary]);
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-gray-800">🗺️ Your 10-Day Adventure Map</h2>
+        <div className="flex gap-2">
+          {isEditing ? (
+            <>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              >
+                Save Changes
+              </button>
+              <button
+                onClick={resetItinerary}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+              >
+                Reset
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => {
+                setEditableItinerary([...defaultItinerary]);
+                setIsEditing(true);
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            >
+              Edit Itinerary
+            </button>
+          )}
+        </div>
+      </div>
+
+      {currentItinerary.map((day, dayIndex) => (
+        <div 
+          key={day.day}
+          className={`border-2 rounded-lg p-4 transition-all ${
+            selectedDay === day.day 
+              ? 'border-blue-500 bg-blue-50 shadow-lg' 
+              : 'border-gray-200 hover:border-gray-300'
+          } ${isEditing ? 'bg-yellow-50 border-yellow-300' : ''}`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                {day.day}
+              </div>
+              <div className="flex-1">
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={day.location}
+                      onChange={(e) => updateDay(dayIndex, 'location', e.target.value)}
+                      className="font-bold text-gray-800 bg-white border border-gray-300 rounded px-2 py-1 w-full"
+                      placeholder="Location"
+                    />
+                    <input
+                      type="text"
+                      value={day.highlight}
+                      onChange={(e) => updateDay(dayIndex, 'highlight', e.target.value)}
+                      className="text-sm text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 w-full"
+                      placeholder="Highlight"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <h3 className="font-bold text-gray-800">{day.location}</h3>
+                    <p className="text-sm text-gray-600">{day.highlight}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <button 
+              onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
+              className="p-1"
+            >
+              <MapPin className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+          
+          {selectedDay === day.day && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-semibold text-gray-700">Today's Adventures:</h4>
+                {isEditing && (
+                  <button
+                    onClick={() => addActivity(dayIndex)}
+                    className="text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                  >
+                    + Add Activity
+                  </button>
+                )}
+              </div>
+              
+              {isEditing ? (
+                <div className="space-y-2">
+                  {day.activities.map((activity, activityIndex) => (
+                    <div key={activityIndex} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={activity}
+                        onChange={(e) => {
+                          const updated = [...editableItinerary];
+                          updated[dayIndex].activities[activityIndex] = e.target.value;
+                          setEditableItinerary(updated);
+                        }}
+                        className="flex-1 bg-white rounded px-3 py-2 text-sm border border-gray-300"
+                      />
+                      <button
+                        onClick={() => removeActivity(dayIndex, activityIndex)}
+                        className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-3 gap-2">
+                  {day.activities.map((activity, idx) => (
+                    <div key={idx} className="bg-white rounded px-3 py-2 text-sm border border-gray-200">
+                      {activity}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {!isEditing && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Any hidden gems or unexpected stops? Make it fun and detailed for our group of 10 guys.`);
+                  }}
+                  className="mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                >
+                  Get Detailed Plans for Day {day.day}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
 
   const renderChat = () => (
   <div className="space-y-4">
