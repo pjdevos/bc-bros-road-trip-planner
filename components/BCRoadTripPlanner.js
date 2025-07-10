@@ -4,13 +4,30 @@ import React, { useState } from 'react';
 import { MapPin, Compass, Coffee, Mountain, Waves, Camera, Calendar, Users, Zap, Star } from 'lucide-react';
 
 const BCRoadTripPlanner = () => {
+  // Define the default itinerary FIRST
+  const defaultItinerary = [
+    { day: 1, location: "Vancouver Start", highlight: "Gear up & get wild", activities: ["Granville Island", "Capilano Suspension Bridge", "Camper van pickup"] },
+    { day: 2, location: "Vancouver → Whistler", highlight: "Mountain madness begins", activities: ["Sea-to-Sky Highway", "Shannon Falls", "Whistler Village"] },
+    { day: 3, location: "Whistler Adventures", highlight: "Adrenaline overdose", activities: ["Mountain biking", "Ziplining", "Alpine slide"] },
+    { day: 4, location: "Whistler → Kamloops", highlight: "Desert vibes", activities: ["Thompson River", "Kamloops Lake", "Sage & desert landscapes"] },
+    { day: 5, location: "Kamloops → Revelstoke", highlight: "Railway town chaos", activities: ["Three Valley Gap", "Crazy Creek Suspension Bridge", "Railway Museum"] },
+    { day: 6, location: "Revelstoke → Nelson", highlight: "Hippie town takeover", activities: ["Kokanee Glacier", "Lakefront lounging", "Historic downtown"] },
+    { day: 7, location: "Nelson → Fernie", highlight: "Rockies entrance", activities: ["Kootenay Lake Ferry", "Mountain views", "Fernie Alpine Resort"] },
+    { day: 8, location: "Fernie → Calgary", highlight: "Cowboy territory", activities: ["Crowsnest Pass", "Frank Slide", "Calgary Stampede vibes"] },
+    { day: 9, location: "Calgary → Jasper", highlight: "Rockies domination", activities: ["Icefields Parkway", "Athabasca Falls", "Jasper townsite"] },
+    { day: 10, location: "Jasper → Vancouver", highlight: "Epic finale", activities: ["Mount Robson", "Kamloops return", "Victory lap"] }
+  ];
+
+  // Then define all the state variables
   const [currentSection, setCurrentSection] = useState('overview');
   const [selectedDay, setSelectedDay] = useState(null);
   const [responses, setResponses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [customQuestion, setCustomQuestion] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-const [editableItinerary, setEditableItinerary] = useState(defaultItinerary);
+  const [editableItinerary, setEditableItinerary] = useState(defaultItinerary);
+
+
   const handleClaude = async (prompt) => {
     setIsLoading(true);
     try {
@@ -48,18 +65,7 @@ Your entire response MUST be valid JSON only.`
     setIsLoading(false);
   };
 
-  const defaultItinerary = [
-  { day: 1, location: "Vancouver Start", highlight: "Gear up & get wild", activities: ["Granville Island", "Capilano Suspension Bridge", "Camper van pickup"] },
-  { day: 2, location: "Vancouver → Whistler", highlight: "Mountain madness begins", activities: ["Sea-to-Sky Highway", "Shannon Falls", "Whistler Village"] },
-  { day: 3, location: "Whistler Adventures", highlight: "Adrenaline overdose", activities: ["Mountain biking", "Ziplining", "Alpine slide"] },
-  { day: 4, location: "Whistler → Kamloops", highlight: "Desert vibes", activities: ["Thompson River", "Kamloops Lake", "Sage & desert landscapes"] },
-  { day: 5, location: "Kamloops → Revelstoke", highlight: "Railway town chaos", activities: ["Three Valley Gap", "Crazy Creek Suspension Bridge", "Railway Museum"] },
-  { day: 6, location: "Revelstoke → Nelson", highlight: "Hippie town takeover", activities: ["Kokanee Glacier", "Lakefront lounging", "Historic downtown"] },
-  { day: 7, location: "Nelson → Fernie", highlight: "Rockies entrance", activities: ["Kootenay Lake Ferry", "Mountain views", "Fernie Alpine Resort"] },
-  { day: 8, location: "Fernie → Calgary", highlight: "Cowboy territory", activities: ["Crowsnest Pass", "Frank Slide", "Calgary Stampede vibes"] },
-  { day: 9, location: "Calgary → Jasper", highlight: "Rockies domination", activities: ["Icefields Parkway", "Athabasca Falls", "Jasper townsite"] },
-  { day: 10, location: "Jasper → Vancouver", highlight: "Epic finale", activities: ["Mount Robson", "Kamloops return", "Victory lap"] }
-];
+  
 
   const quickQuestions = [
     "What are the most epic outdoor adventures for our group?",
