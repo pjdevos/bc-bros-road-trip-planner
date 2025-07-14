@@ -44,7 +44,7 @@ const BCRoadTripPlanner = () => {
   const [followUpMessageId, setFollowUpMessageId] = useState(null);
   const [isOnline, setIsOnline] = useState(true);
   const [weatherData, setWeatherData] = useState({});
-  const [contributions, setContributions] = useState({});
+  const [contributions, setContributions] = useState({ tempFriend: '', tempAmount: 0, tempDescription: '' });
 
   // BC Fun Facts (shortened for brevity)
   const bcFunFacts = [
@@ -65,12 +65,12 @@ const BCRoadTripPlanner = () => {
       if (cachedItinerary) setEditableItinerary(JSON.parse(cachedItinerary));
       if (cachedConversation) setConversation(JSON.parse(cachedConversation).slice(-50));
       if (cachedWeather) setWeatherData(JSON.parse(cachedWeather));
-      if (cachedContributions) setContributions(JSON.parse(cachedContributions));
+      if (cachedContributions) setContributions(prev => ({ ...prev, ...JSON.parse(cachedContributions) }));
 
       const handleOnline = () => setIsOnline(true);
       const handleOffline = () => setIsOnline(false);
       window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
+      window.removeEventListener('offline', handleOffline);
       setIsOnline(navigator.onLine);
 
       return () => {
@@ -84,7 +84,12 @@ const BCRoadTripPlanner = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('bcRoadTripItinerary', JSON.stringify(editableItinerary));
       localStorage.setItem('bcRoadTripConversation', JSON.stringify(conversation.slice(-50)));
-      localStorage.setItem('bcRoadTripContributions', JSON.stringify(contributions));
+      localStorage.setItem('bcRoadTripContributions', JSON.stringify({
+        ...contributions,
+        tempFriend: undefined,
+        tempAmount: undefined,
+        tempDescription: undefined
+      }));
       localStorage.setItem('bcRoadTripWeather', JSON.stringify(weatherData));
     }
   }, [editableItinerary, conversation, contributions, weatherData]);
@@ -373,7 +378,10 @@ Respond with a JSON object:
   const handleContribution = (friend, amount, description) => {
     setContributions(prev => ({
       ...prev,
-      [friend]: [...(prev[friend] || []), { amount, description, timestamp: Date.now() }]
+      [friend]: [...(prev[friend] || []), { amount, description, timestamp: Date.now() }],
+      tempFriend: '',
+      tempAmount: 0,
+      tempDescription: ''
     }));
   };
 
@@ -566,8 +574,9 @@ Respond with a JSON object:
                 <h5 className="text-sm font-semibold text-purple-700">Add Contribution:</h5>
                 <div className="flex gap-2 mt-2">
                   <select
-                    className="px-2 py-1 border border-gray-300 rounded"
+                    value={contributions.tempFriend || ''}
                     onChange={(e) => setContributions(prev => ({ ...prev, tempFriend: e.target.value }))}
+                    className="px-2 py-1 border border-gray-300 rounded"
                     aria-label="Select friend for contribution"
                   >
                     <option value="">Select Friend</option>
@@ -577,14 +586,14 @@ Respond with a JSON object:
                     type="number"
                     placeholder="Amount"
                     className="px-2 py-1 border border-gray-300 rounded w-24"
-                    onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 }))}
                     aria-label="Contribution amount"
                   />
                   <input
                     type="text"
                     placeholder="Description"
                     className="px-2 py-1 border border-gray-300 rounded flex-1"
-                    onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value })}
+                    onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value }))}
                     aria-label="Contribution description"
                   />
                   <button
@@ -592,7 +601,6 @@ Respond with a JSON object:
                       const { tempFriend, tempAmount, tempDescription } = contributions;
                       if (tempFriend && tempAmount && tempDescription) {
                         handleContribution(tempFriend, tempAmount, tempDescription);
-                        setContributions(prev => ({ ...prev, tempFriend: '', tempAmount: 0, tempDescription: '' }));
                       }
                     }}
                     className="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
@@ -1067,7 +1075,7 @@ Respond with a JSON object:
           ))}
         </div>
       </div>
-    </div>
+    );
   );
 
   return (
