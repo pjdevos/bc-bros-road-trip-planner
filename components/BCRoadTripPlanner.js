@@ -1,10 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
-import { MapPin, Compass, Coffee, Mountain, Calendar, Users, Zap, Star, Map } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, Compass, Coffee, Mountain, Calendar, Users, Zap, Star } from 'lucide-react';
 
 const BCRoadTripPlanner = () => {
-  // Define the NEW itinerary (Osoyoos/Tofino route)
   const defaultItinerary = [
     { day: 1, location: "Vancouver → Osoyoos", highlight: "Desert wine country adventure", activities: ["Early departure from Vancouver", "Chilliwack supply stop", "Osoyoos Desert Centre", "Wine tasting in Canada's only desert"] },
     { day: 2, location: "Osoyoos → Kelowna", highlight: "Okanagan Lake paradise", activities: ["Nk'Mip Desert Cultural Centre", "Drive along Okanagan Lake", "Fintry Provincial Park setup", "Lakeside swimming"] },
@@ -18,7 +17,6 @@ const BCRoadTripPlanner = () => {
     { day: 10, location: "Vancouver Return", highlight: "Epic journey complete", activities: ["RV return and cleanup", "Final supply run", "Airport departures", "Legendary memories made"] }
   ];
 
-  // State variables
   const [currentSection, setCurrentSection] = useState('overview');
   const [selectedDay, setSelectedDay] = useState(null);
   const [responses, setResponses] = useState([]);
@@ -26,185 +24,7 @@ const BCRoadTripPlanner = () => {
   const [customQuestion, setCustomQuestion] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editableItinerary, setEditableItinerary] = useState(defaultItinerary);
-  const [showMap, setShowMap] = useState(false);
-  const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Load Google Maps when needed
-  useEffect(() => {
-    if (showMap && !mapLoaded) {
-      // Check if Google Maps is already loaded
-      if (window.google && window.google.maps) {
-        setMapLoaded(true);
-        setTimeout(initializeMap, 200);
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDqBGR6jfw1eatF7DYtpLdnhc-uQBdL40I&libraries=geometry&callback=initGoogleMaps`;
-      script.async = true;
-      script.defer = true;
-      
-      // Create a global callback function
-      window.initGoogleMaps = () => {
-        setMapLoaded(true);
-        setTimeout(initializeMap, 300);
-      };
-
-      script.onerror = () => {
-        console.error('Failed to load Google Maps');
-        showMapFallback();
-      };
-
-      document.head.appendChild(script);
-    }
-  }, [showMap, mapLoaded]);
-
-  const showMapFallback = () => {
-    const mapElement = document.getElementById('trip-map');
-    if (mapElement) {
-      mapElement.innerHTML = `
-        <div class="flex items-center justify-center h-full bg-gray-100 text-gray-600">
-          <div class="text-center p-8">
-            <p class="text-lg font-semibold mb-2">🗺️ Your BC Adventure Route</p>
-            <div class="text-left bg-white rounded-lg p-4 shadow-sm max-w-sm">
-              <p class="text-sm text-blue-600 font-medium mb-2">10-Day Journey:</p>
-              <div class="text-xs space-y-1">
-                <div>📍 Day 1: Vancouver → Osoyoos (Desert wine country)</div>
-                <div>📍 Day 2-3: Osoyoos → Kelowna (Okanagan Lake)</div>
-                <div>📍 Day 4: Kelowna → Pemberton (Mountains)</div>
-                <div>📍 Day 5-6: Pemberton → Tofino (Pacific Ocean)</div>
-                <div>📍 Day 7-8: Tofino → Victoria (Capital city)</div>
-                <div>📍 Day 9-10: Victoria → Vancouver (Journey home)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-  };
-
-  // Initialize Google Maps
-  const initializeMap = () => {
-    if (!window.google || !window.google.maps || !document.getElementById('trip-map')) {
-      console.log('Google Maps not ready yet');
-      return;
-    }
-
-    try {
-      const coordinates = {
-        1: { lat: 49.2827, lng: -123.1207, name: "Vancouver" },
-        2: { lat: 49.0325, lng: -119.4525, name: "Osoyoos" },
-        3: { lat: 49.8880, lng: -119.4960, name: "Kelowna" },
-        4: { lat: 50.3192, lng: -122.7948, name: "Pemberton" },
-        5: { lat: 49.1533, lng: -125.9060, name: "Tofino" },
-        6: { lat: 49.1533, lng: -125.9060, name: "Tofino" },
-        7: { lat: 48.4284, lng: -123.3656, name: "Victoria" },
-        8: { lat: 48.4284, lng: -123.3656, name: "Victoria" },
-        9: { lat: 49.1666, lng: -121.9833, name: "Cultus Lake" },
-        10: { lat: 49.2827, lng: -123.1207, name: "Vancouver" }
-      };
-
-      const map = new window.google.maps.Map(document.getElementById('trip-map'), {
-        zoom: 6,
-        center: { lat: 49.0, lng: -123.0 },
-        mapTypeId: 'terrain',
-        styles: [
-          {
-            featureType: 'poi.business',
-            stylers: [{ visibility: 'off' }]
-          }
-        ]
-      });
-
-      // Add custom markers for each day
-      const currentItinerary = isEditing ? editableItinerary : defaultItinerary;
-      currentItinerary.forEach((day) => {
-        const coord = coordinates[day.day];
-        if (coord) {
-          const marker = new window.google.maps.Marker({
-            position: coord,
-            map: map,
-            title: `Day ${day.day}: ${day.location}`,
-            label: {
-              text: day.day.toString(),
-              color: 'white',
-              fontWeight: 'bold'
-            },
-            icon: {
-              path: window.google.maps.SymbolPath.CIRCLE,
-              scale: 20,
-              fillColor: '#3B82F6',
-              fillOpacity: 1,
-              strokeColor: 'white',
-              strokeWeight: 2
-            }
-          });
-
-          const infoWindow = new window.google.maps.InfoWindow({
-            content: `
-              <div style="padding: 10px; max-width: 250px;">
-                <h3 style="margin: 0 0 5px 0; color: #1f2937;">Day ${day.day}</h3>
-                <p style="margin: 0 0 5px 0; font-weight: bold; color: #3B82F6;">${day.location}</p>
-                <p style="margin: 0 0 8px 0; color: #6b7280;">${day.highlight}</p>
-                <div style="font-size: 12px; color: #6b7280;">
-                  <strong>Activities:</strong><br>
-                  • ${day.activities.join('<br>• ')}
-                </div>
-              </div>
-            `
-          });
-
-          marker.addListener('click', () => {
-            infoWindow.open(map, marker);
-          });
-        }
-      });
-
-      // Add driving directions
-      try {
-        const directionsService = new window.google.maps.DirectionsService();
-        const directionsRenderer = new window.google.maps.DirectionsRenderer({
-          suppressMarkers: true, // We already have custom markers
-          polylineOptions: {
-            strokeColor: '#3B82F6',
-            strokeWeight: 4,
-            strokeOpacity: 0.8
-          }
-        });
-        directionsRenderer.setMap(map);
-
-        const waypoints = [];
-        for (let i = 2; i <= 9; i++) {
-          waypoints.push({
-            location: coordinates[i],
-            stopover: true
-          });
-        }
-
-        directionsService.route({
-          origin: coordinates[1],
-          destination: coordinates[10],
-          waypoints: waypoints,
-          optimizeWaypoints: false,
-          travelMode: window.google.maps.TravelMode.DRIVING
-        }, (result, status) => {
-          if (status === 'OK') {
-            directionsRenderer.setDirections(result);
-          } else {
-            console.log('Directions request failed:', status);
-          }
-        });
-      } catch (error) {
-        console.log('Directions service failed, but markers still work:', error);
-      }
-
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      showMapFallback();
-    }
-  };
-
-  // Handle Claude API calls
   const handleClaude = async (prompt) => {
     setIsLoading(true);
     try {
@@ -271,26 +91,26 @@ Your entire response MUST be valid JSON only.`
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 text-white">
         <h2 className="text-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
-        <p className="text-lg">Markus's epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days through BC's best!</p>
+        <p className="text-lg">Markus's epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
       </div>
       
       <div className="grid md:grid-cols-3 gap-4">
         <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
           <Mountain className="w-8 h-8 text-orange-600 mb-2" />
           <h3 className="font-bold text-orange-800">Desert to Ocean</h3>
-          <p className="text-sm text-orange-700">Wine country, mountain lakes, Pacific surfing, and more diversity than you can handle</p>
+          <p className="text-sm text-orange-700">Wine country, mountain lakes, Pacific surfing, and incredible diversity</p>
         </div>
         
         <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
           <Compass className="w-8 h-8 text-blue-600 mb-2" />
           <h3 className="font-bold text-blue-800">Hidden Gems</h3>
-          <p className="text-sm text-blue-700">Hot springs, secret beaches, island adventures, and places perfect for your international crew</p>
+          <p className="text-sm text-blue-700">Hot springs, secret beaches, island adventures perfect for your crew</p>
         </div>
         
         <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
           <Users className="w-8 h-8 text-purple-600 mb-2" />
           <h3 className="font-bold text-purple-800">Epic Experiences</h3>
-          <p className="text-sm text-purple-700">Perfect for 10 international legends who want to create unforgettable memories</p>
+          <p className="text-sm text-purple-700">Perfect for 10 international legends creating unforgettable memories</p>
         </div>
       </div>
 
@@ -341,13 +161,6 @@ Your entire response MUST be valid JSON only.`
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">🗺️ Your 10-Day Adventure Map</h2>
           <div className="flex gap-2">
-            <button
-              onClick={() => setShowMap(!showMap)}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-2"
-            >
-              <Map className="w-4 h-4" />
-              {showMap ? 'Hide Map' : 'Show Route Map'}
-            </button>
             {isEditing ? (
               <>
                 <button
@@ -376,20 +189,6 @@ Your entire response MUST be valid JSON only.`
             )}
           </div>
         </div>
-
-        {showMap && (
-          <div className="mb-6">
-            <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-t-xl p-4 text-white">
-              <h3 className="text-lg font-bold">🗺️ Your BC Adventure Route</h3>
-              <p className="text-sm opacity-90">Click markers to see daily details • Blue line shows your driving route</p>
-            </div>
-            <div 
-              id="trip-map" 
-              className="w-full h-96 rounded-b-xl border border-gray-200"
-              style={{ minHeight: '400px' }}
-            />
-          </div>
-        )}
 
         {currentItinerary.map((day, dayIndex) => (
           <div 
@@ -493,7 +292,7 @@ Your entire response MUST be valid JSON only.`
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Any hidden gems or unexpected stops? Make it fun and detailed for our group of 10 international legends.`);
+                        handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Make it fun and detailed for our international crew of 10 guys.`);
                       }}
                       disabled={isLoading}
                       className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
@@ -501,7 +300,6 @@ Your entire response MUST be valid JSON only.`
                       {isLoading ? 'Getting Plans...' : `Get Detailed Plans for Day ${day.day}`}
                     </button>
                     
-                    {/* Show responses for this specific day */}
                     {responses.filter(response => 
                       response.question.includes(`Day ${day.day}`) || 
                       response.question.includes(day.location)
@@ -606,4 +404,82 @@ Your entire response MUST be valid JSON only.`
       <div className="space-y-4">
         {responses.map((response, idx) => (
           <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="font-sem
+            <div className="font-semibold text-gray-800 mb-2">❓ {response.question}</div>
+            <div className="text-gray-700 mb-3">{response.response}</div>
+            
+            {response.recommendations && response.recommendations.length > 0 && (
+              <div className="mb-3">
+                <h4 className="font-semibold text-gray-800 mb-1">🎯 Top Recommendations:</h4>
+                <ul className="list-disc list-inside text-sm text-gray-700">
+                  {response.recommendations.map((rec, i) => (
+                    <li key={i}>{rec}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {response.insider_tip && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                <span className="font-semibold text-yellow-800">💡 Insider Tip: </span>
+                <span className="text-yellow-700">{response.insider_tip}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-4xl mx-auto p-4 bg-white">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          🚐 BC Bros Road Trip Planner
+        </h1>
+        <p className="text-gray-600">July 2026 • 10 Days • Markus's 40th Birthday • International Legends</p>
+      </div>
+
+      <div className="flex gap-2 mb-6 bg-gray-100 rounded-lg p-1">
+        <button
+          onClick={() => setCurrentSection('overview')}
+          className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+            currentSection === 'overview' 
+              ? 'bg-white text-gray-800 shadow-sm' 
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          <Star className="w-4 h-4 inline mr-1" />
+          Overview
+        </button>
+        <button
+          onClick={() => setCurrentSection('itinerary')}
+          className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+            currentSection === 'itinerary' 
+              ? 'bg-white text-gray-800 shadow-sm' 
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          <Calendar className="w-4 h-4 inline mr-1" />
+          Itinerary
+        </button>
+        <button
+          onClick={() => setCurrentSection('chat')}
+          className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+            currentSection === 'chat' 
+              ? 'bg-white text-gray-800 shadow-sm' 
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          <Coffee className="w-4 h-4 inline mr-1" />
+          Ask Guide
+        </button>
+      </div>
+
+      {currentSection === 'overview' && renderOverview()}
+      {currentSection === 'itinerary' && renderItinerary()}
+      {currentSection === 'chat' && renderChat()}
+    </div>
+  );
+};
+
+export default BCRoadTripPlanner;
