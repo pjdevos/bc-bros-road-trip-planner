@@ -713,8 +713,13 @@ Your entire response MUST be valid JSON only.`
 
       {/* Chat conversation display */}
       <div className="space-y-4 max-h-96 overflow-y-auto">
+        {conversation.length === 0 && (
+          <div className="text-center text-gray-500 py-8">
+            <p>👋 Hey legends! Ask me anything about your epic BC adventure!</p>
+          </div>
+        )}
         {conversation.map((message, idx) => (
-          <div key={idx} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={`msg-${idx}-${message.timestamp}`} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
             {message.type === 'nanook' && (
               <img 
                 src="https://i.imgur.com/xtAl4ow.png" 
@@ -727,7 +732,7 @@ Your entire response MUST be valid JSON only.`
                 ? 'bg-blue-600 text-white' 
                 : 'bg-gray-100 text-gray-800'
             }`}>
-              <p className="text-sm">{message.content}</p>
+              <p className="text-sm">{message.content || 'Loading...'}</p>
               
               {message.type === 'nanook' && message.recommendations && message.recommendations.length > 0 && (
                 <div className="mt-2 pt-2 border-t border-gray-200">
