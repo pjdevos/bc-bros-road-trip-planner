@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -70,14 +69,12 @@ const BCRoadTripPlanner = () => {
             <div class="text-left bg-white rounded-lg p-4 shadow-sm max-w-sm">
               <p class="text-sm text-blue-600 font-medium mb-2">10-Day Journey:</p>
               <div class="text-xs space-y-1">
-                <div>📍 Day 1-2: Vancouver → Whistler</div>
-                <div>📍 Day 3-4: Whistler → Kamloops</div>
-                <div>📍 Day 5: Kamloops → Revelstoke</div>
-                <div>📍 Day 6: Revelstoke → Nelson</div>
-                <div>📍 Day 7: Nelson → Fernie</div>
-                <div>📍 Day 8: Fernie → Calgary</div>
-                <div>📍 Day 9: Calgary → Jasper</div>
-                <div>📍 Day 10: Jasper → Vancouver</div>
+                <div>📍 Day 1: Vancouver → Osoyoos (Desert wine country)</div>
+                <div>📍 Day 2-3: Osoyoos → Kelowna (Okanagan Lake)</div>
+                <div>📍 Day 4: Kelowna → Pemberton (Mountains)</div>
+                <div>📍 Day 5-6: Pemberton → Tofino (Pacific Ocean)</div>
+                <div>📍 Day 7-8: Tofino → Victoria (Capital city)</div>
+                <div>📍 Day 9-10: Victoria → Vancouver (Journey home)</div>
               </div>
             </div>
           </div>
@@ -95,15 +92,15 @@ const BCRoadTripPlanner = () => {
 
     try {
       const coordinates = {
-        1: { lat: 49.2827, lng: -123.1207, name: "Vancouver" },
-        2: { lat: 50.1163, lng: -122.9574, name: "Whistler" },
-        3: { lat: 50.1163, lng: -122.9574, name: "Whistler" },
-        4: { lat: 50.6745, lng: -120.3273, name: "Kamloops" },
-        5: { lat: 51.0447, lng: -118.2065, name: "Revelstoke" },
-        6: { lat: 49.4928, lng: -117.2948, name: "Nelson" },
-        7: { lat: 49.5047, lng: -115.0631, name: "Fernie" },
-        8: { lat: 51.0447, lng: -114.0719, name: "Calgary" },
-        9: { lat: 52.8737, lng: -118.0814, name: "Jasper" },
+        1: { lat: 49.0325, lng: -119.4525, name: "Osoyoos" },
+        2: { lat: 49.8880, lng: -119.4960, name: "Kelowna" },
+        3: { lat: 49.8880, lng: -119.4960, name: "Kelowna" },
+        4: { lat: 50.3192, lng: -122.7948, name: "Pemberton" },
+        5: { lat: 49.1533, lng: -125.9060, name: "Tofino" },
+        6: { lat: 49.1533, lng: -125.9060, name: "Tofino" },
+        7: { lat: 48.4284, lng: -123.3656, name: "Victoria" },
+        8: { lat: 48.4284, lng: -123.3656, name: "Victoria" },
+        9: { lat: 49.1666, lng: -121.9833, name: "Cultus Lake" },
         10: { lat: 49.2827, lng: -123.1207, name: "Vancouver" }
       };
 
@@ -219,27 +216,27 @@ const BCRoadTripPlanner = () => {
         body: JSON.stringify({
           prompt: `You are the ultimate BC road trip guide for a legendary group of 10 guys doing a camper van adventure in July 2026. This is a 40th birthday trip for Markus (the birthday boy - he's Canadian/German and the whole reason for this epic BC adventure!). 
 
-THE CREW:
-- Markus (the birthday boy - turning 40!) Canadian/German, this is his birthday trip
-- Thomas (Tom) - British but born in Brussels, lived there all his life
-- Ramon - Dutch/Peruvian, speaks Spanish
-- Alex - lives in the Emirates 
-- Emil - Swedish and the most left-wing of the group
-- Henning - lives in Holland
-- Patrick (Paddy) - from Ireland
-- Serban - from Romania 
-- Tudor
-- Pieter (P-J) - the oldest at 46, the wise elder of the group, and he's the real Belgian
+THE CREW (with all their quirks):
+- Markus (the birthday boy - turning 40!) Canadian/German, father of Emmy and Rafael, Green party centrist, not a fan of zionism
+- Thomas (Tom) - French/Irish, loves parties and raves, single and liberal, the party animal
+- Ramon - Dutch/Peruvian, speaks Spanish, UFC wrestling fan, loves philosophical discussions  
+- Alex (goes by Churchill) - speaks Chinese, loves England, grew up in Belgium, lives in Dubai
+- Emil - Swedish Arctic hillbilly, loves football and left-wing politics, philosophical thinker
+- Henning - German/Dutch, sailing enthusiast, works for Groningen regional government, Schützenfest lover, football fan, beer connoisseur, dive bar expert, Social Democrat, philosophical discussions
+- Patrick (Paddy) - Irish, eternally young Peter Pan type, loves travel, electronic music, parties, and philosophy
+- Serban (goes by Radu) - Austrian/Romanian, youngest (under 30), crypto/gambling enthusiast, womanizer, grew up in Vienna, Tudor's brother-in-law
+- Tudor - Romanian/Dutch, Liberal, worked for European People's Party, Radu's brother-in-law, loves philosophical discussions
+- Pieter (P-J) - the oldest at 46, Belgian, liberal, worked for Belgian government, the wise elder
 
-Be fun, cheeky, and enthusiastic. Occasionally reference one of the guys by name in a playful way that fits their personality or background. Make gentle fun of them like good friends do. Focus on outdoor adventures and unexpected places perfect for this international crew of legends.
+Be fun, cheeky, and enthusiastic. Reference these guys by name with playful jabs that fit their personalities - tease Radu about crypto, joke about Churchill's Dubai lifestyle, reference the philosophical debate club (Tudor, Patrick, Emil, Ramon, Henning), make sailing jokes about Henning, party jokes about Tom, etc. Focus on outdoor adventures perfect for this eclectic international crew.
 
 Here's what they want to know: ${prompt}
 
 Respond with a JSON object:
 {
-  "response": "Your fun, detailed response with occasional cheeky references to the crew",
-  "recommendations": ["specific recommendation 1", "specific recommendation 2", "specific recommendation 3"],
-  "insider_tip": "A cheeky insider tip, maybe mentioning one of the guys"
+  "response": "Your fun, detailed response with cheeky personality-based references to the crew",
+  "recommendations": ["specific recommendation 1", "specific recommendation 2", "specific recommendation 3"],  
+  "insider_tip": "A cheeky insider tip, definitely mentioning one of the guys by name/personality"
 }
 
 Your entire response MUST be valid JSON only.`
@@ -262,12 +259,12 @@ Your entire response MUST be valid JSON only.`
   };
 
   const quickQuestions = [
-    "What are the most epic outdoor adventures for our international crew?",
+    "What are the most epic outdoor adventures for our eclectic international crew?",
     "Hidden gems and weird roadside attractions we shouldn't miss?",
-    "Best camping spots for camper vans along our route?",
-    "What should we pack for entertainment during long drives?",
-    "Local food challenges and craft breweries to hit? (Ramon can translate if needed!)",
-    "Emergency backup plans if weather sucks? (Emil probably has socialist solutions)"
+    "Best camping spots for camper vans along our route? (Henning can pretend he's sailing on land)",
+    "What should we pack for entertainment during long drives? (Philosophical debates included)",
+    "Local food challenges and craft breweries? (Henning knows his dive bars, P-J his government wine)",
+    "Emergency backup plans if weather sucks? (Radu will probably suggest crypto trading indoors)"
   ];
 
   const renderOverview = () => (
@@ -300,10 +297,10 @@ Your entire response MUST be valid JSON only.`
       <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
         <h3 className="font-bold text-yellow-800 mb-2">⚡ Quick Trip Stats</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div><strong>Distance:</strong> ~2,500km</div>
+          <div><strong>Distance:</strong> ~1,500km + ferries</div>
           <div><strong>Best Time:</strong> July 2026</div>
           <div><strong>Group Size:</strong> 10 international legends</div>
-          <div><strong>Vehicle:</strong> Camper vans</div>
+          <div><strong>Vehicle:</strong> RV/Camper vans</div>
         </div>
       </div>
     </div>
@@ -687,4 +684,4 @@ Your entire response MUST be valid JSON only.`
   );
 };
 
-export default BCRoadTripPlanner;
+export default BCRoadTripPlanner; 
