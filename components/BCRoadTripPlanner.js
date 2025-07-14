@@ -523,41 +523,42 @@ Respond with a JSON object:
           <h3 className="font-bold text-purple-800 mb-2">🤝 Group Coordination</h3>
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold text-purple-700 mb-2">Activity Assignments & Votes:</h4>
-              {editableItinerary.map((day, dayIndex) => (
-                <div key={day.day} className="mb-2">
-                  <p className="text-sm font-medium">Day {day.day} ({day.location}):</p>
-                  <div className="grid md:grid-cols-2 gap-2 text-sm">
-                    {day.activities.map((activity, activityIndex) => (
-                      <div key={activityIndex} className="flex items-center gap-2">
-                        <span>{activity}</span>
-                        <select
-                          value={day.assignments[activityIndex] || ''}
-                          onChange={(e) => handleAssign(dayIndex, activityIndex, e.target.value)}
-                          className="px-2 py-1 border border-gray-300 rounded text-xs"
-                          aria-label={`Assign ${activity} for Day ${day.day}`}
-                        >
-                          <option value="">Assign...</option>
-                          {friends.map(f => <option key={f} value={f}>{f}</option>)}
-                        </select>
-                        <div className="flex gap-1">
-                          {friends.map(friend => (
-                            <button
-                              key={friend}
-                              onClick={() => handleVote(dayIndex, activityIndex, friend, day.votes[activityIndex]?.[friend] === 'up' ? null : 'up')}
-                              className={`text-xs ${day.votes[activityIndex]?.[friend] === 'up' ? 'text-green-600' : 'text-gray-400'}`}
-                              aria goes here-label={`Vote up for ${activity} by ${friend}`}
-                            >
-                              👍
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+           <div>
+  <h4 className="font-semibold text-purple-700 mb-2">Activity Assignments & Votes:</h4>
+  {editableItinerary.map((day, dayIndex) => (
+    <div key={day.day} className="mb-2">
+      <p className="text-sm font-medium">Day {day.day} ({day.location}):</p>
+      <div className="grid md:grid-cols-2 gap-2 text-sm">
+        {day.activities.map((activity, activityIndex) => (
+          <div key={activityIndex} className="flex items-center gap-2">
+            <span>{activity}</span>
+            <select
+              value={day.assignments[activityIndex] || ''}
+              onChange={(e) => handleAssign(dayIndex, activityIndex, e.target.value)}
+              className="px-2 py-1 border border-gray-300 rounded text-xs"
+              aria-label={`Assign ${activity} for Day ${day.day}`}
+            >
+              <option value="">Assign...</option>
+              {friends.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+            <div className="flex gap-1">
+              {friends.map(friend => (
+                <button
+                  key={friend}
+                  onClick={() => handleVote(dayIndex, activityIndex, friend, day.votes[activityIndex]?.[friend] === 'up' ? null : 'up')}
+                  className={`text-xs ${day.votes[activityIndex]?.[friend] === 'up' ? 'text-green-600' : 'text-gray-400'} hover:text-green-700 focus:outline-none`}
+                  aria-label={`Vote ${day.votes[activityIndex]?.[friend] === 'up' ? 'remove' : 'add'} for ${activity} by ${friend}`}
+                >
+                  👍
+                </button>
               ))}
             </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  ))}
+</div> 
             <div>
               <h4 className="font-semibold text-purple-700 mb-2">Contributions:</h4>
               <div className="grid md:grid-cols-2 gap-2 text-sm">
