@@ -1130,7 +1130,7 @@ Respond with a JSON object:
       {currentSection === 'itinerary' && renderItinerary()}
       {currentSection === 'chat' && renderChat()}
     </div>
-  );
-}
+  )
+};
 
 export default BCRoadTripPlanner;
