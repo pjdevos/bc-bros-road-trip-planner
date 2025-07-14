@@ -206,6 +206,16 @@ Your entire response MUST be valid JSON only.`
         <h2 className="text-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
         <p className="text-lg">Markus's epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
       </div>
+
+      {/* Add your custom image here */}
+      <div className="flex justify-center">
+        <img 
+          src="https://drive.google.com/uc?id=1OMhuLfCPZW5hlAdUv4w5P9DW3Pf7t8K6" 
+          alt="Markus's 40th Birthday BC Adventure" 
+          className="rounded-xl shadow-lg max-w-full h-auto"
+          style={{ maxHeight: '400px' }}
+        />
+      </div>
       
       <div className="grid md:grid-cols-3 gap-4">
         <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
