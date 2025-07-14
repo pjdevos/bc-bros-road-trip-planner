@@ -92,8 +92,8 @@ const BCRoadTripPlanner = () => {
 
     try {
       const coordinates = {
-        1: { lat: 49.0325, lng: -119.4525, name: "Osoyoos" },
-        2: { lat: 49.8880, lng: -119.4960, name: "Kelowna" },
+        1: { lat: 49.2827, lng: -123.1207, name: "Vancouver" },
+        2: { lat: 49.0325, lng: -119.4525, name: "Osoyoos" },
         3: { lat: 49.8880, lng: -119.4960, name: "Kelowna" },
         4: { lat: 50.3192, lng: -122.7948, name: "Pemberton" },
         5: { lat: 49.1533, lng: -125.9060, name: "Tofino" },
@@ -259,19 +259,19 @@ Your entire response MUST be valid JSON only.`
   };
 
   const quickQuestions = [
-    "What are the most epic outdoor adventures for our eclectic international crew?",
-    "Hidden gems and weird roadside attractions we shouldn't miss?",
-    "Best camping spots for camper vans along our route? (Henning can pretend he's sailing on land)",
-    "What should we pack for entertainment during long drives? (Philosophical debates included)",
-    "Local food challenges and craft breweries? (Henning knows his dive bars, P-J his government wine)",
-    "Emergency backup plans if weather sucks? (Radu will probably suggest crypto trading indoors)"
+    "What are the most epic activities for our diverse route from desert to ocean?",
+    "Hidden gems between Osoyoos wine country and Tofino beaches?",
+    "Best RV camping spots and ferry booking tips for our route?",
+    "What should we pack for desert, lakes, mountains AND ocean? (Philosophical debates included)",
+    "Local wine, craft breweries, and food along our new route? (Henning's dive bar radar activated)",
+    "Emergency backup plans if BC ferries are delayed? (Radu will probably suggest crypto trading while waiting)"
   ];
 
   const renderOverview = () => (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 text-white">
         <h2 className="text-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
-        <p className="text-lg">Markus's epic 40th birthday adventure! 10 international legends, 10 days, 1 unforgettable camper van journey through the most beautiful province in Canada</p>
+        <p className="text-lg">Markus's epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days through BC's best!</p>
       </div>
       
       <div className="grid md:grid-cols-3 gap-4">
@@ -684,4 +684,4 @@ Your entire response MUST be valid JSON only.`
   );
 };
 
-export default BCRoadTripPlanner; 
+export default BCRoadTripPlanner;
