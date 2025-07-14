@@ -70,7 +70,7 @@ const BCRoadTripPlanner = () => {
       const handleOnline = () => setIsOnline(true);
       const handleOffline = () => setIsOnline(false);
       window.addEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.addEventListener('offline', handleOffline);
       setIsOnline(navigator.onLine);
 
       return () => {
@@ -546,7 +546,7 @@ Respond with a JSON object:
                               key={friend}
                               onClick={() => handleVote(dayIndex, activityIndex, friend, day.votes[activityIndex]?.[friend] === 'up' ? null : 'up')}
                               className={`text-xs ${day.votes[activityIndex]?.[friend] === 'up' ? 'text-green-600' : 'text-gray-400'}`}
-                              aria-label={`Vote up for ${activity} by ${friend}`}
+                              aria goes here-label={`Vote up for ${activity} by ${friend}`}
                             >
                               👍
                             </button>
@@ -1075,7 +1075,7 @@ Respond with a JSON object:
           ))}
         </div>
       </div>
-    );
+    </div>
   );
 
   return (
@@ -1130,7 +1130,7 @@ Respond with a JSON object:
       {currentSection === 'itinerary' && renderItinerary()}
       {currentSection === 'chat' && renderChat()}
     </div>
-  )
-};
+  );
+}
 
 export default BCRoadTripPlanner;
