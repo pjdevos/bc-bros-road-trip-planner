@@ -1131,6 +1131,6 @@ Respond with a JSON object:
       {currentSection === 'chat' && renderChat()}
     </div>
   );
-};
+}
 
 export default BCRoadTripPlanner;
