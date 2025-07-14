@@ -6,16 +6,26 @@ import { MapPin, Compass, Coffee, Mountain, Calendar, Users, Zap, Star, Map } fr
 
 const BCRoadTripPlanner = () => {
   const defaultItinerary = [
-    { day: 1, location: "Vancouver → Osoyoos", highlight: "Desert wine country adventure", activities: ["Early departure from Vancouver", "Chilliwack supply stop", "Osoyoos Desert Centre", "Wine tasting in Canada's only desert"] },
-    { day: 2, location: "Osoyoos → Kelowna", highlight: "Okanagan Lake paradise", activities: ["Nk'Mip Desert Cultural Centre", "Drive along Okanagan Lake", "Fintry Provincial Park setup", "Lakeside swimming"] },
-    { day: 3, location: "Kelowna Rest Day", highlight: "Wine tours and lake activities", activities: ["Local winery visits", "Big White Scenic Chairlift", "Okanagan Lake water sports", "Downtown Kelowna"] },
-    { day: 4, location: "Kelowna → Pemberton", highlight: "Mountain valley transition", activities: ["Coquihalla Highway drive", "Nairn Falls Provincial Park", "Nairn Falls hike", "Mountain photography"] },
-    { day: 5, location: "Pemberton → Tofino", highlight: "Sea-to-Sky to Pacific Ocean", activities: ["Sea-to-Sky Highway", "Horseshoe Bay ferry", "Cathedral Grove", "First Pacific sunset"] },
-    { day: 6, location: "Tofino Adventures", highlight: "Surf, whales, and hot springs", activities: ["Surfing lessons", "Hot Springs Cove boat tour", "Whale watching", "Rainforest boardwalk trails"] },
-    { day: 7, location: "Tofino → Victoria", highlight: "West coast to capital city", activities: ["Final Tofino beach walk", "Drive through Island interior", "Goldstream Provincial Park", "Victoria Inner Harbour"] },
-    { day: 8, location: "Victoria Exploration", highlight: "Gardens and royal treatment", activities: ["Butchart Gardens", "Royal BC Museum", "Inner Harbour stroll", "Beacon Hill Park peacocks"] },
-    { day: 9, location: "Victoria → Vancouver", highlight: "Ferry crossing finale", activities: ["Swartz Bay to Tsawwassen ferry", "Optional Cultus Lake stop", "Trip reflection", "Final group dinner"] },
-    { day: 10, location: "Vancouver Return", highlight: "Epic journey complete", activities: ["RV return and cleanup", "Final supply run", "Airport departures", "Legendary memories made"] }
+    { day: 1, location: "Vancouver → Osoyoos", highlight: "Desert wine country adventure", activities: ["Early departure from Vancouver", "Chilliwack supply stop", "Osoyoos Desert Centre", "Wine tasting"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
+    { day: 2, location: "Osoyoos → Kelowna", highlight: "Okanagan Lake paradise", activities: ["Nk'Mip Desert Cultural Centre", "Drive along Okanagan Lake", "Fintry Provincial Park setup", "Lakeside swimming"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
+    { day: 3, location: "Kelowna Rest Day", highlight: "Wine tours and lake activities", activities: ["Local winery visits", "Big White Scenic Chairlift", "Okanagan Lake water sports", "Downtown Kelowna"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
+    { day: 4, location: "Kelowna → Pemberton", highlight: "Mountain valley transition", activities: ["Coquihalla Highway drive", "Nairn Falls Provincial Park", "Nairn Falls hike", "Mountain photography"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
+    { day: 5, location: "Pemberton → Tofino", highlight: "Sea-to-Sky to Pacific Ocean", activities: ["Sea-to-Sky Highway", "Horseshoe Bay ferry", "Cathedral Grove", "First Pacific sunset"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
+    { day: 6, location: "Tofino Adventures", highlight: "Surf, whales, and hot springs", activities: ["Surfing lessons", "Hot Springs Cove boat tour", "Whale watching", "Rainforest boardwalk trails"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
+    { day: 7, location: "Tofino → Victoria", highlight: "West coast to capital city", activities: ["Final Tofino beach walk", "Drive through Island interior", "Goldstream Provincial Park", "Victoria Inner Harbour"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
+    { day: 8, location: "Victoria Exploration", highlight: "Gardens and royal treatment", activities: ["Butchart Gardens", "Royal BC Museum", "Inner Harbour stroll", "Beacon Hill Park peacocks"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
+    { day: 9, location: "Victoria → Vancouver", highlight: "Ferry crossing finale", activities: ["Swartz Bay to Tsawwassen ferry", "Optional Cultus Lake stop", "Trip reflection", "Final group dinner"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
+    { day: 10, location: "Vancouver Return", highlight: "Epic journey complete", activities: ["RV return and cleanup", "Final supply run", "Airport departures", "Legendary memories made"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} }
+  ];
+
+  const friends = ["Markus", "Tom", "Ramon", "Churchill", "Emil", "Henning", "Paddy", "Radu", "Tudor", "P-J"];
+  const locations = [
+    { name: "Vancouver", lat: 49.2827, lng: -123.1207 },
+    { name: "Osoyoos", lat: 49.0325, lng: -119.4525 },
+    { name: "Kelowna", lat: 49.8880, lng: -119.4960 },
+    { name: "Pemberton", lat: 50.3192, lng: -122.7948 },
+    { name: "Tofino", lat: 49.1533, lng: -125.9060 },
+    { name: "Victoria", lat: 48.4284, lng: -123.3656 }
   ];
 
   const [currentSection, setCurrentSection] = useState('overview');
@@ -30,16 +40,108 @@ const BCRoadTripPlanner = () => {
   const [currentFunFact, setCurrentFunFact] = useState(null);
   const [followUpQuestion, setFollowUpQuestion] = useState('');
   const [followUpMessageId, setFollowUpMessageId] = useState(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [weatherData, setWeatherData] = useState({});
+  const [contributions, setContributions] = useState({});
 
-  // BC Fun Facts (shortened for brevity, add back full list as needed)
+  // BC Fun Facts (shortened for brevity)
   const bcFunFacts = [
     {
       title: "Raincouver Is Real",
       fact: "Vancouver gets so much rain that locals joke about owning multiple rain jackets, each for a different level of wetness — from 'misty drizzle' to 'horizontal sideways rain.'",
       tip: "☔ Locals don't even use umbrellas. That's how you spot a tourist."
     },
-    // Add back the rest of the fun facts from your original code
   ];
+
+  // Offline Functionality
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cachedItinerary = localStorage.getItem('bcRoadTripItinerary');
+      const cachedConversation = localStorage.getItem('bcRoadTripConversation');
+      const cachedWeather = localStorage.getItem('bcRoadTripWeather');
+      const cachedContributions = localStorage.getItem('bcRoadTripContributions');
+      if (cachedItinerary) setEditableItinerary(JSON.parse(cachedItinerary));
+      if (cachedConversation) setConversation(JSON.parse(cachedConversation).slice(-50));
+      if (cachedWeather) setWeatherData(JSON.parse(cachedWeather));
+      if (cachedContributions) setContributions(JSON.parse(cachedContributions));
+
+      const handleOnline = () => setIsOnline(true);
+      const handleOffline = () => setIsOnline(false);
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      setIsOnline(navigator.onLine);
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bcRoadTripItinerary', JSON.stringify(editableItinerary));
+      localStorage.setItem('bcRoadTripConversation', JSON.stringify(conversation.slice(-50)));
+      localStorage.setItem('bcRoadTripContributions', JSON.stringify(contributions));
+      localStorage.setItem('bcRoadTripWeather', JSON.stringify(weatherData));
+    }
+  }, [editableItinerary, conversation, contributions, weatherData]);
+
+  // Weather Integration
+  const fetchWeather = async () => {
+    const apiKey = process.env.NEXT_PUBLIC_OPENWEATHERMAP_API_KEY || 'b4852d0dab1e53207f5a738c8564f18b';
+    const now = Date.now();
+    const cacheDuration = 6 * 60 * 60 * 1000; // 6 hours
+    const cachedWeather = JSON.parse(localStorage.getItem('bcRoadTripWeather') || '{}');
+
+    for (const loc of locations) {
+      if (cachedWeather[loc.name] && now - cachedWeather[loc.name].timestamp < cacheDuration) {
+        continue; // Use cached data
+      }
+
+      try {
+        const res = await fetch(
+          `https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lng}&units=metric&appid=${apiKey}`
+        );
+        if (!res.ok) throw new Error(`Weather API error for ${loc.name}: ${res.status}`);
+        const data = await res.json();
+        setWeatherData(prev => ({
+          ...prev,
+          [loc.name]: {
+            current: {
+              temp: Math.round(data.list[0].main.temp),
+              condition: data.list[0].weather[0].main,
+              icon: data.list[0].weather[0].icon
+            },
+            forecast: data.list.slice(0, 5).map(item => ({
+              date: new Date(item.dt * 1000).toLocaleDateString(),
+              temp: Math.round(item.main.temp),
+              condition: item.weather[0].main
+            })),
+            timestamp: now
+          }
+        }));
+      } catch (error) {
+        console.error(`Failed to fetch weather for ${loc.name}:`, error);
+        setWeatherData(prev => ({
+          ...prev,
+          [loc.name]: {
+            current: { temp: 'N/A', condition: 'Unavailable', icon: '' },
+            forecast: [],
+            timestamp: now
+          }
+        }));
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bcRoadTripWeather', JSON.stringify(weatherData));
+    }
+  };
+
+  useEffect(() => {
+    if (isOnline) fetchWeather();
+  }, [isOnline]);
 
   const getRandomFunFact = () => {
     const randomIndex = Math.floor(Math.random() * bcFunFacts.length);
@@ -84,7 +186,7 @@ const BCRoadTripPlanner = () => {
         mapTypeId: 'terrain'
       });
 
-      const locations = [
+      const mapLocations = [
         { lat: 49.2827, lng: -123.1207, name: "Vancouver Start", day: 1 },
         { lat: 49.0325, lng: -119.4525, name: "Osoyoos", day: 2 },
         { lat: 49.8880, lng: -119.4960, name: "Kelowna", day: 3 },
@@ -97,7 +199,7 @@ const BCRoadTripPlanner = () => {
         { lat: 49.2900, lng: -123.1100, name: "Vancouver Return", day: 10 }
       ];
 
-      locations.forEach(location => {
+      mapLocations.forEach(location => {
         const marker = new window.google.maps.Marker({
           position: { lat: location.lat, lng: location.lng },
           map: map,
@@ -161,6 +263,20 @@ const BCRoadTripPlanner = () => {
   }, [showMap, mapLoaded]);
 
   const handleClaude = async (prompt, parentMessageId = null) => {
+    if (!isOnline) {
+      setConversation(prev => [...prev, {
+        id: Date.now(),
+        type: 'nanook',
+        content: "Whoa, legends! Looks like we're offline. Check back when you've got signal, and I'll hook you up with epic BC advice!",
+        recommendations: [],
+        insider_tip: "",
+        timestamp: Date.now(),
+        reactions: [],
+        parentId: parentMessageId
+      }]);
+      return;
+    }
+
     setIsLoading(true);
     const newMessage = {
       id: Date.now(),
@@ -196,9 +312,7 @@ Respond with a JSON object:
   "response": "Your cheeky, enthusiastic response with crew references and BC wisdom",
   "recommendations": ["specific recommendation 1", "specific recommendation 2", "specific recommendation 3"],  
   "insider_tip": "A cheeky insider tip mentioning one of the guys by name/personality"
-}
-
-Your entire response MUST be valid JSON only.`
+}`
         })
       });
 
@@ -241,6 +355,26 @@ Your entire response MUST be valid JSON only.`
     ));
   };
 
+  const handleVote = (dayIndex, activityIndex, friend, vote) => {
+    const updated = [...editableItinerary];
+    if (!updated[dayIndex].votes[activityIndex]) updated[dayIndex].votes[activityIndex] = {};
+    updated[dayIndex].votes[activityIndex][friend] = vote;
+    setEditableItinerary(updated);
+  };
+
+  const handleAssign = (dayIndex, activityIndex, friend) => {
+    const updated = [...editableItinerary];
+    updated[dayIndex].assignments[activityIndex] = friend;
+    setEditableItinerary(updated);
+  };
+
+  const handleContribution = (friend, amount, description) => {
+    setContributions(prev => ({
+      ...prev,
+      [friend]: [...(prev[friend] || []), { amount, description, timestamp: Date.now() }]
+    }));
+  };
+
   const quickQuestions = [
     "What are the most epic activities for our diverse route from desert to ocean?",
     "Hidden gems between Osoyoos wine country and Tofino beaches?",
@@ -250,102 +384,168 @@ Your entire response MUST be valid JSON only.`
     "Emergency backup plans if BC ferries are delayed? (Radu will probably suggest crypto trading while waiting)"
   ];
 
-  const renderOverview = () => (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 text-white">
-        <h2 className="text-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
-        <p className="text-lg">Markus's epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
-      </div>
+  const renderOverview = () => {
+    const totalBudget = editableItinerary.reduce((sum, day) => sum + day.costs.activities + day.costs.accommodations, 0);
 
-      <div className="flex justify-center">
-        <img 
-          src="https://i.imgur.com/nG9m1vO.png" 
-          alt="Markus's 40th Birthday BC Adventure" 
-          className="rounded-xl shadow-lg max-w-full h-auto"
-          style={{ maxHeight: '400px' }}
-        />
-      </div>
-      
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
-          <Mountain className="w-8 h-8 text-orange-600 mb-2" />
-          <h3 className="font-bold text-orange-800">Desert to Ocean</h3>
-          <p className="text-sm text-orange-700">Wine country, mountain lakes, Pacific surfing, and incredible diversity</p>
+    return (
+      <div className="space-y-6">
+        {!isOnline && (
+          <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 text-yellow-800">
+            <p>📡 Offline Mode: Using cached data. Some features may be limited until you're back online!</p>
+          </div>
+        )}
+        <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 text-white">
+          <h2 className="text-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
+          <p className="text-lg">Markus's epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
+        </div>
+
+        <div className="flex justify-center">
+          <img 
+            src="https://i.imgur.com/nG9m1vO.png" 
+            alt="Markus's 40th Birthday BC Adventure" 
+            className="rounded-xl shadow-lg max-w-full h-auto"
+            style={{ maxHeight: '400px' }}
+          />
         </div>
         
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-          <Compass className="w-8 h-8 text-blue-600 mb-2" />
-          <h3 className="font-bold text-blue-800">Hidden Gems</h3>
-          <p className="text-sm text-blue-700">Hot springs, secret beaches, island adventures perfect for your crew</p>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+            <Mountain className="w-8 h-8 text-orange-600 mb-2" />
+            <h3 className="font-bold text-orange-800">Desert to Ocean</h3>
+            <p className="text-sm text-orange-700">Wine country, mountain lakes, Pacific surfing, and incredible diversity</p>
+          </div>
+          
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+            <Compass className="w-8 h-8 text-blue-600 mb-2" />
+            <h3 className="font-bold text-blue-800">Hidden Gems</h3>
+            <p className="text-sm text-blue-700">Hot springs, secret beaches, island adventures perfect for your crew</p>
+          </div>
+          
+          <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+            <Users className="w-8 h-8 text-purple-600 mb-2" />
+            <h3 className="font-bold text-purple-800">Epic Experiences</h3>
+            <p className="text-sm text-purple-700">Perfect for 10 international legends creating unforgettable memories</p>
+          </div>
         </div>
-        
+
+        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
+          <h3 className="font-bold text-yellow-800 mb-2">💰 Budget Overview</h3>
+          <div className="text-sm">
+            <p><strong>Total Estimated Cost:</strong> ${totalBudget.toFixed(2)}</p>
+            <p className="mt-2"><strong>Breakdown by Day:</strong></p>
+            <ul className="list-disc pl-5">
+              {editableItinerary.map(day => (
+                <li key={day.day}>
+                  Day {day.day} ({day.location}): Activities ${day.costs.activities.toFixed(2)}, Accommodations ${day.costs.accommodations.toFixed(2)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
         <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-          <Users className="w-8 h-8 text-purple-600 mb-2" />
-          <h3 className="font-bold text-purple-800">Epic Experiences</h3>
-          <p className="text-sm text-purple-700">Perfect for 10 international legends creating unforgettable memories</p>
-        </div>
-      </div>
-
-      <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
-        <h3 className="font-bold text-yellow-800 mb-2">⚡ Quick Trip Stats</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div><strong>Distance:</strong> ~1,500km + ferries</div>
-          <div><strong>Best Time:</strong> July 2026</div>
-          <div><strong>Group Size:</strong> 10 international legends</div>
-          <div><strong>Vehicle:</strong> RV/Camper vans</div>
-        </div>
-      </div>
-
-      <div className="flex justify-center">
-        <button
-          onClick={getRandomFunFact}
-          className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
-          aria-label="Get a random BC fun fact"
-        >
-          <span className="text-xl">🤯</span>
-          <span className="font-semibold">BC Fun Facts</span>
-          <span className="text-sm opacity-90">(Prepare to be amused)</span>
-        </button>
-      </div>
-
-      {currentFunFact && (
-        <div className="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-purple-200 rounded-xl p-6">
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="text-xl font-bold text-purple-800">{currentFunFact.title}</h3>
-            <button 
-              onClick={() => setCurrentFunFact(null)}
-              className="text-purple-600 hover:text-purple-800 text-xl"
-              aria-label="Close fun fact"
-            >
-              ✕
-            </button>
+          <h3 className="font-bold text-purple-800 mb-2">🤝 Group Contributions</h3>
+          <div className="grid md:grid-cols-2 gap-2 text-sm">
+            {friends.map(friend => (
+              <div key={friend}>
+                <strong>{friend}:</strong> {contributions[friend]?.length || 0} contributions
+                {contributions[friend]?.map((c, idx) => (
+                  <p key={idx} className="text-xs text-gray-600">• ${c.amount} for {c.description}</p>
+                ))}
+              </div>
+            ))}
           </div>
-          <p className="text-purple-700 mb-3 leading-relaxed">{currentFunFact.fact}</p>
-          <div className="bg-purple-100 rounded-lg p-3 border-l-4 border-purple-400">
-            <p className="text-purple-800 font-medium">{currentFunFact.tip}</p>
-          </div>
-          <div className="mt-4 flex justify-center">
-            <button
-              onClick={getRandomFunFact}
-              className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-sm"
-              aria-label="Get another random BC fun fact"
-            >
-              🎲 Another Fun Fact!
-            </button>
+          <div className="mt-4">
+            <h4 className="text-sm font-semibold text-purple-700">Add Contribution:</h4>
+            <div className="flex gap-2 mt-2">
+              <select
+                className="px-2 py-1 border border-gray-300 rounded"
+                onChange={(e) => setContributions(prev => ({ ...prev, tempFriend: e.target.value }))}
+              >
+                <option value="">Select Friend</option>
+                {friends.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+              <input
+                type="number"
+                placeholder="Amount"
+                className="px-2 py-1 border border-gray-300 rounded w-24"
+                onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 }))}
+              />
+              <input
+                type="text"
+                placeholder="Description"
+                className="px-2 py-1 border border-gray-300 rounded flex-1"
+                onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value }))}
+              />
+              <button
+                onClick={() => {
+                  const { tempFriend, tempAmount, tempDescription } = contributions;
+                  if (tempFriend && tempAmount && tempDescription) {
+                    handleContribution(tempFriend, tempAmount, tempDescription);
+                    setContributions(prev => ({ ...prev, tempFriend: '', tempAmount: 0, tempDescription: '' }));
+                  }
+                }}
+                className="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+              >
+                Add
+              </button>
+            </div>
           </div>
         </div>
-      )}
-    </div>
-  );
+
+        <div className="flex justify-center">
+          <button
+            onClick={getRandomFunFact}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
+            aria-label="Get a random BC fun fact"
+          >
+            <span className="text-xl">🤯</span>
+            <span className="font-semibold">BC Fun Facts</span>
+            <span className="text-sm opacity-90">(Prepare to be amused)</span>
+          </button>
+        </div>
+
+        {currentFunFact && (
+          <div className="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-purple-200 rounded-xl p-6">
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="text-xl font-bold text-purple-800">{currentFunFact.title}</h3>
+              <button 
+                onClick={() => setCurrentFunFact(null)}
+                className="text-purple-600 hover:text-purple-800 text-xl"
+                aria-label="Close fun fact"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-purple-700 mb-3 leading-relaxed">{currentFunFact.fact}</p>
+            <div className="bg-purple-100 rounded-lg p-3 border-l-4 border-purple-400">
+              <p className="text-purple-800 font-medium">{currentFunFact.tip}</p>
+            </div>
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={getRandomFunFact}
+                className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-sm"
+                aria-label="Get another random BC fun fact"
+              >
+                🎲 Another Fun Fact!
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderItinerary = () => {
     const currentItinerary = isEditing ? editableItinerary : defaultItinerary;
     
     const updateDay = (dayIndex, field, value) => {
-      if (!value.trim()) return;
+      if (!value.trim() && field !== 'costs') return;
       const updated = [...editableItinerary];
       if (field === 'activities') {
         updated[dayIndex].activities = value.split(',').map(a => a.trim()).filter(a => a);
+      } else if (field === 'costs') {
+        updated[dayIndex].costs = { ...updated[dayIndex].costs, ...value };
       } else {
         updated[dayIndex][field] = value.trim();
       }
@@ -361,6 +561,8 @@ Your entire response MUST be valid JSON only.`
     const removeActivity = (dayIndex, activityIndex) => {
       const updated = [...editableItinerary];
       updated[dayIndex].activities.splice(activityIndex, 1);
+      delete updated[dayIndex].assignments[activityIndex];
+      delete updated[dayIndex].votes[activityIndex];
       setEditableItinerary(updated);
     };
 
@@ -437,130 +639,201 @@ Your entire response MUST be valid JSON only.`
           </div>
         )}
 
-        {currentItinerary.map((day, dayIndex) => (
-          <div 
-            key={day.day}
-            className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${
-              selectedDay === day.day 
-                ? 'border-blue-500 bg-blue-50 shadow-lg' 
-                : 'border-gray-200 hover:border-gray-300'
-            } ${isEditing ? 'bg-yellow-50 border-yellow-300' : ''}`}
-            onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                  {day.day}
+        {currentItinerary.map((day, dayIndex) => {
+          const locationName = day.location.split('→')[1]?.trim() || day.location.split(' ')[0];
+          const weather = weatherData[locationName] || {};
+
+          return (
+            <div 
+              key={day.day}
+              className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${
+                selectedDay === day.day 
+                  ? 'border-blue-500 bg-blue-50 shadow-lg' 
+                  : 'border-gray-200 hover:border-gray-300'
+              } ${isEditing ? 'bg-yellow-50 border-yellow-300' : ''}`}
+              onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                    {day.day}
+                  </div>
+                  <div className="flex-1">
+                    {isEditing ? (
+                      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                        <label htmlFor={`location-${dayIndex}`} className="sr-only">Location for Day {day.day}</label>
+                        <input
+                          id={`location-${dayIndex}`}
+                          type="text"
+                          value={day.location}
+                          onChange={(e) => updateDay(dayIndex, 'location', e.target.value)}
+                          className="font-bold text-gray-800 bg-white border border-gray-300 rounded px-2 py-1 w-full"
+                          placeholder="Location"
+                        />
+                        <label htmlFor={`highlight-${dayIndex}`} className="sr-only">Highlight for Day {day.day}</label>
+                        <input
+                          id={`highlight-${dayIndex}`}
+                          type="text"
+                          value={day.highlight}
+                          onChange={(e) => updateDay(dayIndex, 'highlight', e.target.value)}
+                          className="text-sm text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 w-full"
+                          placeholder="Highlight"
+                        />
+                        <div className="flex gap-2">
+                          <label htmlFor={`activities-cost-${dayIndex}`} className="sr-only">Activities Cost for Day {day.day}</label>
+                          <input
+                            id={`activities-cost-${dayIndex}`}
+                            type="number"
+                            value={day.costs.activities}
+                            onChange={(e) => updateDay(dayIndex, 'costs', { ...day.costs, activities: parseFloat(e.target.value) || 0 })}
+                            className="px-2 py-1 border border-gray-300 rounded w-24"
+                            placeholder="Activities Cost"
+                          />
+                          <label htmlFor={`accommodations-cost-${dayIndex}`} className="sr-only">Accommodations Cost for Day {day.day}</label>
+                          <input
+                            id={`accommodations-cost-${dayIndex}`}
+                            type="number"
+                            value={day.costs.accommodations}
+                            onChange={(e) => updateDay(dayIndex, 'costs', { ...day.costs, accommodations: parseFloat(e.target.value) || 0 })}
+                            className="px-2 py-1 border border-gray-300 rounded w-24"
+                            placeholder="Accommodations Cost"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <h3 className="font-bold text-gray-800">{day.location}</h3>
+                        <p className="text-sm text-gray-600">{day.highlight}</p>
+                        <p className="text-sm text-gray-600">Costs: Activities ${day.costs.activities.toFixed(2)}, Accommodations ${day.costs.accommodations.toFixed(2)}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1">
+                <MapPin className="w-5 h-5 text-gray-400" />
+              </div>
+              
+              {selectedDay === day.day && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  {weather.current && (
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-gray-700">🌤️ Weather in {locationName}</h4>
+                      <p className="text-sm">
+                        Current: {weather.current.temp}°C, {weather.current.condition}
+                        {weather.current.icon && (
+                          <img
+                            src={`http://openweathermap.org/img/wn/${weather.current.icon}.png`}
+                            alt={weather.current.condition}
+                            className="inline w-6 h-6 ml-1"
+                          />
+                        )}
+                      </p>
+                      <p className="text-sm">5-Day Forecast:</p>
+                      <div className="grid grid-cols-5 gap-2 text-xs">
+                        {weather.forecast?.map((f, idx) => (
+                          <div key={idx} className="bg-gray-100 p-2 rounded">
+                            <p>{f.date}</p>
+                            <p>{f.temp}°C, {f.condition}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-semibold text-gray-700">Today's Adventures:</h4>
+                    {isEditing && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addActivity(dayIndex);
+                        }}
+                        className="text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                        aria-label="Add new activity"
+                      >
+                        + Add Activity
+                      </button>
+                    )}
+                  </div>
+                  
                   {isEditing ? (
-                    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                      <label htmlFor={`location-${dayIndex}`} className="sr-only">Location for Day {day.day}</label>
-                      <input
-                        id={`location-${dayIndex}`}
-                        type="text"
-                        value={day.location}
-                        onChange={(e) => updateDay(dayIndex, 'location', e.target.value)}
-                        className="font-bold text-gray-800 bg-white border border-gray-300 rounded px-2 py-1 w-full"
-                        placeholder="Location"
-                      />
-                      <label htmlFor={`highlight-${dayIndex}`} className="sr-only">Highlight for Day {day.day}</label>
-                      <input
-                        id={`highlight-${dayIndex}`}
-                        type="text"
-                        value={day.highlight}
-                        onChange={(e) => updateDay(dayIndex, 'highlight', e.target.value)}
-                        className="text-sm text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 w-full"
-                        placeholder="Highlight"
-                      />
+                    <div className="space-y-2">
+                      {day.activities.map((activity, activityIndex) => (
+                        <div key={activityIndex} className="flex gap-2">
+                          <label htmlFor={`activity-${dayIndex}-${activityIndex}`} className="sr-only">Activity {activityIndex + 1} for Day {day.day}</label>
+                          <input
+                            id={`activity-${dayIndex}-${activityIndex}`}
+                            type="text"
+                            value={activity}
+                            onChange={(e) => {
+                              const updated = [...editableItinerary];
+                              updated[dayIndex].activities[activityIndex] = e.target.value;
+                              setEditableItinerary(updated);
+                            }}
+                            className="flex-1 bg-white rounded px-3 py-2 text-sm border border-gray-300"
+                          />
+                          <select
+                            value={day.assignments[activityIndex] || ''}
+                            onChange={(e) => handleAssign(dayIndex, activityIndex, e.target.value)}
+                            className="px-2 py-1 border border-gray-300 rounded"
+                          >
+                            <option value="">Assign to...</option>
+                            {friends.map(f => <option key={f} value={f}>{f}</option>)}
+                          </select>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeActivity(dayIndex, activityIndex);
+                            }}
+                            className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
+                            aria-label={`Remove activity ${activityIndex + 1}`}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   ) : (
-                    <div>
-                      <h3 className="font-bold text-gray-800">{day.location}</h3>
-                      <p className="text-sm text-gray-600">{day.highlight}</p>
+                    <div className="grid md:grid-cols-3 gap-2">
+                      {day.activities.map((activity, idx) => (
+                        <div key={idx} className="bg-white rounded px-3 py-2 text-sm border border-gray-200">
+                          {activity} {day.assignments[idx] && <span>(Assigned to {day.assignments[idx]})</span>}
+                          <div className="mt-1 flex gap-1">
+                            {friends.map(friend => (
+                              <button
+                                key={friend}
+                                onClick={() => handleVote(dayIndex, idx, friend, day.votes[idx]?.[friend] === 'up' ? null : 'up')}
+                                className={`text-xs ${day.votes[idx]?.[friend] === 'up' ? 'text-green-600' : 'text-gray-400'}`}
+                                aria-label={`Vote up for ${activity} by ${friend}`}
+                              >
+                                👍
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {!isEditing && (
+                    <div className="mt-3 space-y-3">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Make it fun and detailed for our international crew of 10 guys.`);
+                        }}
+                        disabled={isLoading}
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                        aria-label={`Get detailed plans for Day ${day.day}`}
+                      >
+                        {isLoading ? 'Getting Plans...' : `Get Detailed Plans for Day ${day.day}`}
+                      </button>
                     </div>
                   )}
                 </div>
-              </div>
-              <MapPin className="w-5 h-5 text-gray-400" />
+              )}
             </div>
-            
-            {selectedDay === day.day && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-semibold text-gray-700">Today's Adventures:</h4>
-                  {isEditing && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addActivity(dayIndex);
-                      }}
-                      className="text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                      aria-label="Add new activity"
-                    >
-                      + Add Activity
-                    </button>
-                  )}
-                </div>
-                
-                {isEditing ? (
-                  <div className="space-y-2">
-                    {day.activities.map((activity, activityIndex) => (
-                      <div key={activityIndex} className="flex gap-2">
-                        <label htmlFor={`activity-${dayIndex}-${activityIndex}`} className="sr-only">Activity {activityIndex + 1} for Day {day.day}</label>
-                        <input
-                          id={`activity-${dayIndex}-${activityIndex}`}
-                          type="text"
-                          value={activity}
-                          onChange={(e) => {
-                            const updated = [...editableItinerary];
-                            updated[dayIndex].activities[activityIndex] = e.target.value;
-                            setEditableItinerary(updated);
-                          }}
-                          className="flex-1 bg-white rounded px-3 py-2 text-sm border border-gray-300"
-                        />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeActivity(dayIndex, activityIndex);
-                          }}
-                          className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
-                          aria-label={`Remove activity ${activityIndex + 1}`}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid md:grid-cols-3 gap-2">
-                    {day.activities.map((activity, idx) => (
-                      <div key={idx} className="bg-white rounded px-3 py-2 text-sm border border-gray-200">
-                        {activity}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {!isEditing && (
-                  <div className="mt-3 space-y-3">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Make it fun and detailed for our international crew of 10 guys.`);
-                      }}
-                      disabled={isLoading}
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                      aria-label={`Get detailed plans for Day ${day.day}`}
-                    >
-                      {isLoading ? 'Getting Plans...' : `Get Detailed Plans for Day ${day.day}`}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -591,7 +864,7 @@ Your entire response MUST be valid JSON only.`
             type="text"
             value={customQuestion}
             onChange={(e) => setCustomQuestion(e.target.value)}
-            placeholder="Type your question about the BC road trip..."
+            placeholder="Type your question (e.g., @Tom, book the ferry?)..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isLoading}
             onKeyPress={(e) => {
@@ -683,7 +956,7 @@ Your entire response MUST be valid JSON only.`
                     ))}
                     {message.reactions.length > 0 && (
                       <span className="text-xs text-gray-500">
-                        {message.revaluations.length} reaction{message.reactions.length > 1 ? 's' : ''}
+                        {message.reactions.length} reaction{message.reactions.length > 1 ? 's' : ''}
                       </span>
                     )}
                   </div>
