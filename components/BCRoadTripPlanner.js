@@ -6,16 +6,16 @@ import { MapPin, Compass, Coffee, Mountain, Calendar, Users, Zap, Star, Map } fr
 
 const BCRoadTripPlanner = () => {
   const defaultItinerary = [
-    { day: 1, location: "Vancouver → Osoyoos", highlight: "Desert wine country adventure", activities: ["Early departure from Vancouver", "Chilliwack supply stop", "Osoyoos Desert Centre", "Wine tasting"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
-    { day: 2, location: "Osoyoos → Kelowna", highlight: "Okanagan Lake paradise", activities: ["Nk'Mip Desert Cultural Centre", "Drive along Okanagan Lake", "Fintry Provincial Park setup", "Lakeside swimming"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
-    { day: 3, location: "Kelowna Rest Day", highlight: "Wine tours and lake activities", activities: ["Local winery visits", "Big White Scenic Chairlift", "Okanagan Lake water sports", "Downtown Kelowna"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
-    { day: 4, location: "Kelowna → Pemberton", highlight: "Mountain valley transition", activities: ["Coquihalla Highway drive", "Nairn Falls Provincial Park", "Nairn Falls hike", "Mountain photography"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
-    { day: 5, location: "Pemberton → Tofino", highlight: "Sea-to-Sky to Pacific Ocean", activities: ["Sea-to-Sky Highway", "Horseshoe Bay ferry", "Cathedral Grove", "First Pacific sunset"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
-    { day: 6, location: "Tofino Adventures", highlight: "Surf, whales, and hot springs", activities: ["Surfing lessons", "Hot Springs Cove boat tour", "Whale watching", "Rainforest boardwalk trails"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
-    { day: 7, location: "Tofino → Victoria", highlight: "West coast to capital city", activities: ["Final Tofino beach walk", "Drive through Island interior", "Goldstream Provincial Park", "Victoria Inner Harbour"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
-    { day: 8, location: "Victoria Exploration", highlight: "Gardens and royal treatment", activities: ["Butchart Gardens", "Royal BC Museum", "Inner Harbour stroll", "Beacon Hill Park peacocks"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
-    { day: 9, location: "Victoria → Vancouver", highlight: "Ferry crossing finale", activities: ["Swartz Bay to Tsawwassen ferry", "Optional Cultus Lake stop", "Trip reflection", "Final group dinner"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} },
-    { day: 10, location: "Vancouver Return", highlight: "Epic journey complete", activities: ["RV return and cleanup", "Final supply run", "Airport departures", "Legendary memories made"], costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} }
+    { day: 1, location: "Vancouver → Osoyoos", highlight: "Desert wine country adventure", activities: ["Early departure from Vancouver", "Chilliwack supply stop", "Osoyoos Desert Centre", "Wine tasting"] },
+    { day: 2, location: "Osoyoos → Kelowna", highlight: "Okanagan Lake paradise", activities: ["Nk'Mip Desert Cultural Centre", "Drive along Okanagan Lake", "Fintry Provincial Park setup", "Lakeside swimming"] },
+    { day: 3, location: "Kelowna Rest Day", highlight: "Wine tours and lake activities", activities: ["Local winery visits", "Big White Scenic Chairlift", "Okanagan Lake water sports", "Downtown Kelowna"] },
+    { day: 4, location: "Kelowna → Pemberton", highlight: "Mountain valley transition", activities: ["Coquihalla Highway drive", "Nairn Falls Provincial Park", "Nairn Falls hike", "Mountain photography"] },
+    { day: 5, location: "Pemberton → Tofino", highlight: "Sea-to-Sky to Pacific Ocean", activities: ["Sea-to-Sky Highway", "Horseshoe Bay ferry", "Cathedral Grove", "First Pacific sunset"] },
+    { day: 6, location: "Tofino Adventures", highlight: "Surf, whales, and hot springs", activities: ["Surfing lessons", "Hot Springs Cove boat tour", "Whale watching", "Rainforest boardwalk trails"] },
+    { day: 7, location: "Tofino → Victoria", highlight: "West coast to capital city", activities: ["Final Tofino beach walk", "Drive through Island interior", "Goldstream Provincial Park", "Victoria Inner Harbour"] },
+    { day: 8, location: "Victoria Exploration", highlight: "Gardens and royal treatment", activities: ["Butchart Gardens", "Royal BC Museum", "Inner Harbour stroll", "Beacon Hill Park peacocks"] },
+    { day: 9, location: "Victoria → Vancouver", highlight: "Ferry crossing finale", activities: ["Swartz Bay to Tsawwassen ferry", "Optional Cultus Lake stop", "Trip reflection", "Final group dinner"] },
+    { day: 10, location: "Vancouver Return", highlight: "Epic journey complete", activities: ["RV return and cleanup", "Final supply run", "Airport departures", "Legendary memories made"] }
   ];
 
   const friends = ["Markus", "Tom", "Ramon", "Churchill", "Emil", "Henning", "Paddy", "Radu", "Tudor", "P-J"];
@@ -34,7 +34,9 @@ const BCRoadTripPlanner = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [customQuestion, setCustomQuestion] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [editableItinerary, setEditableItinerary] = useState(defaultItinerary);
+  const [editableItinerary, setEditableItinerary] = useState(
+    defaultItinerary.map(day => ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} }))
+  );
   const [showMap, setShowMap] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [currentFunFact, setCurrentFunFact] = useState(null);
@@ -96,7 +98,7 @@ const BCRoadTripPlanner = () => {
 
     for (const loc of locations) {
       if (cachedWeather[loc.name] && now - cachedWeather[loc.name].timestamp < cacheDuration) {
-        continue; // Use cached data
+        continue;
       }
 
       try {
@@ -152,12 +154,12 @@ const BCRoadTripPlanner = () => {
     const mapElement = document.getElementById('trip-map');
     if (mapElement) {
       mapElement.innerHTML = `
-        <div class="flex items-center justify-center h-full bg-gray-100 text-gray-600" role="alert" aria-live="polite">
-          <div class="text-center p-8">
-            <p class="text-lg font-semibold mb-2">🗺️ Map temporarily unavailable</p>
-            <p class="text-sm mb-4">Your epic BC route:</p>
-            <div class="text-left bg-white rounded-lg p-4 shadow-sm max-w-sm mx-auto">
-              <div class="text-xs space-y-1">
+        <div className="flex items-center justify-center h-full bg-gray-100 text-gray-600" role="alert" aria-live="polite">
+          <div className="text-center p-8">
+            <p className="text-lg font-semibold mb-2">🗺️ Map temporarily unavailable</p>
+            <p className="text-sm mb-4">Your epic BC route:</p>
+            <div className="text-left bg-white rounded-lg p-4 shadow-sm max-w-sm mx-auto">
+              <div className="text-xs space-y-1">
                 <div>📍 Vancouver → Osoyoos (Desert)</div>
                 <div>📍 Osoyoos → Kelowna (Wine Country)</div>
                 <div>📍 Kelowna → Pemberton (Mountains)</div>
@@ -375,6 +377,12 @@ Respond with a JSON object:
     }));
   };
 
+  const updateDayCosts = (dayIndex, field, value) => {
+    const updated = [...editableItinerary];
+    updated[dayIndex].costs[field] = parseFloat(value) || 0;
+    setEditableItinerary(updated);
+  };
+
   const quickQuestions = [
     "What are the most epic activities for our diverse route from desert to ocean?",
     "Hidden gems between Osoyoos wine country and Tofino beaches?",
@@ -429,66 +437,171 @@ Respond with a JSON object:
         </div>
 
         <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
-          <h3 className="font-bold text-yellow-800 mb-2">💰 Budget Overview</h3>
-          <div className="text-sm">
-            <p><strong>Total Estimated Cost:</strong> ${totalBudget.toFixed(2)}</p>
-            <p className="mt-2"><strong>Breakdown by Day:</strong></p>
-            <ul className="list-disc pl-5">
-              {editableItinerary.map(day => (
-                <li key={day.day}>
-                  Day {day.day} ({day.location}): Activities ${day.costs.activities.toFixed(2)}, Accommodations ${day.costs.accommodations.toFixed(2)}
-                </li>
-              ))}
-            </ul>
+          <h3 className="font-bold text-yellow-800 mb-2">💰 Budget Planner</h3>
+          <div className="space-y-4">
+            <div className="text-sm">
+              <p><strong>Total Estimated Cost:</strong> ${totalBudget.toFixed(2)}</p>
+              <p className="mt-2"><strong>Breakdown by Day:</strong></p>
+              <ul className="list-disc pl-5">
+                {editableItinerary.map(day => (
+                  <li key={day.day}>
+                    Day {day.day} ({day.location}): Activities ${day.costs.activities.toFixed(2)}, Accommodations ${day.costs.accommodations.toFixed(2)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-yellow-700 mb-2">Enter Estimated Costs:</h4>
+              <div className="space-y-2">
+                {editableItinerary.map((day, dayIndex) => (
+                  <div key={day.day} className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Day {day.day} ({day.location}):</span>
+                    <input
+                      type="number"
+                      value={day.costs.activities}
+                      onChange={(e) => updateDayCosts(dayIndex, 'activities', e.target.value)}
+                      className="px-2 py-1 border border-gray-300 rounded w-24"
+                      placeholder="Activities"
+                      aria-label={`Activities cost for Day ${day.day}`}
+                    />
+                    <input
+                      type="number"
+                      value={day.costs.accommodations}
+                      onChange={(e) => updateDayCosts(dayIndex, 'accommodations', e.target.value)}
+                      className="px-2 py-1 border border-gray-300 rounded w-24"
+                      placeholder="Accommodations"
+                      aria-label={`Accommodations cost for Day ${day.day}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+          <h3 className="font-bold text-blue-800 mb-2">🌤️ Weather Forecast</h3>
+          <div className="grid md:grid-cols-2 gap-2 text-sm">
+            {locations.map(loc => (
+              <div key={loc.name}>
+                <strong>{loc.name}:</strong>
+                {weatherData[loc.name]?.current ? (
+                  <div>
+                    <p>Current: {weatherData[loc.name].current.temp}°C, {weatherData[loc.name].current.condition}
+                      {weatherData[loc.name].current.icon && (
+                        <img
+                          src={`http://openweathermap.org/img/wn/${weatherData[loc.name].current.icon}.png`}
+                          alt={weatherData[loc.name].current.condition}
+                          className="inline w-6 h-6 ml-1"
+                        />
+                      )}
+                    </p>
+                    <p>5-Day Forecast:</p>
+                    <ul className="text-xs list-disc pl-5">
+                      {weatherData[loc.name].forecast?.map((f, idx) => (
+                        <li key={idx}>{f.date}: {f.temp}°C, {f.condition}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p>Weather data unavailable</p>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
         <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-          <h3 className="font-bold text-purple-800 mb-2">🤝 Group Contributions</h3>
-          <div className="grid md:grid-cols-2 gap-2 text-sm">
-            {friends.map(friend => (
-              <div key={friend}>
-                <strong>{friend}:</strong> {contributions[friend]?.length || 0} contributions
-                {contributions[friend]?.map((c, idx) => (
-                  <p key={idx} className="text-xs text-gray-600">• ${c.amount} for {c.description}</p>
+          <h3 className="font-bold text-purple-800 mb-2">🤝 Group Coordination</h3>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold text-purple-700 mb-2">Activity Assignments & Votes:</h4>
+              {editableItinerary.map((day, dayIndex) => (
+                <div key={day.day} className="mb-2">
+                  <p className="text-sm font-medium">Day {day.day} ({day.location}):</p>
+                  <div className="grid md:grid-cols-2 gap-2 text-sm">
+                    {day.activities.map((activity, activityIndex) => (
+                      <div key={activityIndex} className="flex items-center gap-2">
+                        <span>{activity}</span>
+                        <select
+                          value={day.assignments[activityIndex] || ''}
+                          onChange={(e) => handleAssign(dayIndex, activityIndex, e.target.value)}
+                          className="px-2 py-1 border border-gray-300 rounded text-xs"
+                          aria-label={`Assign ${activity} for Day ${day.day}`}
+                        >
+                          <option value="">Assign...</option>
+                          {friends.map(f => <option key={f} value={f}>{f}</option>)}
+                        </select>
+                        <div className="flex gap-1">
+                          {friends.map(friend => (
+                            <button
+                              key={friend}
+                              onClick={() => handleVote(dayIndex, activityIndex, friend, day.votes[activityIndex]?.[friend] === 'up' ? null : 'up')}
+                              className={`text-xs ${day.votes[activityIndex]?.[friend] === 'up' ? 'text-green-600' : 'text-gray-400'}`}
+                              aria-label={`Vote up for ${activity} by ${friend}`}
+                            >
+                              👍
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <h4 className="font-semibold text-purple-700 mb-2">Contributions:</h4>
+              <div className="grid md:grid-cols-2 gap-2 text-sm">
+                {friends.map(friend => (
+                  <div key={friend}>
+                    <strong>{friend}:</strong> {contributions[friend]?.length || 0} contributions
+                    {contributions[friend]?.map((c, idx) => (
+                      <p key={idx} className="text-xs text-gray-600">• ${c.amount} for {c.description}</p>
+                    ))}
+                  </div>
                 ))}
               </div>
-            ))}
-          </div>
-          <div className="mt-4">
-            <h4 className="text-sm font-semibold text-purple-700">Add Contribution:</h4>
-            <div className="flex gap-2 mt-2">
-              <select
-                className="px-2 py-1 border border-gray-300 rounded"
-                onChange={(e) => setContributions(prev => ({ ...prev, tempFriend: e.target.value }))}
-              >
-                <option value="">Select Friend</option>
-                {friends.map(f => <option key={f} value={f}>{f}</option>)}
-              </select>
-              <input
-                type="number"
-                placeholder="Amount"
-                className="px-2 py-1 border border-gray-300 rounded w-24"
-                onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 }))}
-              />
-              <input
-                type="text"
-                placeholder="Description"
-                className="px-2 py-1 border border-gray-300 rounded flex-1"
-                onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value }))}
-              />
-              <button
-                onClick={() => {
-                  const { tempFriend, tempAmount, tempDescription } = contributions;
-                  if (tempFriend && tempAmount && tempDescription) {
-                    handleContribution(tempFriend, tempAmount, tempDescription);
-                    setContributions(prev => ({ ...prev, tempFriend: '', tempAmount: 0, tempDescription: '' }));
-                  }
-                }}
-                className="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
-              >
-                Add
-              </button>
+              <div className="mt-4">
+                <h5 className="text-sm font-semibold text-purple-700">Add Contribution:</h5>
+                <div className="flex gap-2 mt-2">
+                  <select
+                    className="px-2 py-1 border border-gray-300 rounded"
+                    onChange={(e) => setContributions(prev => ({ ...prev, tempFriend: e.target.value }))}
+                    aria-label="Select friend for contribution"
+                  >
+                    <option value="">Select Friend</option>
+                    {friends.map(f => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Amount"
+                    className="px-2 py-1 border border-gray-300 rounded w-24"
+                    onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 })}
+                    aria-label="Contribution amount"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Description"
+                    className="px-2 py-1 border border-gray-300 rounded flex-1"
+                    onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value })}
+                    aria-label="Contribution description"
+                  />
+                  <button
+                    onClick={() => {
+                      const { tempFriend, tempAmount, tempDescription } = contributions;
+                      if (tempFriend && tempAmount && tempDescription) {
+                        handleContribution(tempFriend, tempAmount, tempDescription);
+                        setContributions(prev => ({ ...prev, tempFriend: '', tempAmount: 0, tempDescription: '' }));
+                      }
+                    }}
+                    className="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+                    aria-label="Add contribution"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -540,12 +653,10 @@ Respond with a JSON object:
     const currentItinerary = isEditing ? editableItinerary : defaultItinerary;
     
     const updateDay = (dayIndex, field, value) => {
-      if (!value.trim() && field !== 'costs') return;
+      if (!value.trim()) return;
       const updated = [...editableItinerary];
       if (field === 'activities') {
         updated[dayIndex].activities = value.split(',').map(a => a.trim()).filter(a => a);
-      } else if (field === 'costs') {
-        updated[dayIndex].costs = { ...updated[dayIndex].costs, ...value };
       } else {
         updated[dayIndex][field] = value.trim();
       }
@@ -561,13 +672,11 @@ Respond with a JSON object:
     const removeActivity = (dayIndex, activityIndex) => {
       const updated = [...editableItinerary];
       updated[dayIndex].activities.splice(activityIndex, 1);
-      delete updated[dayIndex].assignments[activityIndex];
-      delete updated[dayIndex].votes[activityIndex];
       setEditableItinerary(updated);
     };
 
     const resetItinerary = () => {
-      setEditableItinerary([...defaultItinerary]);
+      setEditableItinerary(defaultItinerary.map(day => ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} })));
       setIsEditing(false);
     };
 
@@ -604,7 +713,7 @@ Respond with a JSON object:
             ) : (
               <button
                 onClick={() => {
-                  setEditableItinerary([...defaultItinerary]);
+                  setEditableItinerary(defaultItinerary.map(day => ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} })));
                   setIsEditing(true);
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
@@ -639,201 +748,130 @@ Respond with a JSON object:
           </div>
         )}
 
-        {currentItinerary.map((day, dayIndex) => {
-          const locationName = day.location.split('→')[1]?.trim() || day.location.split(' ')[0];
-          const weather = weatherData[locationName] || {};
-
-          return (
-            <div 
-              key={day.day}
-              className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${
-                selectedDay === day.day 
-                  ? 'border-blue-500 bg-blue-50 shadow-lg' 
-                  : 'border-gray-200 hover:border-gray-300'
-              } ${isEditing ? 'bg-yellow-50 border-yellow-300' : ''}`}
-              onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                    {day.day}
-                  </div>
-                  <div className="flex-1">
-                    {isEditing ? (
-                      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                        <label htmlFor={`location-${dayIndex}`} className="sr-only">Location for Day {day.day}</label>
-                        <input
-                          id={`location-${dayIndex}`}
-                          type="text"
-                          value={day.location}
-                          onChange={(e) => updateDay(dayIndex, 'location', e.target.value)}
-                          className="font-bold text-gray-800 bg-white border border-gray-300 rounded px-2 py-1 w-full"
-                          placeholder="Location"
-                        />
-                        <label htmlFor={`highlight-${dayIndex}`} className="sr-only">Highlight for Day {day.day}</label>
-                        <input
-                          id={`highlight-${dayIndex}`}
-                          type="text"
-                          value={day.highlight}
-                          onChange={(e) => updateDay(dayIndex, 'highlight', e.target.value)}
-                          className="text-sm text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 w-full"
-                          placeholder="Highlight"
-                        />
-                        <div className="flex gap-2">
-                          <label htmlFor={`activities-cost-${dayIndex}`} className="sr-only">Activities Cost for Day {day.day}</label>
-                          <input
-                            id={`activities-cost-${dayIndex}`}
-                            type="number"
-                            value={day.costs.activities}
-                            onChange={(e) => updateDay(dayIndex, 'costs', { ...day.costs, activities: parseFloat(e.target.value) || 0 })}
-                            className="px-2 py-1 border border-gray-300 rounded w-24"
-                            placeholder="Activities Cost"
-                          />
-                          <label htmlFor={`accommodations-cost-${dayIndex}`} className="sr-only">Accommodations Cost for Day {day.day}</label>
-                          <input
-                            id={`accommodations-cost-${dayIndex}`}
-                            type="number"
-                            value={day.costs.accommodations}
-                            onChange={(e) => updateDay(dayIndex, 'costs', { ...day.costs, accommodations: parseFloat(e.target.value) || 0 })}
-                            className="px-2 py-1 border border-gray-300 rounded w-24"
-                            placeholder="Accommodations Cost"
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <h3 className="font-bold text-gray-800">{day.location}</h3>
-                        <p className="text-sm text-gray-600">{day.highlight}</p>
-                        <p className="text-sm text-gray-600">Costs: Activities ${day.costs.activities.toFixed(2)}, Accommodations ${day.costs.accommodations.toFixed(2)}</p>
-                      </div>
-                    )}
-                  </div>
+        {currentItinerary.map((day, dayIndex) => (
+          <div 
+            key={day.day}
+            className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${
+              selectedDay === day.day 
+                ? 'border-blue-500 bg-blue-50 shadow-lg' 
+                : 'border-gray-200 hover:border-gray-300'
+            } ${isEditing ? 'bg-yellow-50 border-yellow-300' : ''}`}
+            onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                  {day.day}
                 </div>
-                <MapPin className="w-5 h-5 text-gray-400" />
-              </div>
-              
-              {selectedDay === day.day && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  {weather.current && (
-                    <div className="mb-4">
-                      <h4 className="font-semibold text-gray-700">🌤️ Weather in {locationName}</h4>
-                      <p className="text-sm">
-                        Current: {weather.current.temp}°C, {weather.current.condition}
-                        {weather.current.icon && (
-                          <img
-                            src={`http://openweathermap.org/img/wn/${weather.current.icon}.png`}
-                            alt={weather.current.condition}
-                            className="inline w-6 h-6 ml-1"
-                          />
-                        )}
-                      </p>
-                      <p className="text-sm">5-Day Forecast:</p>
-                      <div className="grid grid-cols-5 gap-2 text-xs">
-                        {weather.forecast?.map((f, idx) => (
-                          <div key={idx} className="bg-gray-100 p-2 rounded">
-                            <p>{f.date}</p>
-                            <p>{f.temp}°C, {f.condition}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-semibold text-gray-700">Today's Adventures:</h4>
-                    {isEditing && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addActivity(dayIndex);
-                        }}
-                        className="text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                        aria-label="Add new activity"
-                      >
-                        + Add Activity
-                      </button>
-                    )}
-                  </div>
-                  
+                <div className="flex-1">
                   {isEditing ? (
-                    <div className="space-y-2">
-                      {day.activities.map((activity, activityIndex) => (
-                        <div key={activityIndex} className="flex gap-2">
-                          <label htmlFor={`activity-${dayIndex}-${activityIndex}`} className="sr-only">Activity {activityIndex + 1} for Day {day.day}</label>
-                          <input
-                            id={`activity-${dayIndex}-${activityIndex}`}
-                            type="text"
-                            value={activity}
-                            onChange={(e) => {
-                              const updated = [...editableItinerary];
-                              updated[dayIndex].activities[activityIndex] = e.target.value;
-                              setEditableItinerary(updated);
-                            }}
-                            className="flex-1 bg-white rounded px-3 py-2 text-sm border border-gray-300"
-                          />
-                          <select
-                            value={day.assignments[activityIndex] || ''}
-                            onChange={(e) => handleAssign(dayIndex, activityIndex, e.target.value)}
-                            className="px-2 py-1 border border-gray-300 rounded"
-                          >
-                            <option value="">Assign to...</option>
-                            {friends.map(f => <option key={f} value={f}>{f}</option>)}
-                          </select>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeActivity(dayIndex, activityIndex);
-                            }}
-                            className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
-                            aria-label={`Remove activity ${activityIndex + 1}`}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
+                    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                      <label htmlFor={`location-${dayIndex}`} className="sr-only">Location for Day {day.day}</label>
+                      <input
+                        id={`location-${dayIndex}`}
+                        type="text"
+                        value={day.location}
+                        onChange={(e) => updateDay(dayIndex, 'location', e.target.value)}
+                        className="font-bold text-gray-800 bg-white border border-gray-300 rounded px-2 py-1 w-full"
+                        placeholder="Location"
+                      />
+                      <label htmlFor={`highlight-${dayIndex}`} className="sr-only">Highlight for Day {day.day}</label>
+                      <input
+                        id={`highlight-${dayIndex}`}
+                        type="text"
+                        value={day.highlight}
+                        onChange={(e) => updateDay(dayIndex, 'highlight', e.target.value)}
+                        className="text-sm text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 w-full"
+                        placeholder="Highlight"
+                      />
                     </div>
                   ) : (
-                    <div className="grid md:grid-cols-3 gap-2">
-                      {day.activities.map((activity, idx) => (
-                        <div key={idx} className="bg-white rounded px-3 py-2 text-sm border border-gray-200">
-                          {activity} {day.assignments[idx] && <span>(Assigned to {day.assignments[idx]})</span>}
-                          <div className="mt-1 flex gap-1">
-                            {friends.map(friend => (
-                              <button
-                                key={friend}
-                                onClick={() => handleVote(dayIndex, idx, friend, day.votes[idx]?.[friend] === 'up' ? null : 'up')}
-                                className={`text-xs ${day.votes[idx]?.[friend] === 'up' ? 'text-green-600' : 'text-gray-400'}`}
-                                aria-label={`Vote up for ${activity} by ${friend}`}
-                              >
-                                👍
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {!isEditing && (
-                    <div className="mt-3 space-y-3">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Make it fun and detailed for our international crew of 10 guys.`);
-                        }}
-                        disabled={isLoading}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                        aria-label={`Get detailed plans for Day ${day.day}`}
-                      >
-                        {isLoading ? 'Getting Plans...' : `Get Detailed Plans for Day ${day.day}`}
-                      </button>
+                    <div>
+                      <h3 className="font-bold text-gray-800">{day.location}</h3>
+                      <p className="text-sm text-gray-600">{day.highlight}</p>
                     </div>
                   )}
                 </div>
-              )}
+              </div>
+              <MapPin className="w-5 h-5 text-gray-400" />
             </div>
-          );
-        })}
+            
+            {selectedDay === day.day && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-semibold text-gray-700">Today's Adventures:</h4>
+                  {isEditing && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addActivity(dayIndex);
+                      }}
+                      className="text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                      aria-label="Add new activity"
+                    >
+                      + Add Activity
+                    </button>
+                  )}
+                </div>
+                
+                {isEditing ? (
+                  <div className="space-y-2">
+                    {day.activities.map((activity, activityIndex) => (
+                      <div key={activityIndex} className="flex gap-2">
+                        <label htmlFor={`activity-${dayIndex}-${activityIndex}`} className="sr-only">Activity {activityIndex + 1} for Day {day.day}</label>
+                        <input
+                          id={`activity-${dayIndex}-${activityIndex}`}
+                          type="text"
+                          value={activity}
+                          onChange={(e) => {
+                            const updated = [...editableItinerary];
+                            updated[dayIndex].activities[activityIndex] = e.target.value;
+                            setEditableItinerary(updated);
+                          }}
+                          className="flex-1 bg-white rounded px-3 py-2 text-sm border border-gray-300"
+                        />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeActivity(dayIndex, activityIndex);
+                          }}
+                          className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
+                          aria-label={`Remove activity ${activityIndex + 1}`}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-3 gap-2">
+                    {day.activities.map((activity, idx) => (
+                      <div key={idx} className="bg-white rounded px-3 py-2 text-sm border border-gray-200">
+                        {activity}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {!isEditing && (
+                  <div className="mt-3 space-y-3">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Make it fun and detailed for our international crew of 10 guys.`);
+                      }}
+                      disabled={isLoading}
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                      aria-label={`Get detailed plans for Day ${day.day}`}
+                    >
+                      {isLoading ? 'Getting Plans...' : `Get Detailed Plans for Day ${day.day}`}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     );
   };
