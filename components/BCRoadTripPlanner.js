@@ -20,8 +20,7 @@ const BCRoadTripPlanner = () => {
 
   const [currentSection, setCurrentSection] = useState('overview');
   const [selectedDay, setSelectedDay] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [conversation, setConversation] = useState([]); // Added conversation state
+  const [conversation, setConversation] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [customQuestion, setCustomQuestion] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -29,8 +28,10 @@ const BCRoadTripPlanner = () => {
   const [showMap, setShowMap] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [currentFunFact, setCurrentFunFact] = useState(null);
+  const [followUpQuestion, setFollowUpQuestion] = useState('');
+  const [followUpMessageId, setFollowUpMessageId] = useState(null);
 
-  // BC Fun Facts (shortened for brevity, add back the full list as needed)
+  // BC Fun Facts (shortened for brevity, add back full list as needed)
   const bcFunFacts = [
     {
       title: "Raincouver Is Real",
@@ -159,9 +160,18 @@ const BCRoadTripPlanner = () => {
     }
   }, [showMap, mapLoaded]);
 
-  const handleClaude = async (prompt) => {
+  const handleClaude = async (prompt, parentMessageId = null) => {
     setIsLoading(true);
-    setConversation(prev => [...prev, { type: 'user', content: prompt, timestamp: Date.now() }]);
+    const newMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: prompt,
+      timestamp: Date.now(),
+      reactions: [],
+      parentId: parentMessageId
+    };
+    setConversation(prev => [...prev, newMessage]);
+
     try {
       const response = await fetch('/api/claude', {
         method: 'POST',
@@ -175,7 +185,11 @@ You're helping Markus's legendary 40th birthday crew (THE INTERNATIONAL LEGENDS:
 
 Be fun, cheeky, and enthusiastic! Call them "legends," "dudes," "international adventure seekers," etc. Reference the guys by name with playful jabs that fit their personalities - tease Radu about crypto, joke about Churchill's Dubai lifestyle, reference the philosophical debate club (Tudor, Patrick, Emil, Ramon, Henning), make sailing jokes about Henning, party jokes about Tom, etc. 
 
-Focus on outdoor adventures perfect for this eclectic international crew. Keep it energetic and fun - less backstory, more awesome BC advice with personality! Here's their question: ${prompt}
+Focus on outdoor adventures perfect for this eclectic international crew. Keep it energetic and fun - less backstory, more awesome BC advice with personality! ${
+            parentMessageId 
+              ? `This is a follow-up question to: "${conversation.find(msg => msg.id === parentMessageId)?.content}". Provide more details or related advice. `
+              : ''
+          }Here's their question: ${prompt}
 
 Respond with a JSON object:
 {
@@ -191,33 +205,40 @@ Your entire response MUST be valid JSON only.`
       if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
       const data = await response.json();
       const parsedResponse = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
-      setResponses(prev => [...prev, { question: prompt, ...parsedResponse, timestamp: Date.now() }]);
       setConversation(prev => [...prev, {
+        id: Date.now(),
         type: 'nanook',
         content: parsedResponse.response,
         recommendations: parsedResponse.recommendations,
         insider_tip: parsedResponse.insider_tip,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        reactions: [],
+        parentId: parentMessageId
       }]);
     } catch (error) {
       console.error('Error:', error);
-      const errorResponse = {
-        question: prompt,
-        response: "Sorry bros, had a technical hiccup there! Try asking again.",
+      setConversation(prev => [...prev, {
+        id: Date.now(),
+        type: 'nanook',
+        content: "Sorry bros, had a technical hiccup there! Try asking again.",
         recommendations: [],
         insider_tip: "",
-        timestamp: Date.now()
-      };
-      setResponses(prev => [...prev, errorResponse]);
-      setConversation(prev => [...prev, {
-        type: 'nanook',
-        content: errorResponse.response,
-        recommendations: errorResponse.recommendations,
-        insider_tip: errorResponse.insider_tip,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        reactions: [],
+        parentId: parentMessageId
       }]);
     }
     setIsLoading(false);
+    setFollowUpQuestion('');
+    setFollowUpMessageId(null);
+  };
+
+  const handleReaction = (messageId, emoji) => {
+    setConversation(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, reactions: msg.reactions.includes(emoji) ? msg.reactions.filter(r => r !== emoji) : [...msg.reactions, emoji] }
+        : msg
+    ));
   };
 
   const quickQuestions = [
@@ -534,34 +555,6 @@ Your entire response MUST be valid JSON only.`
                     >
                       {isLoading ? 'Getting Plans...' : `Get Detailed Plans for Day ${day.day}`}
                     </button>
-                    
-                    {responses.filter(response => 
-                      response.question.includes(`Day ${day.day}`) || 
-                      response.question.includes(day.location)
-                    ).map((response, idx) => (
-                      <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-4 mt-3">
-                        <div className="font-semibold text-green-800 mb-2">🗺️ Detailed Plans for Day {day.day}</div>
-                        <div className="text-green-700 mb-3">{response.response}</div>
-                        
-                        {response.recommendations && response.recommendations.length > 0 && (
-                          <div className="mb-3">
-                            <h4 className="font-semibold text-green-800 mb-1">🎯 Top Recommendations:</h4>
-                            <ul className="list-disc list-inside text-sm text-green-700">
-                              {response.recommendations.map((rec, i) => (
-                                <li key={i}>{rec}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        
-                        {response.insider_tip && (
-                          <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                            <span className="font-semibold text-yellow-800">💡 Insider Tip: </span>
-                            <span className="text-yellow-700">{response.insider_tip}</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
                   </div>
                 )}
               </div>
@@ -582,7 +575,7 @@ Your entire response MUST be valid JSON only.`
             className="w-16 h-16 rounded-full border-3 border-white shadow-lg"
           />
           <div>
-            <h2 className="text-xl font-bold mb-1">🤙 Ask Nanook Anything!</h2>
+            <h2 className="text-xl font-bold mb-1">🤙 Chat with Nanook!</h2>
             <p className="text-lg mb-1">Your cheeky BC guide with insider knowledge!</p>
             <p className="text-sm opacity-90">Former number-cruncher turned wilderness enthusiast. Ready to help you legends plan the most epic BC adventure ever!</p>
           </div>
@@ -590,7 +583,7 @@ Your entire response MUST be valid JSON only.`
       </div>
 
       <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
-        <h3 className="font-semibold text-gray-800 mb-3">Ask Nanook Your Question:</h3>
+        <h3 className="font-semibold text-gray-800 mb-3">Ask Nanook Anything:</h3>
         <div className="flex gap-2">
           <label htmlFor="custom-question" className="sr-only">Ask a question about the BC road trip</label>
           <input
@@ -636,11 +629,11 @@ Your entire response MUST be valid JSON only.`
       <div className="space-y-4 max-h-96 overflow-y-auto">
         {conversation.length === 0 && (
           <div className="text-center text-gray-500 py-8">
-            <p>👋 Hey legends! Ask me anything about your epic BC adventure!</p>
+            <p>👋 Hey legends! Start chatting with me about your epic BC adventure!</p>
           </div>
         )}
         {conversation.map((message, idx) => (
-          <div key={`msg-${message.timestamp}-${idx}`} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={`msg-${message.id}-${idx}`} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
             {message.type === 'nanook' && (
               <img 
                 src="https://i.imgur.com/xtAl4ow.png" 
@@ -674,6 +667,69 @@ Your entire response MUST be valid JSON only.`
                   </p>
                 </div>
               )}
+
+              {message.type === 'nanook' && (
+                <div className="mt-2 flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    {['👍', '😍', '😂', '🤯'].map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => handleReaction(message.id, emoji)}
+                        className={`text-sm ${message.reactions.includes(emoji) ? 'text-blue-600' : 'text-gray-400'} hover:text-blue-500`}
+                        aria-label={`React with ${emoji}`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                    {message.reactions.length > 0 && (
+                      <span className="text-xs text-gray-500">
+                        {message.revaluations.length} reaction{message.reactions.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setFollowUpMessageId(followUpMessageId === message.id ? null : message.id)}
+                    className="text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 rounded px-2 py-1 transition-colors"
+                    aria-label="Reply to this message"
+                  >
+                    💬 Reply
+                  </button>
+                </div>
+              )}
+
+              {message.type === 'nanook' && followUpMessageId === message.id && (
+                <div className="mt-2">
+                  <div className="flex gap-2">
+                    <label htmlFor={`follow-up-${message.id}`} className="sr-only">Follow-up question</label>
+                    <input
+                      id={`follow-up-${message.id}`}
+                      type="text"
+                      value={followUpQuestion}
+                      onChange={(e) => setFollowUpQuestion(e.target.value)}
+                      placeholder="Ask a follow-up question..."
+                      className="flex-1 px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isLoading}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && followUpQuestion.trim()) {
+                          handleClaude(followUpQuestion, message.id);
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        if (followUpQuestion.trim()) {
+                          handleClaude(followUpQuestion, message.id);
+                        }
+                      }}
+                      disabled={isLoading || !followUpQuestion.trim()}
+                      className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+                      aria-label="Submit follow-up question"
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             {message.type === 'user' && (
               <div className="w-8 h-8 rounded-full bg-blue-600 ml-3 mt-1 flex items-center justify-center flex-shrink-0">
@@ -685,7 +741,7 @@ Your entire response MUST be valid JSON only.`
       </div>
 
       <div className="bg-gray-100 rounded-lg p-1">
-        <h3 className="text-sm font-medium text-gray-600 mb-2 px-3 pt-2">Or choose a quick question:</h3>
+        <h3 className="text-sm font-medium text-gray-600 mb-2 px-3 pt-2">Or try a quick question:</h3>
         <div className="grid md:grid-cols-2 gap-3 p-3">
           {quickQuestions.map((question, idx) => (
             <button
@@ -699,42 +755,6 @@ Your entire response MUST be valid JSON only.`
             </button>
           ))}
         </div>
-      </div>
-
-      {isLoading && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-blue-600 animate-pulse" />
-            <span className="text-blue-800">Nanook is getting you the best intel...</span>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {responses.slice().reverse().map((response, idx) => (
-          <div key={`response-${response.timestamp}-${idx}`} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="font-semibold text-gray-800 mb-2">❓ {response.question}</div>
-            <div className="text-gray-700 mb-3">{response.response}</div>
-            
-            {response.recommendations && response.recommendations.length > 0 && (
-              <div className="mb-3">
-                <h4 className="font-semibold text-gray-800 mb-1">🎯 Top Recommendations:</h4>
-                <ul className="list-disc list-inside text-sm text-gray-700">
-                  {response.recommendations.map((rec, i) => (
-                    <li key={i}>{rec}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {response.insider_tip && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                <span className="font-semibold text-yellow-800">💡 Nanook's Insider Tip: </span>
-                <span className="text-yellow-700">{response.insider_tip}</span>
-              </div>
-            )}
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -780,10 +800,10 @@ Your entire response MUST be valid JSON only.`
               ? 'bg-white text-gray-800 shadow-sm' 
               : 'text-gray-600 hover:text-gray-800'
           }`}
-          aria-label="Ask Nanook"
+          aria-label="Chat with Nanook"
         >
           <Coffee className="w-4 h-4 inline mr-1" />
-          Ask Nanook
+          Chat with Nanook
         </button>
       </div>
 
