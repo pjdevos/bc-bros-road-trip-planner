@@ -208,10 +208,10 @@ Your entire response MUST be valid JSON only.`
         <p className="text-lg">Markus's epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
       </div>
 
-      {/* Add your custom image here */}
+      {/* Your epic custom RV image */}
       <div className="flex justify-center">
         <img 
-          src="https://i.imgur.com/zpIQPkd.jpg" 
+          src="https://i.imgur.com/nG9m1vO.png" 
           alt="Markus's 40th Birthday BC Adventure" 
           className="rounded-xl shadow-lg max-w-full h-auto"
           style={{ maxHeight: '400px' }}
