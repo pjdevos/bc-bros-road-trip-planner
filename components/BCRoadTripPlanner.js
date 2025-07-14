@@ -34,29 +34,17 @@ const BCRoadTripPlanner = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: `You are the ultimate BC road trip guide for a legendary group of 10 guys doing a camper van adventure in July 2026. This is a 40th birthday trip for Markus (the birthday boy - he's Canadian/German and the whole reason for this epic BC adventure!). 
+          prompt: `You are the ultimate BC road trip guide for Markus's 40th birthday adventure with 10 international guys doing a camper van trip in July 2026. 
 
-THE CREW (with all their quirks):
-- Markus (the birthday boy - turning 40!) Canadian/German, father of Emmy and Rafael, Green party centrist, not a fan of zionism
-- Thomas (Tom) - French/Irish, loves parties and raves, single and liberal, the party animal
-- Ramon - Dutch/Peruvian, speaks Spanish, UFC wrestling fan, loves philosophical discussions  
-- Alex (goes by Churchill) - speaks Chinese, loves England, grew up in Belgium, lives in Dubai
-- Emil - Swedish Arctic hillbilly, loves football and left-wing politics, philosophical thinker
-- Henning - German/Dutch, sailing enthusiast, works for Groningen regional government, Schützenfest lover, football fan, beer connoisseur, dive bar expert, Social Democrat, philosophical discussions
-- Patrick (Paddy) - Irish, eternally young Peter Pan type, loves travel, electronic music, parties, and philosophy
-- Serban (goes by Radu) - Austrian/Romanian, youngest (under 30), crypto/gambling enthusiast, womanizer, grew up in Vienna, Tudor's brother-in-law
-- Tudor - Romanian/Dutch, Liberal, worked for European People's Party, Radu's brother-in-law, loves philosophical discussions
-- Pieter (P-J) - the oldest at 46, Belgian, liberal, worked for Belgian government, the wise elder
+THE CREW: Markus (birthday boy, Canadian/German), Tom (French/Irish party animal), Ramon (Dutch/Peruvian UFC fan), Churchill (Dubai expat), Emil (Swedish leftie), Henning (German/Dutch sailing enthusiast), Paddy (Irish Peter Pan), Radu (youngest crypto enthusiast), Tudor (Romanian/Dutch liberal), P-J (oldest Belgian government worker).
 
-Be fun, cheeky, and enthusiastic. Reference these guys by name with playful jabs that fit their personalities - tease Radu about crypto, joke about Churchill's Dubai lifestyle, reference the philosophical debate club (Tudor, Patrick, Emil, Ramon, Henning), make sailing jokes about Henning, party jokes about Tom, etc. Focus on outdoor adventures perfect for this eclectic international crew.
-
-Here's what they want to know: ${prompt}
+Be fun, cheeky, and reference the guys by name occasionally. Here's the question: ${prompt}
 
 Respond with a JSON object:
 {
-  "response": "Your fun, detailed response with cheeky personality-based references to the crew",
-  "recommendations": ["specific recommendation 1", "specific recommendation 2", "specific recommendation 3"],  
-  "insider_tip": "A cheeky insider tip, definitely mentioning one of the guys by name/personality"
+  "response": "Your fun response with occasional crew references",
+  "recommendations": ["rec 1", "rec 2", "rec 3"],
+  "insider_tip": "A cheeky tip mentioning one of the guys"
 }
 
 Your entire response MUST be valid JSON only.`
@@ -79,12 +67,12 @@ Your entire response MUST be valid JSON only.`
   };
 
   const quickQuestions = [
-    "What are the most epic activities for our diverse route from desert to ocean?",
+    "What are the most epic activities for our desert to ocean route?",
     "Hidden gems between Osoyoos wine country and Tofino beaches?",
-    "Best RV camping spots and ferry booking tips for our route?",
-    "What should we pack for desert, lakes, mountains AND ocean? (Philosophical debates included)",
-    "Local wine, craft breweries, and food along our new route? (Henning's dive bar radar activated)",
-    "Emergency backup plans if BC ferries are delayed? (Radu will probably suggest crypto trading while waiting)"
+    "Best RV camping spots and ferry booking tips?",
+    "What should we pack for desert, lakes, mountains AND ocean?",
+    "Local wine, craft breweries, and food along our route?",
+    "Emergency backup plans if BC ferries are delayed?"
   ];
 
   const renderOverview = () => (
