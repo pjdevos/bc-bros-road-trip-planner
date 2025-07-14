@@ -89,15 +89,18 @@ const BCRoadTripPlanner = () => {
         mapTypeId: 'terrain'
       });
 
-      // Route coordinates
+      // Route coordinates - fixed to include all days and avoid overlap
       const locations = [
-        { lat: 49.2827, lng: -123.1207, name: "Vancouver", day: 1 },
+        { lat: 49.2827, lng: -123.1207, name: "Vancouver Start", day: 1 },
         { lat: 49.0325, lng: -119.4525, name: "Osoyoos", day: 2 },
         { lat: 49.8880, lng: -119.4960, name: "Kelowna", day: 3 },
         { lat: 50.3192, lng: -122.7948, name: "Pemberton", day: 4 },
         { lat: 49.1533, lng: -125.9060, name: "Tofino", day: 5 },
+        { lat: 49.1400, lng: -125.8900, name: "Tofino Day 2", day: 6 },
         { lat: 48.4284, lng: -123.3656, name: "Victoria", day: 7 },
-        { lat: 49.2827, lng: -123.1207, name: "Vancouver", day: 10 }
+        { lat: 48.4200, lng: -123.3500, name: "Victoria Day 2", day: 8 },
+        { lat: 49.1666, lng: -121.9833, name: "Cultus Lake", day: 9 },
+        { lat: 49.2900, lng: -123.1100, name: "Vancouver Return", day: 10 }
       ];
 
       // Add markers
