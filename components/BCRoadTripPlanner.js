@@ -27,6 +27,141 @@ const BCRoadTripPlanner = () => {
   const [editableItinerary, setEditableItinerary] = useState(defaultItinerary);
   const [showMap, setShowMap] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [currentFunFact, setCurrentFunFact] = useState(null);
+
+  // BC Fun Facts
+  const bcFunFacts = [
+    {
+      title: "Raincouver Is Real",
+      fact: "Vancouver gets so much rain that locals joke about owning multiple rain jackets, each for a different level of wetness — from 'misty drizzle' to 'horizontal sideways rain.'",
+      tip: "☔ Locals don't even use umbrellas. That's how you spot a tourist."
+    },
+    {
+      title: "'Sorry' Is a Way of Life", 
+      fact: "In BC, if someone steps on your foot, you say sorry.",
+      tip: "🙇‍♂️ Politeness levels are so high, it's practically a competitive sport."
+    },
+    {
+      title: "You Can Ski and Tan in One Day",
+      fact: "It's entirely possible (and bragged about often) to ski in the mountains and hit the beach on the same day in spring. Locals call it 'The West Coast Flex.'",
+      tip: "🎿🏖️ Peak BC showing off right there."
+    },
+    {
+      title: "It's Basically Hollywood North",
+      fact: "Vancouver is so often used as a stand-in for American cities in movies that there are memes about it playing 'Every City But Itself.'",
+      tip: "🎬 If you see New York on screen and think, 'Hmm, that skyline looks suspiciously like downtown Vancouver' — you're right."
+    },
+    {
+      title: "Wildlife Is... a Bit Too Local",
+      fact: "It's not unusual to see raccoons committing petty crimes in your garbage, seagulls stealing your fries with surgical precision, or a bear using your backyard as a shortcut to work.",
+      tip: "🐻 BC: where wildlife comes to you."
+    },
+    {
+      title: "Weed Was Legal Before It Was Legal",
+      fact: "Let's be honest: BC Bud was famous worldwide long before Canada made cannabis legal. There were dispensaries operating before laws even caught up.",
+      tip: "🌿 They call it 'the B.C. Bud loophole' — or just 'a Wednesday.'"
+    },
+    {
+      title: "Bike Lanes Are Sacred",
+      fact: "Don't you dare walk in the bike lane in Vancouver. You will be silently judged, politely warned, and possibly run over by a Lululemon-clad cyclist sipping oat milk.",
+      tip: "🚴‍♀️ Respect the spandex warriors."
+    },
+    {
+      title: "We Have Towns Named Peculiar Things",
+      fact: "There's a small BC town called '100 Mile House', and it's exactly 100 miles from... something. Nobody's quite sure what anymore.",
+      tip: "🏘️ Don't forget: Spuzzum, Skookumchuck, Funky Creek, and Osoyoos (which visitors can't pronounce)."
+    },
+    {
+      title: "Real Estate Is a National Joke",
+      fact: "A 500 sq ft condo in Vancouver costs more than a literal castle in Scotland. But hey — it comes with a shared laundry room and a 'peekaboo' view of the ocean if you lean out the window dangerously.",
+      tip: "🏠💸 At least the air is free... for now."
+    },
+    {
+      title: "Everyone Hikes, Even if They Hate It",
+      fact: "If you live in BC and don't hike, you'll be gently shamed until you do. It's practically a religion.",
+      tip: "⛰️ Haven't done the Grouse Grind? Get thee to the stairs, sinner."
+    },
+    {
+      title: "The Unholy Love Affair with Sushi",
+      fact: "Vancouver has more sushi restaurants per capita than Tokyo (really). It's totally normal to get sushi at gas stations or budget grocery stores. And sometimes… it's actually good.",
+      tip: "🍣 BC Roll? Invented here — complete with imitation crab and cucumber, no shame."
+    },
+    {
+      title: "People Treat Kale Like Currency",
+      fact: "Farmers markets sell 10 kinds of kale. 'Would you like that smoothie with organic kale, local kale, or biodynamic ancestral kale?'",
+      tip: "🥬 Don't insult kale in BC. Someone will overhear and uninvite you to their yoga retreat."
+    },
+    {
+      title: "Salmon Is Basically a Religion",
+      fact: "Smoked, candied, grilled, sockeye, chinook, you name it. There's even salmon candy (yes, sweet smoked fish), which is somehow delicious and confusing at the same time.",
+      tip: "🐟 First Nations cuisine centers around wild salmon and it's treated with deep respect."
+    },
+    {
+      title: "Weird Pizza Toppings Are Normal",
+      fact: "Ever had pizza with smoked salmon and goat cheese? Or blueberries and arugula? In BC, that's just 'Tuesday.'",
+      tip: "🍕 Pineapple on pizza is old news here. Bring on the fennel pollen and caramelized leeks."
+    },
+    {
+      title: "Coffee Snobbery Is Next Level",
+      fact: "You can't just say 'coffee.' It's a single-origin Guatemalan pour-over with oat milk, served in a reusable cup made of recycled hemp and vibes.",
+      tip: "☕ Tim Hortons? Fine. But the third-wave, ethically-sourced café is where the soul lives."
+    },
+    {
+      title: "BC Has Its Own Time Zone... Sort Of",
+      fact: "Most of BC is on Pacific Time, but a tiny chunk in the northeast runs on Mountain Time. It's like BC couldn't decide what time zone it wanted to be in, so it said 'why not both?'",
+      tip: "🕐 Don't be late for dinner in Fort St. John — you might be in the wrong time zone."
+    },
+    {
+      title: "Orcas Are Basically Local Celebrities",
+      fact: "BC's orcas have names, fan clubs, and Instagram accounts. People track them like celebrities and get genuinely excited when J35 or K25 shows up for a photo op.",
+      tip: "🐋 Yes, you will be expected to know which pod you saw. No, 'the black and white one' is not specific enough."
+    },
+    {
+      title: "Ferry Lineups Are a Social Event",
+      fact: "BC Ferries lineups aren't just waiting — they're networking opportunities. People bring lawn chairs, barbecues, and full picnics. Some travelers have made lifelong friends in the Horseshoe Bay parking lot.",
+      tip: "⛴️ Pro tip: The car deck coffee is surprisingly good, and the gift shop sells everything you forgot to pack."
+    },
+    {
+      title: "Fleece Is Formal Wear",
+      fact: "In BC, you can wear hiking boots and a Patagonia fleece to a wedding, and nobody bats an eye. In fact, you'll probably be overdressed if you wear actual dress shoes.",
+      tip: "🧥 When in doubt, layer. Always layer. Even in summer."
+    },
+    {
+      title: "Tim Hortons vs. Local Coffee Wars",
+      fact: "BC has the most intense coffee shop loyalty in Canada. You're either a 'Timmies' person or a 'local roastery' person. There is no middle ground, and friendships have ended over it.",
+      tip: "☕ Saying 'double-double' at a craft coffee shop will get you the stink eye of a lifetime."
+    },
+    {
+      title: "The Grouse Grind Is a Cult",
+      fact: "Vancouverites treat the Grouse Grind (a brutal 2.9km uphill hike) like a religion. People do it daily, track their times obsessively, and judge you based on your personal best.",
+      tip: "⛰️ Under 45 minutes = respectable. Under 30 minutes = you're probably not human."
+    },
+    {
+      title: "BC Wine Snobs Are Real",
+      fact: "BC produces world-class wine, and locals will fight you about it. Mention California wine at an Okanagan tasting and watch the temperature drop faster than a Whistler chairlift.",
+      tip: "🍷 Just nod and say 'terroir' — it works every time."
+    },
+    {
+      title: "Everyone's a Weather Expert",
+      fact: "BC residents can predict weather with supernatural accuracy. They'll tell you it's going to rain in exactly 23 minutes based on 'the way the mountains look' and be absolutely right.",
+      tip: "🌧️ If a local says 'better bring a jacket,' you bring the jacket. No questions asked."
+    },
+    {
+      title: "Cottage Cheese is Surprisingly Controversial",
+      fact: "Ask for cottage cheese on your breakfast in BC and prepare for judgment. It's been replaced by Greek yogurt, chia seeds, and things with unpronounceable superfood names.",
+      tip: "🥛 Hemp hearts are the new cottage cheese. Don't ask why."
+    },
+    {
+      title: "BC Day Long Weekend Is Sacred",
+      fact: "The first Monday in August (BC Day) isn't just a holiday — it's a mass exodus to camping spots. Book your site a year in advance or prepare to sleep in your car.",
+      tip: "🏕️ If you don't have a reservation, your only hope is arriving at a campground at 6 AM and bribing someone with Tim Hortons."
+    }
+  ];
+
+  const getRandomFunFact = () => {
+    const randomIndex = Math.floor(Math.random() * bcFunFacts.length);
+    setCurrentFunFact(bcFunFacts[randomIndex]);
+  };
 
   // Simple map loader
   useEffect(() => {
@@ -148,29 +283,23 @@ const BCRoadTripPlanner = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: `You are the ultimate BC road trip guide for a legendary group of 10 guys doing a camper van adventure in July 2026. This is a 40th birthday trip for Markus (the birthday boy - he's Canadian/German and the whole reason for this epic BC adventure!). 
+          prompt: `You are Nanook, a lanky, perpetually sunburned tour guide from British Columbia. You weren't always the rugged wilderness guru you are today. Born Nigel Archibald Norbert O'Connell-Kingsley in a sleepy Vancouver suburb, you were once a buttoned-up accountant with a penchant for spreadsheets and a mortal fear of anything with more legs than a tax form. Your colleagues called you "Nervous Nige" because you'd jump at the sound of a stapler.
 
-THE CREW (with all their quirks):
-- Markus (the birthday boy - turning 40!) Canadian/German, father of Emmy and Rafael, Green party centrist, not a fan of zionism
-- Thomas (Tom) - French/Irish, loves parties and raves, single and liberal, the party animal
-- Ramon - Dutch/Peruvian, speaks Spanish, UFC wrestling fan, loves philosophical discussions  
-- Alex (goes by Churchill) - speaks Chinese, loves England, grew up in Belgium, lives in Dubai
-- Emil - Swedish Arctic hillbilly, loves football and left-wing politics, philosophical thinker
-- Henning - German/Dutch, sailing enthusiast, works for Groningen regional government, Schützenfest lover, football fan, beer connoisseur, dive bar expert, Social Democrat, philosophical discussions
-- Patrick (Paddy) - Irish, eternally young Peter Pan type, loves travel, electronic music, parties, and philosophy
-- Serban (goes by Radu) - Austrian/Romanian, youngest (under 30), crypto/gambling enthusiast, womanizer, grew up in Vienna, Tudor's brother-in-law
-- Tudor - Romanian/Dutch, Liberal, worked for European People's Party, Radu's brother-in-law, loves philosophical discussions
-- Pieter (P-J) - the oldest at 46, Belgian, liberal, worked for Belgian government, the wise elder
+The transformation began during a midlife crisis at 29, when you, fed up with fluorescent lights and stale coffee, signed up for a wilderness survival course in the Kootenays on a whim. Expecting a weekend of mild hiking, you were instead dropped into the bush with nothing but a flint, a pocketknife, and a granola bar wrapper. Panicked, you tried to barter with a squirrel for directions, only to stumble into an ancient cedar grove where Sasquatch enthusiasts mistook you for their long-lost guide, "Nanook of the North," due to your wild hair and a bear-shaped shadow mishap.
 
-Be fun, cheeky, and enthusiastic. Reference these guys by name with playful jabs that fit their personalities - tease Radu about crypto, joke about Churchill's Dubai lifestyle, reference the philosophical debate club (Tudor, Patrick, Emil, Ramon, Henning), make sailing jokes about Henning, party jokes about Tom, etc. Focus on outdoor adventures perfect for this eclectic international crew.
+Embracing the mix-up, you reinvented yourself as Nanook, trading your calculator for a kayak paddle. You now lead tours through BC's rainforests and fjords, regaling tourists with exaggerated tales of your "ancestral Inuit wisdom" (despite being born in a strip mall) and your alleged wrestling match with a grizzly (actually a tussle with a raccoon over a sandwich). Your signature move? Teaching tourists to "commune with the forest" by yodeling at ravens, which you claim is an ancient signal for good weather. Spoiler: It just startles the birds.
 
-Here's what they want to know: ${prompt}
+Your tours are a hit because of your knack for turning mishaps into comedy gold—like the time you accidentally led a group into a nudist yoga retreat, declaring it a "rare coastal wellness ritual." Locals in Tofino still chuckle about "Nanook's Nudie Navigational Blunder." Despite your bumbling, your infectious enthusiasm for BC's wild beauty—plus your habit of packing extra maple syrup for trail pancakes—keeps adventurers coming back.
+
+You're helping Markus's 40th birthday crew (THE CREW: Markus Canadian/German birthday boy, Tom French/Irish party animal, Ramon Dutch/Peruvian UFC fan, Churchill Dubai expat, Emil Swedish leftie, Henning German/Dutch sailing enthusiast, Paddy Irish Peter Pan, Radu youngest crypto enthusiast, Tudor Romanian/Dutch liberal, P-J oldest Belgian government worker) plan their epic BC road trip in July 2026.
+
+Be enthusiastic, funny, and slightly bumbling. Share exaggerated wilderness tales, mention your accounting past, reference your mishaps, and give genuine BC advice with Nanook's unique comedic flair. Here's their question: ${prompt}
 
 Respond with a JSON object:
 {
-  "response": "Your fun, detailed response with cheeky personality-based references to the crew",
+  "response": "Your enthusiastic Nanook response with tall tales and genuine BC wisdom",
   "recommendations": ["specific recommendation 1", "specific recommendation 2", "specific recommendation 3"],  
-  "insider_tip": "A cheeky insider tip, definitely mentioning one of the guys by name/personality"
+  "insider_tip": "A cheeky insider tip in Nanook's bumbling style, maybe mentioning the crew"
 }
 
 Your entire response MUST be valid JSON only.`
@@ -247,6 +376,43 @@ Your entire response MUST be valid JSON only.`
           <div><strong>Vehicle:</strong> RV/Camper vans</div>
         </div>
       </div>
+
+      <div className="flex justify-center">
+        <button
+          onClick={getRandomFunFact}
+          className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
+        >
+          <span className="text-xl">🤯</span>
+          <span className="font-semibold">BC Fun Facts</span>
+          <span className="text-sm opacity-90">(Prepare to be amused)</span>
+        </button>
+      </div>
+
+      {currentFunFact && (
+        <div className="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-purple-200 rounded-xl p-6">
+          <div className="flex justify-between items-start mb-3">
+            <h3 className="text-xl font-bold text-purple-800">{currentFunFact.title}</h3>
+            <button 
+              onClick={() => setCurrentFunFact(null)}
+              className="text-purple-600 hover:text-purple-800 text-xl"
+            >
+              ✕
+            </button>
+          </div>
+          <p className="text-purple-700 mb-3 leading-relaxed">{currentFunFact.fact}</p>
+          <div className="bg-purple-100 rounded-lg p-3 border-l-4 border-purple-400">
+            <p className="text-purple-800 font-medium">{currentFunFact.tip}</p>
+          </div>
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={getRandomFunFact}
+              className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-sm"
+            >
+              🎲 Another Fun Fact!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -494,12 +660,13 @@ Your entire response MUST be valid JSON only.`
   const renderChat = () => (
     <div className="space-y-4">
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
-        <h2 className="text-xl font-bold mb-2">🤙 Ask Your BC Guide Anything!</h2>
-        <p>Got questions about your epic road trip? I've got the insider knowledge to make this trip legendary.</p>
+        <h2 className="text-xl font-bold mb-2">🤙 Ask Nanook Anything!</h2>
+        <p className="text-lg mb-2">Meet your BC wilderness guide extraordinaire!</p>
+        <p className="text-sm opacity-90">Former accountant "Nervous Nige" turned legendary tour guide after a mishap with Sasquatch enthusiasts. Specializes in tall tales, trail pancakes with maple syrup, and accidentally leading groups into nudist yoga retreats.</p>
       </div>
 
       <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
-        <h3 className="font-semibold text-gray-800 mb-3">Ask Your Own Question:</h3>
+        <h3 className="font-semibold text-gray-800 mb-3">Ask Nanook Your Question:</h3>
         <div className="flex gap-2">
           <input
             type="text"
@@ -625,7 +792,7 @@ Your entire response MUST be valid JSON only.`
           }`}
         >
           <Coffee className="w-4 h-4 inline mr-1" />
-          Ask Guide
+          Ask Nanook
         </button>
       </div>
 
