@@ -520,113 +520,58 @@ Respond with a JSON object:
         </div>
 
         <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-  <h3 className="font-bold text-purple-800 mb-2">🤝 Group Coordination</h3>
-  <div className="space-y-4">
-    <div>
-      <h4 className="font-semibold text-purple-700 mb-2">Activity Assignments & Votes:</h4>
-      {editableItinerary.map((day, dayIndex) => (
-        <div key={day.day} className="mb-2">
-          <button
-            onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
-            className="w-full text-left p-2 bg-white border border-gray-200 rounded hover:bg-gray-50 focus:outline-none"
-            aria-expanded={selectedDay === day.day}
-            aria-label={`Toggle activities for Day ${day.day} (${day.location})`}
-          >
-            <span className="text-sm font-medium">Day {day.day} ({day.location})</span>
-            <span className="ml-2">{selectedDay === day.day ? '▲' : '▼'}</span>
-          </button>
-          {selectedDay === day.day && (
-            <div className="mt-2 pl-4 space-y-2">
-              {day.activities.map((activity, activityIndex) => (
-                <div key={activityIndex} className="flex items-center gap-2">
-                  <span>{activity}</span>
-                  <select
-                    value={day.assignments[activityIndex] || ''}
-                    onChange={(e) => handleAssign(dayIndex, activityIndex, e.target.value)}
-                    className="px-2 py-1 border border-gray-300 rounded text-xs"
-                    aria-label={`Assign ${activity} for Day ${day.day}`}
+          <h3 className="font-bold text-purple-800 mb-2">🤝 Group Coordination</h3>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold text-purple-700 mb-2">Activity Assignments & Votes:</h4>
+              {editableItinerary.map((day, dayIndex) => (
+                <div key={day.day} className="mb-2">
+                  <button
+                    onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
+                    className="w-full text-left p-2 bg-white border border-gray-200 rounded hover:bg-gray-50 focus:outline-none"
+                    aria-expanded={selectedDay === day.day}
+                    aria-label={`Toggle activities for Day ${day.day} (${day.location})`}
                   >
-                    <option value="">Assign...</option>
-                    {friends.map(f => <option key={f} value={f}>{f}</option>)}
-                  </select>
-                  <div className="flex gap-1">
-                    {friends.map(friend => (
-                      <button
-                        key={friend}
-                        onClick={() => {
-                          console.log(`Voting for ${friend} on Day ${day.day}, Activity ${activity}`);
-                          handleVote(dayIndex, activityIndex, friend, day.votes[activityIndex]?.[friend] === 'up' ? null : 'up');
-                        }}
-                        className={`text-xs ${day.votes[activityIndex]?.[friend] === 'up' ? 'text-green-600' : 'text-gray-400'} hover:text-green-700 focus:outline-none`}
-                        aria-label={`Vote ${day.votes[activityIndex]?.[friend] === 'up' ? 'remove' : 'add'} for ${activity} by ${friend}`}
-                      >
-                        👍
-                      </button>
-                    ))}
-                  </div>
+                    <span className="text-sm font-medium">Day {day.day} ({day.location})</span>
+                    <span className="ml-2">{selectedDay === day.day ? '▲' : '▼'}</span>
+                  </button>
+                  {selectedDay === day.day && (
+                    <div className="mt-2 pl-4 space-y-2">
+                      {day.activities.map((activity, activityIndex) => (
+                        <div key={activityIndex} className="flex items-center gap-2">
+                          <span>{activity}</span>
+                          <select
+                            value={day.assignments[activityIndex] || ''}
+                            onChange={(e) => handleAssign(dayIndex, activityIndex, e.target.value)}
+                            className="px-2 py-1 border border-gray-300 rounded text-xs"
+                            aria-label={`Assign ${activity} for Day ${day.day}`}
+                          >
+                            <option value="">Assign...</option>
+                            {friends.map(f => <option key={f} value={f}>{f}</option>)}
+                          </select>
+                          <div className="flex gap-1">
+                            {friends.map(friend => (
+                              <button
+                                key={friend}
+                                onClick={() => {
+                                  console.log(`Voting for ${friend} on Day ${day.day}, Activity ${activity}`);
+                                  handleVote(dayIndex, activityIndex, friend, day.votes[activityIndex]?.[friend] === 'up' ? null : 'up');
+                                }}
+                                className={`text-xs ${day.votes[activityIndex]?.[friend] === 'up' ? 'text-green-600' : 'text-gray-400'} hover:text-green-700 focus:outline-none`}
+                                aria-label={`Vote ${day.votes[activityIndex]?.[friend] === 'up' ? 'remove' : 'add'} for ${activity} by ${friend}`}
+                              >
+                                👍
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      ))}
-    </div>
-          <div>
-    <div>
-      <h4 className="font-semibold text-purple-700 mb-2">Contributions:</h4>
-      <div className="grid md:grid-cols-2 gap-2 text-sm">
-        {friends.map(friend => (
-          <div key={friend}>
-            <strong>{friend}:</strong> {contributions[friend]?.length || 0} contributions
-            {contributions[friend]?.map((c, idx) => (
-              <p key={idx} className="text-xs text-gray-600">• ${c.amount} for {c.description}</p>
-            ))}
-          </div>
-        ))}
-      </div>
-      <div className="mt-4">
-        <h5 className="text-sm font-semibold text-purple-700">Add Contribution:</h5>
-        <div className="flex gap-2 mt-2">
-          <select
-            value={contributions.tempFriend || ''}
-            onChange={(e) => setContributions(prev => ({ ...prev, tempFriend: e.target.value }))}
-            className="px-2 py-1 border border-gray-300 rounded"
-            aria-label="Select friend for contribution"
-          >
-            <option value="">Select Friend</option>
-            {friends.map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-          <input
-            type="number"
-            placeholder="Amount"
-            className="px-2 py-1 border border-gray-300 rounded w-24"
-            onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 }))}
-            aria-label="Contribution amount"
-          />
-          <input
-            type="text"
-            placeholder="Description"
-            className="px-2 py-1 border border-gray-300 rounded flex-1"
-            onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value }))}
-            aria-label="Contribution description"
-          />
-          <button
-            onClick={() => {
-              const { tempFriend, tempAmount, tempDescription } = contributions;
-              if (tempFriend && tempAmount && tempDescription) {
-                handleContribution(tempFriend, tempAmount, tempDescription);
-              }
-            }}
-            className="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
-            aria-label="Add contribution"
-          >
-            Add
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+            <div>
               <h4 className="font-semibold text-purple-700 mb-2">Contributions:</h4>
               <div className="grid md:grid-cols-2 gap-2 text-sm">
                 {friends.map(friend => (
