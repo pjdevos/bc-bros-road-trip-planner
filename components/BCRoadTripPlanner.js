@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react';
-import { MapPin, Compass, Coffee, Mountain, Calendar, Users, Zap, Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Compass, Coffee, Mountain, Calendar, Users, Zap, Star, Map } from 'lucide-react';
 
 const BCRoadTripPlanner = () => {
   const defaultItinerary = [
@@ -24,6 +24,64 @@ const BCRoadTripPlanner = () => {
   const [customQuestion, setCustomQuestion] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editableItinerary, setEditableItinerary] = useState(defaultItinerary);
+  const [showMap, setShowMap] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  // Simple map loader
+  useEffect(() => {
+    if (showMap && !mapLoaded) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDqBGR6jfw1eatF7DYtpLdnhc-uQBdL40I&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      
+      window.initMap = () => {
+        setMapLoaded(true);
+        createMap();
+      };
+
+      document.head.appendChild(script);
+    }
+  }, [showMap]);
+
+  const createMap = () => {
+    if (!window.google || !document.getElementById('trip-map')) return;
+
+    const map = new window.google.maps.Map(document.getElementById('trip-map'), {
+      zoom: 6,
+      center: { lat: 49.5, lng: -122.0 },
+      mapTypeId: 'terrain'
+    });
+
+    // Route coordinates
+    const locations = [
+      { lat: 49.2827, lng: -123.1207, name: "Vancouver", day: 1 },
+      { lat: 49.0325, lng: -119.4525, name: "Osoyoos", day: 2 },
+      { lat: 49.8880, lng: -119.4960, name: "Kelowna", day: 3 },
+      { lat: 50.3192, lng: -122.7948, name: "Pemberton", day: 4 },
+      { lat: 49.1533, lng: -125.9060, name: "Tofino", day: 5 },
+      { lat: 48.4284, lng: -123.3656, name: "Victoria", day: 7 },
+      { lat: 49.2827, lng: -123.1207, name: "Vancouver", day: 10 }
+    ];
+
+    // Add markers
+    locations.forEach(location => {
+      const marker = new window.google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: map,
+        title: `Day ${location.day}: ${location.name}`,
+        label: location.day.toString()
+      });
+
+      const infoWindow = new window.google.maps.InfoWindow({
+        content: `<div><h3>Day ${location.day}</h3><p>${location.name}</p></div>`
+      });
+
+      marker.addListener('click', () => {
+        infoWindow.open(map, marker);
+      });
+    });
+  };
 
   const handleClaude = async (prompt) => {
     setIsLoading(true);
@@ -34,17 +92,29 @@ const BCRoadTripPlanner = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: `You are the ultimate BC road trip guide for Markus's 40th birthday adventure with 10 international guys doing a camper van trip in July 2026. 
+          prompt: `You are the ultimate BC road trip guide for a legendary group of 10 guys doing a camper van adventure in July 2026. This is a 40th birthday trip for Markus (the birthday boy - he's Canadian/German and the whole reason for this epic BC adventure!). 
 
-THE CREW: Markus (birthday boy, Canadian/German), Tom (French/Irish party animal), Ramon (Dutch/Peruvian UFC fan), Churchill (Dubai expat), Emil (Swedish leftie), Henning (German/Dutch sailing enthusiast), Paddy (Irish Peter Pan), Radu (youngest crypto enthusiast), Tudor (Romanian/Dutch liberal), P-J (oldest Belgian government worker).
+THE CREW (with all their quirks):
+- Markus (the birthday boy - turning 40!) Canadian/German, father of Emmy and Rafael, Green party centrist, not a fan of zionism
+- Thomas (Tom) - French/Irish, loves parties and raves, single and liberal, the party animal
+- Ramon - Dutch/Peruvian, speaks Spanish, UFC wrestling fan, loves philosophical discussions  
+- Alex (goes by Churchill) - speaks Chinese, loves England, grew up in Belgium, lives in Dubai
+- Emil - Swedish Arctic hillbilly, loves football and left-wing politics, philosophical thinker
+- Henning - German/Dutch, sailing enthusiast, works for Groningen regional government, Schützenfest lover, football fan, beer connoisseur, dive bar expert, Social Democrat, philosophical discussions
+- Patrick (Paddy) - Irish, eternally young Peter Pan type, loves travel, electronic music, parties, and philosophy
+- Serban (goes by Radu) - Austrian/Romanian, youngest (under 30), crypto/gambling enthusiast, womanizer, grew up in Vienna, Tudor's brother-in-law
+- Tudor - Romanian/Dutch, Liberal, worked for European People's Party, Radu's brother-in-law, loves philosophical discussions
+- Pieter (P-J) - the oldest at 46, Belgian, liberal, worked for Belgian government, the wise elder
 
-Be fun, cheeky, and reference the guys by name occasionally. Here's the question: ${prompt}
+Be fun, cheeky, and enthusiastic. Reference these guys by name with playful jabs that fit their personalities - tease Radu about crypto, joke about Churchill's Dubai lifestyle, reference the philosophical debate club (Tudor, Patrick, Emil, Ramon, Henning), make sailing jokes about Henning, party jokes about Tom, etc. Focus on outdoor adventures perfect for this eclectic international crew.
+
+Here's what they want to know: ${prompt}
 
 Respond with a JSON object:
 {
-  "response": "Your fun response with occasional crew references",
-  "recommendations": ["rec 1", "rec 2", "rec 3"],
-  "insider_tip": "A cheeky tip mentioning one of the guys"
+  "response": "Your fun, detailed response with cheeky personality-based references to the crew",
+  "recommendations": ["specific recommendation 1", "specific recommendation 2", "specific recommendation 3"],  
+  "insider_tip": "A cheeky insider tip, definitely mentioning one of the guys by name/personality"
 }
 
 Your entire response MUST be valid JSON only.`
@@ -67,12 +137,12 @@ Your entire response MUST be valid JSON only.`
   };
 
   const quickQuestions = [
-    "What are the most epic activities for our desert to ocean route?",
+    "What are the most epic activities for our diverse route from desert to ocean?",
     "Hidden gems between Osoyoos wine country and Tofino beaches?",
-    "Best RV camping spots and ferry booking tips?",
-    "What should we pack for desert, lakes, mountains AND ocean?",
-    "Local wine, craft breweries, and food along our route?",
-    "Emergency backup plans if BC ferries are delayed?"
+    "Best RV camping spots and ferry booking tips for our route?",
+    "What should we pack for desert, lakes, mountains AND ocean? (Philosophical debates included)",
+    "Local wine, craft breweries, and food along our new route? (Henning's dive bar radar activated)",
+    "Emergency backup plans if BC ferries are delayed? (Radu will probably suggest crypto trading while waiting)"
   ];
 
   const renderOverview = () => (
@@ -149,6 +219,13 @@ Your entire response MUST be valid JSON only.`
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">🗺️ Your 10-Day Adventure Map</h2>
           <div className="flex gap-2">
+            <button
+              onClick={() => setShowMap(!showMap)}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <Map className="w-4 h-4" />
+              {showMap ? 'Hide Map' : 'Show Route Map'}
+            </button>
             {isEditing ? (
               <>
                 <button
@@ -177,6 +254,29 @@ Your entire response MUST be valid JSON only.`
             )}
           </div>
         </div>
+
+        {showMap && (
+          <div className="mb-6">
+            <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-t-xl p-4 text-white">
+              <h3 className="text-lg font-bold">🗺️ Your BC Adventure Route</h3>
+              <p className="text-sm opacity-90">Vancouver → Osoyoos → Kelowna → Pemberton → Tofino → Victoria → Vancouver</p>
+            </div>
+            <div 
+              id="trip-map" 
+              className="w-full h-96 rounded-b-xl border border-gray-200"
+              style={{ minHeight: '400px' }}
+            >
+              {!mapLoaded && (
+                <div className="flex items-center justify-center h-full bg-gray-100 text-gray-600">
+                  <div className="text-center">
+                    <p className="text-lg font-semibold mb-2">🗺️ Loading your epic BC route...</p>
+                    <p className="text-sm">Desert → Wine Country → Mountains → Ocean → Islands</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {currentItinerary.map((day, dayIndex) => (
           <div 
