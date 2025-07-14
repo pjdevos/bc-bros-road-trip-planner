@@ -711,28 +711,59 @@ Your entire response MUST be valid JSON only.`
         </div>
       )}
 
-      {/* Show newest answers first, right below input */}
-      <div className="space-y-4">
-        {responses.slice().reverse().map((response, idx) => (
-          <div key={responses.length - 1 - idx} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="font-semibold text-gray-800 mb-2">❓ {response.question}</div>
-            <div className="text-gray-700 mb-3">{response.response}</div>
-            
-            {response.recommendations && response.recommendations.length > 0 && (
-              <div className="mb-3">
-                <h4 className="font-semibold text-gray-800 mb-1">🎯 Top Recommendations:</h4>
-                <ul className="list-disc list-inside text-sm text-gray-700">
-                  {response.recommendations.map((rec, i) => (
-                    <li key={i}>{rec}</li>
-                  ))}
-                </ul>
-              </div>
+      {/* Chat conversation display */}
+      <div className="space-y-4 max-h-96 overflow-y-auto">
+        {conversation.map((message, idx) => (
+          <div key={idx} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+            {message.type === 'nanook' && (
+              <img 
+                src="https://i.imgur.com/xtAl4ow.png" 
+                alt="Nanook" 
+                className="w-8 h-8 rounded-full mr-3 mt-1 flex-shrink-0"
+              />
             )}
-            
-            {response.insider_tip && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                <span className="font-semibold text-yellow-800">💡 Nanook's Insider Tip: </span>
-                <span className="text-yellow-700">{response.insider_tip}</span>
+            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+              message.type === 'user' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-100 text-gray-800'
+            }`}>
+              <p className="text-sm">{message.content}</p>
+              
+              {message.type === 'nanook' && message.recommendations && message.recommendations.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-gray-200">
+                  <p className="text-xs font-semibold text-gray-600 mb-1">🎯 Recommendations:</p>
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    {message.recommendations.map((rec, i) => (
+                      <li key={i}>• {rec}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {message.type === 'nanook' && message.insider_tip && (
+                <div className="mt-2 pt-2 border-t border-gray-200">
+                  <p className="text-xs bg-yellow-100 text-yellow-800 rounded p-2">
+                    <span className="font-semibold">💡 Tip: </span>
+                    {message.insider_tip}
+                  </p>
+                </div>
+              )}
+              
+              {message.type === 'nanook' && message.follow_up_question && (
+                <div className="mt-2">
+                  <button
+                    onClick={() => handleClaude(message.follow_up_question)}
+                    className="text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 rounded px-2 py-1 transition-colors"
+                    disabled={isLoading}
+                  >
+                    💬 {message.follow_up_question}
+                  </button>
+                </div>
+              )}
+            </div>
+            {message.type === 'user' && (
+              <div className="w-8 h-8 rounded-full bg-blue-600 ml-3 mt-1 flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xs font-bold">You</span>
               </div>
             )}
           </div>
