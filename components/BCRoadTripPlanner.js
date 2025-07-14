@@ -558,8 +558,7 @@ Respond with a JSON object:
       </div>
     </div>
   ))}
-</div> 
-            <div>
+</div>
               <h4 className="font-semibold text-purple-700 mb-2">Contributions:</h4>
               <div className="grid md:grid-cols-2 gap-2 text-sm">
                 {friends.map(friend => (
