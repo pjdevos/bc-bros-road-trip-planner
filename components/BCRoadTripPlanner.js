@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -210,7 +211,7 @@ Your entire response MUST be valid JSON only.`
       {/* Add your custom image here */}
       <div className="flex justify-center">
         <img 
-          src="https://drive.google.com/uc?id=1OMhuLfCPZW5hlAdUv4w5P9DW3Pf7t8K6" 
+          src="https://i.imgur.com/zpIQPkd.jpg" 
           alt="Markus's 40th Birthday BC Adventure" 
           className="rounded-xl shadow-lg max-w-full h-auto"
           style={{ maxHeight: '400px' }}
