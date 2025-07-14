@@ -46,7 +46,6 @@ const BCRoadTripPlanner = () => {
   const [weatherData, setWeatherData] = useState({});
   const [contributions, setContributions] = useState({ tempFriend: '', tempAmount: 0, tempDescription: '' });
 
-  // BC Fun Facts (shortened for brevity)
   const bcFunFacts = [
     {
       title: "Raincouver Is Real",
@@ -55,7 +54,6 @@ const BCRoadTripPlanner = () => {
     },
   ];
 
-  // Offline Functionality
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const cachedItinerary = localStorage.getItem('bcRoadTripItinerary');
@@ -94,11 +92,10 @@ const BCRoadTripPlanner = () => {
     }
   }, [editableItinerary, conversation, contributions, weatherData]);
 
-  // Weather Integration
   const fetchWeather = async () => {
     const apiKey = process.env.NEXT_PUBLIC_OPENWEATHERMAP_API_KEY || 'b4852d0dab1e53207f5a738c8564f18b';
     const now = Date.now();
-    const cacheDuration = 6 * 60 * 60 * 1000; // 6 hours
+    const cacheDuration = 6 * 60 * 60 * 1000;
     const cachedWeather = JSON.parse(localStorage.getItem('bcRoadTripWeather') || '{}');
 
     for (const loc of locations) {
@@ -402,6 +399,10 @@ Respond with a JSON object:
 
   const renderOverview = () => {
     const totalBudget = editableItinerary.reduce((sum, day) => sum + day.costs.activities + day.costs.accommodations, 0);
+    const totalContributions = Object.values(contributions)
+      .filter(f => f && Array.isArray(f))
+      .flat()
+      .reduce((sum, c) => sum + c.amount, 0) || 0;
 
     return (
       <div className="space-y-6">
@@ -449,6 +450,7 @@ Respond with a JSON object:
           <div className="space-y-4">
             <div className="text-sm">
               <p><strong>Total Estimated Cost:</strong> ${totalBudget.toFixed(2)}</p>
+              <p><strong>Total Contributions:</strong> ${totalContributions.toFixed(2)}</p>
               <p className="mt-2"><strong>Breakdown by Day:</strong></p>
               <ul className="list-disc pl-5">
                 {editableItinerary.map(day => (
@@ -482,6 +484,59 @@ Respond with a JSON object:
                     />
                   </div>
                 ))}
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold text-yellow-700 mb-2">Contributions:</h4>
+              <div className="grid md:grid-cols-2 gap-2 text-sm">
+                {friends.map(friend => (
+                  <div key={friend}>
+                    <strong>{friend}:</strong> ${contributions[friend]?.reduce((sum, c) => sum + c.amount, 0) || 0} ({contributions[friend]?.length || 0} contributions)
+                    {contributions[friend]?.map((c, idx) => (
+                      <p key={idx} className="text-xs text-gray-600">• ${c.amount} for {c.description}</p>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <h5 className="text-sm font-semibold text-yellow-700">Add Contribution:</h5>
+                <div className="flex gap-2 mt-2">
+                  <select
+                    value={contributions.tempFriend || ''}
+                    onChange={(e) => setContributions(prev => ({ ...prev, tempFriend: e.target.value }))}
+                    className="px-2 py-1 border border-gray-300 rounded"
+                    aria-label="Select friend for contribution"
+                  >
+                    <option value="">Select Friend</option>
+                    {friends.map(f => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Amount"
+                    className="px-2 py-1 border border-gray-300 rounded w-24"
+                    onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 }))}
+                    aria-label="Contribution amount"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Description"
+                    className="px-2 py-1 border border-gray-300 rounded flex-1"
+                    onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value }))}
+                    aria-label="Contribution description"
+                  />
+                  <button
+                    onClick={() => {
+                      const { tempFriend, tempAmount, tempDescription } = contributions;
+                      if (tempFriend && tempAmount && tempDescription) {
+                        handleContribution(tempFriend, tempAmount, tempDescription);
+                      }
+                    }}
+                    className="px-2 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                    aria-label="Add contribution"
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -570,59 +625,6 @@ Respond with a JSON object:
                   )}
                 </div>
               ))}
-            </div>
-            <div>
-              <h4 className="font-semibold text-purple-700 mb-2">Contributions:</h4>
-              <div className="grid md:grid-cols-2 gap-2 text-sm">
-                {friends.map(friend => (
-                  <div key={friend}>
-                    <strong>{friend}:</strong> {contributions[friend]?.length || 0} contributions
-                    {contributions[friend]?.map((c, idx) => (
-                      <p key={idx} className="text-xs text-gray-600">• ${c.amount} for {c.description}</p>
-                    ))}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4">
-                <h5 className="text-sm font-semibold text-purple-700">Add Contribution:</h5>
-                <div className="flex gap-2 mt-2">
-                  <select
-                    value={contributions.tempFriend || ''}
-                    onChange={(e) => setContributions(prev => ({ ...prev, tempFriend: e.target.value }))}
-                    className="px-2 py-1 border border-gray-300 rounded"
-                    aria-label="Select friend for contribution"
-                  >
-                    <option value="">Select Friend</option>
-                    {friends.map(f => <option key={f} value={f}>{f}</option>)}
-                  </select>
-                  <input
-                    type="number"
-                    placeholder="Amount"
-                    className="px-2 py-1 border border-gray-300 rounded w-24"
-                    onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 }))}
-                    aria-label="Contribution amount"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Description"
-                    className="px-2 py-1 border border-gray-300 rounded flex-1"
-                    onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value }))}
-                    aria-label="Contribution description"
-                  />
-                  <button
-                    onClick={() => {
-                      const { tempFriend, tempAmount, tempDescription } = contributions;
-                      if (tempFriend && tempAmount && tempDescription) {
-                        handleContribution(tempFriend, tempAmount, tempDescription);
-                      }
-                    }}
-                    className="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
-                    aria-label="Add contribution"
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
