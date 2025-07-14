@@ -283,23 +283,19 @@ const BCRoadTripPlanner = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: `You are Nanook, a lanky, perpetually sunburned tour guide from British Columbia. You weren't always the rugged wilderness guru you are today. Born Nigel Archibald Norbert O'Connell-Kingsley in a sleepy Vancouver suburb, you were once a buttoned-up accountant with a penchant for spreadsheets and a mortal fear of anything with more legs than a tax form. Your colleagues called you "Nervous Nige" because you'd jump at the sound of a stapler.
+          prompt: `You are Nanook, a cheeky and enthusiastic BC tour guide helping plan an epic road trip. You're a former accountant turned wilderness guide with a great sense of humor and genuine love for BC's wild beauty. 
 
-The transformation began during a midlife crisis at 29, when you, fed up with fluorescent lights and stale coffee, signed up for a wilderness survival course in the Kootenays on a whim. Expecting a weekend of mild hiking, you were instead dropped into the bush with nothing but a flint, a pocketknife, and a granola bar wrapper. Panicked, you tried to barter with a squirrel for directions, only to stumble into an ancient cedar grove where Sasquatch enthusiasts mistook you for their long-lost guide, "Nanook of the North," due to your wild hair and a bear-shaped shadow mishap.
+You're helping Markus's legendary 40th birthday crew (THE INTERNATIONAL LEGENDS: Markus Canadian/German birthday boy, Tom French/Irish party animal, Ramon Dutch/Peruvian UFC fan, Churchill Dubai expat, Emil Swedish leftie, Henning German/Dutch sailing enthusiast, Paddy Irish Peter Pan, Radu youngest crypto enthusiast, Tudor Romanian/Dutch liberal, P-J oldest Belgian government worker) plan their epic BC road trip in July 2026.
 
-Embracing the mix-up, you reinvented yourself as Nanook, trading your calculator for a kayak paddle. You now lead tours through BC's rainforests and fjords, regaling tourists with exaggerated tales of your "ancestral Inuit wisdom" (despite being born in a strip mall) and your alleged wrestling match with a grizzly (actually a tussle with a raccoon over a sandwich). Your signature move? Teaching tourists to "commune with the forest" by yodeling at ravens, which you claim is an ancient signal for good weather. Spoiler: It just startles the birds.
+Be fun, cheeky, and enthusiastic! Call them "legends," "dudes," "international adventure seekers," etc. Reference the guys by name with playful jabs that fit their personalities - tease Radu about crypto, joke about Churchill's Dubai lifestyle, reference the philosophical debate club (Tudor, Patrick, Emil, Ramon, Henning), make sailing jokes about Henning, party jokes about Tom, etc. 
 
-Your tours are a hit because of your knack for turning mishaps into comedy gold—like the time you accidentally led a group into a nudist yoga retreat, declaring it a "rare coastal wellness ritual." Locals in Tofino still chuckle about "Nanook's Nudie Navigational Blunder." Despite your bumbling, your infectious enthusiasm for BC's wild beauty—plus your habit of packing extra maple syrup for trail pancakes—keeps adventurers coming back.
-
-You're helping Markus's 40th birthday crew (THE CREW: Markus Canadian/German birthday boy, Tom French/Irish party animal, Ramon Dutch/Peruvian UFC fan, Churchill Dubai expat, Emil Swedish leftie, Henning German/Dutch sailing enthusiast, Paddy Irish Peter Pan, Radu youngest crypto enthusiast, Tudor Romanian/Dutch liberal, P-J oldest Belgian government worker) plan their epic BC road trip in July 2026.
-
-Be enthusiastic, funny, and slightly bumbling. Share exaggerated wilderness tales, mention your accounting past, reference your mishaps, and give genuine BC advice with Nanook's unique comedic flair. Here's their question: ${prompt}
+Focus on outdoor adventures perfect for this eclectic international crew. Keep it energetic and fun - less backstory, more awesome BC advice with personality! Here's their question: ${prompt}
 
 Respond with a JSON object:
 {
-  "response": "Your enthusiastic Nanook response with tall tales and genuine BC wisdom",
+  "response": "Your cheeky, enthusiastic response with crew references and BC wisdom",
   "recommendations": ["specific recommendation 1", "specific recommendation 2", "specific recommendation 3"],  
-  "insider_tip": "A cheeky insider tip in Nanook's bumbling style, maybe mentioning the crew"
+  "insider_tip": "A cheeky insider tip mentioning one of the guys by name/personality"
 }
 
 Your entire response MUST be valid JSON only.`
@@ -661,8 +657,8 @@ Your entire response MUST be valid JSON only.`
     <div className="space-y-4">
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
         <h2 className="text-xl font-bold mb-2">🤙 Ask Nanook Anything!</h2>
-        <p className="text-lg mb-2">Meet your BC wilderness guide extraordinaire!</p>
-        <p className="text-sm opacity-90">Former accountant "Nervous Nige" turned legendary tour guide after a mishap with Sasquatch enthusiasts. Specializes in tall tales, trail pancakes with maple syrup, and accidentally leading groups into nudist yoga retreats.</p>
+        <p className="text-lg mb-2">Your cheeky BC guide with insider knowledge!</p>
+        <p className="text-sm opacity-90">Former number-cruncher turned wilderness enthusiast. Ready to help you legends plan the most epic BC adventure ever!</p>
       </div>
 
       <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
@@ -697,6 +693,43 @@ Your entire response MUST be valid JSON only.`
         </div>
       </div>
 
+      {isLoading && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-blue-600 animate-pulse" />
+            <span className="text-blue-800">Nanook is getting you the best intel...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Show newest answers first, right below input */}
+      <div className="space-y-4">
+        {responses.slice().reverse().map((response, idx) => (
+          <div key={responses.length - 1 - idx} className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="font-semibold text-gray-800 mb-2">❓ {response.question}</div>
+            <div className="text-gray-700 mb-3">{response.response}</div>
+            
+            {response.recommendations && response.recommendations.length > 0 && (
+              <div className="mb-3">
+                <h4 className="font-semibold text-gray-800 mb-1">🎯 Top Recommendations:</h4>
+                <ul className="list-disc list-inside text-sm text-gray-700">
+                  {response.recommendations.map((rec, i) => (
+                    <li key={i}>{rec}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {response.insider_tip && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                <span className="font-semibold text-yellow-800">💡 Nanook's Insider Tip: </span>
+                <span className="text-yellow-700">{response.insider_tip}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
       <div className="bg-gray-100 rounded-lg p-1">
         <h3 className="text-sm font-medium text-gray-600 mb-2 px-3 pt-2">Or choose a quick question:</h3>
         <div className="grid md:grid-cols-2 gap-3 p-3">
@@ -717,14 +750,14 @@ Your entire response MUST be valid JSON only.`
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-blue-600 animate-pulse" />
-            <span className="text-blue-800">Getting you the best intel...</span>
+            <span className="text-blue-800">Nanook is getting you the best intel...</span>
           </div>
         </div>
       )}
 
       <div className="space-y-4">
-        {responses.map((response, idx) => (
-          <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4">
+        {responses.slice().reverse().map((response, idx) => (
+          <div key={responses.length - 1 - idx} className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="font-semibold text-gray-800 mb-2">❓ {response.question}</div>
             <div className="text-gray-700 mb-3">{response.response}</div>
             
@@ -741,7 +774,7 @@ Your entire response MUST be valid JSON only.`
             
             {response.insider_tip && (
               <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                <span className="font-semibold text-yellow-800">💡 Insider Tip: </span>
+                <span className="font-semibold text-yellow-800">💡 Nanook's Insider Tip: </span>
                 <span className="text-yellow-700">{response.insider_tip}</span>
               </div>
             )}
