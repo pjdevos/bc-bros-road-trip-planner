@@ -4,18 +4,18 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Compass, Coffee, Mountain, Calendar, Users, Zap, Star, Map } from 'lucide-react';
 
 const BCRoadTripPlanner = () => {
-  // Define the default itinerary
+  // Define the NEW itinerary (Osoyoos/Tofino route)
   const defaultItinerary = [
-    { day: 1, location: "Vancouver Start", highlight: "Gear up & get wild", activities: ["Granville Island", "Capilano Suspension Bridge", "Camper van pickup"] },
-    { day: 2, location: "Vancouver → Whistler", highlight: "Mountain madness begins", activities: ["Sea-to-Sky Highway", "Shannon Falls", "Whistler Village"] },
-    { day: 3, location: "Whistler Adventures", highlight: "Adrenaline overdose", activities: ["Mountain biking", "Ziplining", "Alpine slide"] },
-    { day: 4, location: "Whistler → Kamloops", highlight: "Desert vibes", activities: ["Thompson River", "Kamloops Lake", "Sage & desert landscapes"] },
-    { day: 5, location: "Kamloops → Revelstoke", highlight: "Railway town chaos", activities: ["Three Valley Gap", "Crazy Creek Suspension Bridge", "Railway Museum"] },
-    { day: 6, location: "Revelstoke → Nelson", highlight: "Hippie town takeover", activities: ["Kokanee Glacier", "Lakefront lounging", "Historic downtown"] },
-    { day: 7, location: "Nelson → Fernie", highlight: "Rockies entrance", activities: ["Kootenay Lake Ferry", "Mountain views", "Fernie Alpine Resort"] },
-    { day: 8, location: "Fernie → Calgary", highlight: "Cowboy territory", activities: ["Crowsnest Pass", "Frank Slide", "Calgary Stampede vibes"] },
-    { day: 9, location: "Calgary → Jasper", highlight: "Rockies domination", activities: ["Icefields Parkway", "Athabasca Falls", "Jasper townsite"] },
-    { day: 10, location: "Jasper → Vancouver", highlight: "Epic finale", activities: ["Mount Robson", "Kamloops return", "Victory lap"] }
+    { day: 1, location: "Vancouver → Osoyoos", highlight: "Desert wine country adventure", activities: ["Early departure from Vancouver", "Chilliwack supply stop", "Osoyoos Desert Centre", "Wine tasting in Canada's only desert"] },
+    { day: 2, location: "Osoyoos → Kelowna", highlight: "Okanagan Lake paradise", activities: ["Nk'Mip Desert Cultural Centre", "Drive along Okanagan Lake", "Fintry Provincial Park setup", "Lakeside swimming"] },
+    { day: 3, location: "Kelowna Rest Day", highlight: "Wine tours and lake activities", activities: ["Local winery visits", "Big White Scenic Chairlift", "Okanagan Lake water sports", "Downtown Kelowna"] },
+    { day: 4, location: "Kelowna → Pemberton", highlight: "Mountain valley transition", activities: ["Coquihalla Highway drive", "Nairn Falls Provincial Park", "Nairn Falls hike", "Mountain photography"] },
+    { day: 5, location: "Pemberton → Tofino", highlight: "Sea-to-Sky to Pacific Ocean", activities: ["Sea-to-Sky Highway", "Horseshoe Bay ferry", "Cathedral Grove", "First Pacific sunset"] },
+    { day: 6, location: "Tofino Adventures", highlight: "Surf, whales, and hot springs", activities: ["Surfing lessons", "Hot Springs Cove boat tour", "Whale watching", "Rainforest boardwalk trails"] },
+    { day: 7, location: "Tofino → Victoria", highlight: "West coast to capital city", activities: ["Final Tofino beach walk", "Drive through Island interior", "Goldstream Provincial Park", "Victoria Inner Harbour"] },
+    { day: 8, location: "Victoria Exploration", highlight: "Gardens and royal treatment", activities: ["Butchart Gardens", "Royal BC Museum", "Inner Harbour stroll", "Beacon Hill Park peacocks"] },
+    { day: 9, location: "Victoria → Vancouver", highlight: "Ferry crossing finale", activities: ["Swartz Bay to Tsawwassen ferry", "Optional Cultus Lake stop", "Trip reflection", "Final group dinner"] },
+    { day: 10, location: "Vancouver Return", highlight: "Epic journey complete", activities: ["RV return and cleanup", "Final supply run", "Airport departures", "Legendary memories made"] }
   ];
 
   // State variables
@@ -106,7 +106,7 @@ const BCRoadTripPlanner = () => {
 
       const map = new window.google.maps.Map(document.getElementById('trip-map'), {
         zoom: 6,
-        center: { lat: 50.5, lng: -119.5 },
+        center: { lat: 49.0, lng: -123.0 },
         mapTypeId: 'terrain',
         styles: [
           {
@@ -277,20 +277,20 @@ Your entire response MUST be valid JSON only.`
       <div className="grid md:grid-cols-3 gap-4">
         <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
           <Mountain className="w-8 h-8 text-orange-600 mb-2" />
-          <h3 className="font-bold text-orange-800">Outdoor Adventures</h3>
-          <p className="text-sm text-orange-700">Mountain biking, hiking, ziplining, and more adrenaline than you can handle</p>
+          <h3 className="font-bold text-orange-800">Desert to Ocean</h3>
+          <p className="text-sm text-orange-700">Wine country, mountain lakes, Pacific surfing, and more diversity than you can handle</p>
         </div>
         
         <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
           <Compass className="w-8 h-8 text-blue-600 mb-2" />
           <h3 className="font-bold text-blue-800">Hidden Gems</h3>
-          <p className="text-sm text-blue-700">Weird roadside attractions, secret spots, and places your buddies have never heard of</p>
+          <p className="text-sm text-blue-700">Hot springs, secret beaches, island adventures, and places perfect for your international crew</p>
         </div>
         
         <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
           <Users className="w-8 h-8 text-purple-600 mb-2" />
-          <h3 className="font-bold text-purple-800">Group Activities</h3>
-          <p className="text-sm text-purple-700">Perfect for 10 guys who want to laugh, compete, and create legendary stories</p>
+          <h3 className="font-bold text-purple-800">Epic Experiences</h3>
+          <p className="text-sm text-purple-700">Perfect for 10 international legends who want to create unforgettable memories</p>
         </div>
       </div>
 
@@ -493,7 +493,7 @@ Your entire response MUST be valid JSON only.`
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Any hidden gems or unexpected stops? Make it fun and detailed for our group of 10 guys.`);
+                        handleClaude(`Tell me detailed plans for Day ${day.day} of our BC road trip: ${day.location}. What specific activities should we do? Any hidden gems or unexpected stops? Make it fun and detailed for our group of 10 international legends.`);
                       }}
                       disabled={isLoading}
                       className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
@@ -606,82 +606,4 @@ Your entire response MUST be valid JSON only.`
       <div className="space-y-4">
         {responses.map((response, idx) => (
           <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="font-semibold text-gray-800 mb-2">❓ {response.question}</div>
-            <div className="text-gray-700 mb-3">{response.response}</div>
-            
-            {response.recommendations && response.recommendations.length > 0 && (
-              <div className="mb-3">
-                <h4 className="font-semibold text-gray-800 mb-1">🎯 Top Recommendations:</h4>
-                <ul className="list-disc list-inside text-sm text-gray-700">
-                  {response.recommendations.map((rec, i) => (
-                    <li key={i}>{rec}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {response.insider_tip && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                <span className="font-semibold text-yellow-800">💡 Insider Tip: </span>
-                <span className="text-yellow-700">{response.insider_tip}</span>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="max-w-4xl mx-auto p-4 bg-white">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          🚐 BC Bros Road Trip Planner
-        </h1>
-        <p className="text-gray-600">July 2026 • 10 Days • Markus's 40th Birthday • International Legends</p>
-      </div>
-
-      <div className="flex gap-2 mb-6 bg-gray-100 rounded-lg p-1">
-        <button
-          onClick={() => setCurrentSection('overview')}
-          className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
-            currentSection === 'overview' 
-              ? 'bg-white text-gray-800 shadow-sm' 
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          <Star className="w-4 h-4 inline mr-1" />
-          Overview
-        </button>
-        <button
-          onClick={() => setCurrentSection('itinerary')}
-          className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
-            currentSection === 'itinerary' 
-              ? 'bg-white text-gray-800 shadow-sm' 
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          <Calendar className="w-4 h-4 inline mr-1" />
-          Itinerary
-        </button>
-        <button
-          onClick={() => setCurrentSection('chat')}
-          className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
-            currentSection === 'chat' 
-              ? 'bg-white text-gray-800 shadow-sm' 
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          <Coffee className="w-4 h-4 inline mr-1" />
-          Ask Guide
-        </button>
-      </div>
-
-      {currentSection === 'overview' && renderOverview()}
-      {currentSection === 'itinerary' && renderItinerary()}
-      {currentSection === 'chat' && renderChat()}
-    </div>
-  );
-};
-
-export default BCRoadTripPlanner;
+            <div className="font-sem
