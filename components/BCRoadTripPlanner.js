@@ -30,57 +30,109 @@ const BCRoadTripPlanner = () => {
   // Simple map loader
   useEffect(() => {
     if (showMap && !mapLoaded) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDqBGR6jfw1eatF7DYtpLdnhc-uQBdL40I&callback=initMap`;
-      script.async = true;
-      script.defer = true;
-      
-      window.initMap = () => {
+      // Check if Google Maps is already loaded
+      if (window.google && window.google.maps) {
         setMapLoaded(true);
         createMap();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDqBGR6jfw1eatF7DYtpLdnhc-uQBdL40I`;
+      script.onload = () => {
+        setMapLoaded(true);
+        setTimeout(createMap, 100);
+      };
+      script.onerror = () => {
+        console.error('Failed to load Google Maps');
+        showMapError();
       };
 
       document.head.appendChild(script);
     }
   }, [showMap]);
 
+  const showMapError = () => {
+    const mapElement = document.getElementById('trip-map');
+    if (mapElement) {
+      mapElement.innerHTML = `
+        <div class="flex items-center justify-center h-full bg-gray-100 text-gray-600">
+          <div class="text-center p-8">
+            <p class="text-lg font-semibold mb-2">🗺️ Map temporarily unavailable</p>
+            <p class="text-sm mb-4">Your epic BC route:</p>
+            <div class="text-left bg-white rounded-lg p-4 shadow-sm max-w-sm mx-auto">
+              <div class="text-xs space-y-1">
+                <div>📍 Vancouver → Osoyoos (Desert)</div>
+                <div>📍 Osoyoos → Kelowna (Wine Country)</div>
+                <div>📍 Kelowna → Pemberton (Mountains)</div>
+                <div>📍 Pemberton → Tofino (Ocean)</div>
+                <div>📍 Tofino → Victoria (Islands)</div>
+                <div>📍 Victoria → Vancouver (Home)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  };
+
   const createMap = () => {
-    if (!window.google || !document.getElementById('trip-map')) return;
+    if (!window.google || !window.google.maps || !document.getElementById('trip-map')) {
+      console.log('Google Maps not ready');
+      return;
+    }
 
-    const map = new window.google.maps.Map(document.getElementById('trip-map'), {
-      zoom: 6,
-      center: { lat: 49.5, lng: -122.0 },
-      mapTypeId: 'terrain'
-    });
-
-    // Route coordinates
-    const locations = [
-      { lat: 49.2827, lng: -123.1207, name: "Vancouver", day: 1 },
-      { lat: 49.0325, lng: -119.4525, name: "Osoyoos", day: 2 },
-      { lat: 49.8880, lng: -119.4960, name: "Kelowna", day: 3 },
-      { lat: 50.3192, lng: -122.7948, name: "Pemberton", day: 4 },
-      { lat: 49.1533, lng: -125.9060, name: "Tofino", day: 5 },
-      { lat: 48.4284, lng: -123.3656, name: "Victoria", day: 7 },
-      { lat: 49.2827, lng: -123.1207, name: "Vancouver", day: 10 }
-    ];
-
-    // Add markers
-    locations.forEach(location => {
-      const marker = new window.google.maps.Marker({
-        position: { lat: location.lat, lng: location.lng },
-        map: map,
-        title: `Day ${location.day}: ${location.name}`,
-        label: location.day.toString()
+    try {
+      const map = new window.google.maps.Map(document.getElementById('trip-map'), {
+        zoom: 6,
+        center: { lat: 49.5, lng: -122.0 },
+        mapTypeId: 'terrain'
       });
 
-      const infoWindow = new window.google.maps.InfoWindow({
-        content: `<div><h3>Day ${location.day}</h3><p>${location.name}</p></div>`
-      });
+      // Route coordinates
+      const locations = [
+        { lat: 49.2827, lng: -123.1207, name: "Vancouver", day: 1 },
+        { lat: 49.0325, lng: -119.4525, name: "Osoyoos", day: 2 },
+        { lat: 49.8880, lng: -119.4960, name: "Kelowna", day: 3 },
+        { lat: 50.3192, lng: -122.7948, name: "Pemberton", day: 4 },
+        { lat: 49.1533, lng: -125.9060, name: "Tofino", day: 5 },
+        { lat: 48.4284, lng: -123.3656, name: "Victoria", day: 7 },
+        { lat: 49.2827, lng: -123.1207, name: "Vancouver", day: 10 }
+      ];
 
-      marker.addListener('click', () => {
-        infoWindow.open(map, marker);
+      // Add markers
+      locations.forEach(location => {
+        const marker = new window.google.maps.Marker({
+          position: { lat: location.lat, lng: location.lng },
+          map: map,
+          title: `Day ${location.day}: ${location.name}`,
+          label: {
+            text: location.day.toString(),
+            color: 'white',
+            fontWeight: 'bold'
+          },
+          icon: {
+            path: window.google.maps.SymbolPath.CIRCLE,
+            scale: 15,
+            fillColor: '#3B82F6',
+            fillOpacity: 1,
+            strokeColor: 'white',
+            strokeWeight: 2
+          }
+        });
+
+        const infoWindow = new window.google.maps.InfoWindow({
+          content: `<div style="padding: 8px;"><h3 style="margin: 0; color: #1f2937;">Day ${location.day}</h3><p style="margin: 5px 0 0 0; color: #3B82F6;">${location.name}</p></div>`
+        });
+
+        marker.addListener('click', () => {
+          infoWindow.open(map, marker);
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error creating map:', error);
+      showMapError();
+    }
   };
 
   const handleClaude = async (prompt) => {
