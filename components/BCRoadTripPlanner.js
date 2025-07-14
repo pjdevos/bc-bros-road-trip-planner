@@ -656,9 +656,18 @@ Your entire response MUST be valid JSON only.`
   const renderChat = () => (
     <div className="space-y-4">
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
-        <h2 className="text-xl font-bold mb-2">🤙 Ask Nanook Anything!</h2>
-        <p className="text-lg mb-2">Your cheeky BC guide with insider knowledge!</p>
-        <p className="text-sm opacity-90">Former number-cruncher turned wilderness enthusiast. Ready to help you legends plan the most epic BC adventure ever!</p>
+        <div className="flex items-center gap-4">
+          <img 
+            src="https://i.imgur.com/xtAl4ow.png" 
+            alt="Nanook - Your BC Guide" 
+            className="w-16 h-16 rounded-full border-3 border-white shadow-lg"
+          />
+          <div>
+            <h2 className="text-xl font-bold mb-1">🤙 Ask Nanook Anything!</h2>
+            <p className="text-lg mb-1">Your cheeky BC guide with insider knowledge!</p>
+            <p className="text-sm opacity-90">Former number-cruncher turned wilderness enthusiast. Ready to help you legends plan the most epic BC adventure ever!</p>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
