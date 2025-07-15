@@ -1,4 +1,8 @@
 
+15/7 04:44
+
+
+
 'use client';
 
 
@@ -225,11 +229,11 @@ const BCRoadTripPlanner = () => {
 
         const res = await fetch(
 
-          `https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lng}&units=metric&appid=${apiKey}`
+          'https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lng}&units=metric&appid=${apiKey}'
 
         );
 
-        if (!res.ok) throw new Error(`Weather API error for ${loc.name}: ${res.status}`);
+        if (!res.ok) throw new Error('Weather API error for ${loc.name}: ${res.status}');
 
         const data = await res.json();
 
@@ -267,7 +271,7 @@ const BCRoadTripPlanner = () => {
 
       } catch (error) {
 
-        console.error(`Failed to fetch weather for ${loc.name}:`, error);
+        console.error('Failed to fetch weather for ${loc.name}:', error);
 
         setWeatherData(prev => ({
 
@@ -411,13 +415,13 @@ const BCRoadTripPlanner = () => {
 
   const renderOverview = () => (
 
-    <div className=“space-y-6”>
+    <div className="space-y-6">
 
       {!isOnline && (
 
-        <div className=“bg-yellow-100 border border-yellow-400 rounded-lg p-4 tekst-yellow-800”>
+        <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 tekst-yellow-800">
 
-          <p>📡 Offline Mode: Using cached data. Some features may be limited until you’re back online!</p>
+          <p>📡 Offline Mode: Using cached data. Some features may be limited until you're back online!</p>
 
         </div>
 
@@ -425,27 +429,27 @@ const BCRoadTripPlanner = () => {
 
 
 
-      <div className=“bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 tekst-white”>
+      <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 tekst-white">
 
-        <h2 className=“tekst-2xl font-bold mb-2”>🏔️ The Ultimate BC Bro-Trip</h2>
+        <h2 className="tekst-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
 
-        <p className=“tekst-lg”>Markus’s epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
+        <p className="tekst-lg">Markus’s epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
 
       </div>
 
 
 
-      <div className=“flex justify-center”>
+      <div className="flex justify-center">
 
         <img
 
           Src=https://i.imgur.com/nG9m1vO.png
 
-          Alt=“Markus’s 40th Birthday BC Adventure”
+          Alt="Markus’s 40th Birthday BC Adventure"
 
-          className=“rounded-xl shadow-lg max-w-full h-auto”
+          className="rounded-xl shadow-lg max-w-full h-auto"
 
-          style={{ maxHeight: ‘400px’ }}
+          style={{ maxHeight: '400px’ }}
 
         />
 
@@ -453,13 +457,15 @@ const BCRoadTripPlanner = () => {
 
 
 
+
+
       {/* BUDGET PLANNER */}
 
-      <div className=“bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4”>
+      <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
 
-        <h3 className=“font-bold tekst-yellow-800 mb-2”>💰 Budget Planner</h3>
+        <h3 className="font-bold tekst-yellow-800 mb-2">💰 Budget Planner</h3>
 
-        <div className=“space-y-4 tekst-sm”>
+        <div className="space-y-4 tekst-sm">
 
           <p><strong>Total Estimated Cost:</strong> ${totalBudget.toFixed(2)}</p>
 
@@ -469,15 +475,15 @@ const BCRoadTripPlanner = () => {
 
           {/* Breakdown by Day */}
 
-          <button onClick={() => setShowBreakdown(v => !v)} className=“w-full tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between”>
+          <button onClick={() => setShowBreakdown(v => !v)} className="w-full tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between">
 
-            Breakdown by Day {showBreakdown ? ‘▲’ : ‘▼’}
+            Breakdown by Day {showBreakdown ? '▲’ : '▼’}
 
           </button>
 
           {showBreakdown && (
 
-            <ul className=“list-disc pl-5”>
+            <ul className="list-disc pl-5">
 
               {editableItinerary.map(day => (
 
@@ -497,47 +503,47 @@ const BCRoadTripPlanner = () => {
 
           {/* Enter Estimated Costs */}
 
-          <button onClick={() => setShowCosts(v => !v)} className=“w-full tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between”>
+          <button onClick={() => setShowCosts(v => !v)} className="w-full tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between">
 
-            Enter Estimated Costs {showCosts ? ‘▲’ : ‘▼’}
+            Enter Estimated Costs {showCosts ? '▲’ : '▼’}
 
           </button>
 
           {showCosts && (
 
-            <div className=“space-y-2”>
+            <div className="space-y-2">
 
               {editableItinerary.map((day, dayIndex) => (
 
-                <div key={day.day} className=“flex items-center gap-2”>
+                <div key={day.day} className="flex items-center gap-2">
 
                   <span>Day {day.day} ({day.location}):</span>
 
                   <input
 
-                    Type=“number”
+                    Type="number"
 
                     Value={day.costs.activities}
 
-                    onChange={€ => updateDayCosts(dayIndex, ‘activities’, e.target.value)}
+                    onChange={€ => updateDayCosts(dayIndex, 'activities’, e.target.value)}
 
-                    className=“px-2 py-1 border border-gray-300 rounded w-24”
+                    className="px-2 py-1 border border-gray-300 rounded w-24"
 
-                    placeholder=“Activities”
+                    placeholder="Activities"
 
                   />
 
                   <input
 
-                    Type=“number”
+                    Type="number"
 
                     Value={day.costs.accommodations}
 
-                    onChange={€ => updateDayCosts(dayIndex, ‘accommodations’, e.target.value)}
+                    onChange={€ => updateDayCosts(dayIndex, 'accommodations’, e.target.value)}
 
-                    className=“px-2 py-1 border border-gray-300 rounded w-24”
+                    className="px-2 py-1 border border-gray-300 rounded w-24"
 
-                    placeholder=“Accommodations”
+                    placeholder="Accommodations"
 
                   />
 
@@ -553,9 +559,9 @@ const BCRoadTripPlanner = () => {
 
           {/* Contributions */}
 
-          <button onClick={() => setShowContributions(v => !v)} className=“w-full tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between”>
+          <button onClick={() => setShowContributions(v => !v)} className="w-full tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between">
 
-            Contributions {showContributions ? ‘▲’ : ‘▼’}
+            Contributions {showContributions ? '▲’ : '▼’}
 
           </button>
 
@@ -563,7 +569,7 @@ const BCRoadTripPlanner = () => {
 
             <div>
 
-              <div className=“grid md:grid-cols-2 gap-2”>
+              <div className="grid md:grid-cols-2 gap-2">
 
                 {friends.map(friend => (
 
@@ -573,7 +579,7 @@ const BCRoadTripPlanner = () => {
 
                     {contributions[friend]?.map((c, idx) => (
 
-                      <p key={idx} className=“tekst-xs tekst-gray-600”>• ${c.amount} for {c.description}</p>
+                      <p key={idx} className="tekst-xs tekst-gray-600">• ${c.amount} for {c.description}</p>
 
                     ))}
 
@@ -583,23 +589,23 @@ const BCRoadTripPlanner = () => {
 
               </div>
 
-              <div className=“mt-4”>
+              <div className="mt-4">
 
-                <h5 className=“tekst-sm font-semibold tekst-yellow-700”>Add Contribution:</h5>
+                <h5 className="tekst-sm font-semibold tekst-yellow-700">Add Contribution:</h5>
 
-                <div className=“flex gap-2 mt-2”>
+                <div className="flex gap-2 mt-2">
 
                   <select
 
-                    Value={contributions.tempFriend || ‘’}
+                    Value={contributions.tempFriend || '’}
 
                     onChange={€ => setContributions(prev => ({ …prev, tempFriend: e.target.value }))}
 
-                    className=“px-2 py-1 border border-gray-300 rounded”
+                    className="px-2 py-1 border border-gray-300 rounded"
 
                   >
 
-                    <option value=““>Select Friend</option>
+                    <option value="">Select Friend</option>
 
                     {friends.map(f => <option key={f} value={f}>{f}</option>)}
 
@@ -607,11 +613,11 @@ const BCRoadTripPlanner = () => {
 
                   <input
 
-                    Type=“number”
+                    Type="number"
 
-                    Placeholder=“Amount”
+                    Placeholder="Amount"
 
-                    className=“px-2 py-1 border border-gray-300 rounded w-24”
+                    className="px-2 py-1 border border-gray-300 rounded w-24"
 
                     onChange={€ => setContributions(prev => ({ …prev, tempAmount: parseFloat(e.target.value) || 0 }))}
 
@@ -619,11 +625,11 @@ const BCRoadTripPlanner = () => {
 
                   <input
 
-                    Type=“tekst”
+                    Type="tekst"
 
-                    Placeholder=“Description”
+                    Placeholder="Description"
 
-                    className=“px-2 py-1 border border-gray-300 rounded flex-1”
+                    className="px-2 py-1 border border-gray-300 rounded flex-1"
 
                     onChange={€ => setContributions(prev => ({ …prev, tempDescription: e.target.value }))}
 
@@ -643,7 +649,7 @@ const BCRoadTripPlanner = () => {
 
                     }}
 
-                    className=“px-2 py-1 bg-yellow-600 tekst-white rounded hover:bg-yellow-700”
+                    className="px-2 py-1 bg-yellow-600 tekst-white rounded hover:bg-yellow-700"
 
                   >
 
@@ -665,19 +671,19 @@ const BCRoadTripPlanner = () => {
 
 {/* WEATHER FORECAST */}
 
-      <div className=“bg-blue-50 border-2 border-blue-200 rounded-lg p-4”>
+      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
 
-        <h3 className=“font-bold tekst-blue-800 mb-2”>🌤️ Weather Forecast</h3>
+        <h3 className="font-bold tekst-blue-800 mb-2">🌤️ Weather Forecast</h3>
 
-        <div className=“space-y-2 tekst-sm”>
+        <div className="space-y-2 tekst-sm">
 
           {locations.map(loc => (
 
-            <div key={loc.name} className=“mb-1”>
+            <div key={loc.name} className="mb-1">
 
               <button
 
-                className=“w-full tekst-left font-semibold tekst-blue-700 flex justify-between py-1”
+                className="w-full tekst-left font-semibold tekst-blue-700 flex justify-between py-1"
 
                 onClick={() => setOpenWeather(prev => ({ …prev, [loc.name]: !prev[loc.name] }))}
 
@@ -685,7 +691,7 @@ const BCRoadTripPlanner = () => {
 
               >
 
-                {loc.name} {openWeather[loc.name] ? ‘▲’ : ‘▼’}
+                {loc.name} {openWeather[loc.name] ? '▲’ : '▼’}
 
               </button>
 
@@ -693,7 +699,7 @@ const BCRoadTripPlanner = () => {
 
                 weatherData[loc.name]?.current ? (
 
-                  <div className=“pl-4”>
+                  <div className="pl-4">
 
                     <p>
 
@@ -703,11 +709,11 @@ const BCRoadTripPlanner = () => {
 
                         <img
 
-                          Src={`http://openweathermap.org/img/wn/${weatherData[loc.name].current.icon}.png`}
+                          Src={'http://openweathermap.org/img/wn/${weatherData[loc.name].current.icon}.png'}
 
                           Alt={weatherData[loc.name].current.condition}
 
-                          className=“inline w-6 h-6 ml-1”
+                          className="inline w-6 h-6 ml-1"
 
                         />
 
@@ -717,7 +723,7 @@ const BCRoadTripPlanner = () => {
 
                     <p>5-Day Forecast:</p>
 
-                    <ul className=“tekst-xs list-disc pl-5”>
+                    <ul className="tekst-xs list-disc pl-5">
 
                       {weatherData[loc.name].forecast?.map((f, idx) => (
 
@@ -731,7 +737,7 @@ const BCRoadTripPlanner = () => {
 
                 ) : (
 
-                  <div className=“pl-4 tekst-gray-500”>Weather data unavailable</div>
+                  <div className="pl-4 tekst-gray-500">Weather data unavailable</div>
 
                 )
 
@@ -749,67 +755,67 @@ const BCRoadTripPlanner = () => {
 
       {/* GROUP COORDINATION */}
 
-      <div className=“bg-purple-50 border-2 border-purple-200 rounded-lg p-4”>
+      <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
 
-        <h3 className=“font-bold tekst-purple-800 mb-2”>🤝 Group Coordination</h3>
+        <h3 className="font-bold tekst-purple-800 mb-2">🤝 Group Coordination</h3>
 
-        <div className=“space-y-4”>
+        <div className="space-y-4">
 
           <div>
 
-            <h4 className=“font-semibold tekst-purple-700 mb-2”>Activity Assignments & Votes:</h4>
+            <h4 className="font-semibold tekst-purple-700 mb-2">Activity Assignments & Votes:</h4>
 
             {editableItinerary.map((day, dayIndex) => (
 
-              <div key={day.day} className=“mb-2”>
+              <div key={day.day} className="mb-2">
 
                 <button
 
                   onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
 
-                  className=“w-full tekst-left p-2 bg-white border border-gray-200 rounded hover:bg-gray-50 focus:outline-none”
+                  className="w-full tekst-left p-2 bg-white border border-gray-200 rounded hover:bg-gray-50 focus:outline-none"
 
                   aria-expanded={selectedDay === day.day}
 
-                  aria-label={`Toggle activities for Day ${day.day} (${day.location})`}
+                  aria-label={'Toggle activities for Day ${day.day} (${day.location})'}
 
                 >
 
-                  <span className=“tekst-sm font-medium”>Day {day.day} ({day.location})</span>
+                  <span className="tekst-sm font-medium">Day {day.day} ({day.location})</span>
 
-                  <span className=“ml-2”>{selectedDay === day.day ? ‘▲’ : ‘▼’}</span>
+                  <span className="ml-2">{selectedDay === day.day ? '▲’ : '▼’}</span>
 
                 </button>
 
                 {selectedDay === day.day && (
 
-                  <div className=“mt-2 pl-4 space-y-2”>
+                  <div className="mt-2 pl-4 space-y-2">
 
                     {day.activities.map((activity, activityIndex) => (
 
-                      <div key={activityIndex} className=“flex items-center gap-2”>
+                      <div key={activityIndex} className="flex items-center gap-2">
 
                         <span>{activity}</span>
 
                         <select
 
-                          Value={day.assignments[activityIndex] || ‘’}
+                          Value={day.assignments[activityIndex] || '’}
 
                           onChange={€ => handleAssign(dayIndex, activityIndex, e.target.value)}
 
-                          className=“px-2 py-1 border border-gray-300 rounded tekst-xs”
+                          className="px-2 py-1 border border-gray-300 rounded tekst-xs"
 
-                          aria-label={`Assign ${activity} for Day ${day.day}`}
+                          aria-label={'Assign ${activity} for Day ${day.day}'}
 
                         >
 
-                          <option value=““>Assign…</option>
+                          <option value="">Assign…</option>
 
                           {friends.map(f => <option key={f} value={f}>{f}</option>)}
 
                         </select>
 
-                        <div className=“flex gap-1”>
+                        <div className="flex gap-1">
 
                           {friends.map(friend => (
 
@@ -817,11 +823,11 @@ const BCRoadTripPlanner = () => {
 
                               Key={friend}
 
-                              onClick={() => handleVote(dayIndex, activityIndex, friend, day.votes[activityIndex]?.[friend] === ‘up’ ? null : ‘up’)}
+                              onClick={() => handleVote(dayIndex, activityIndex, friend, day.votes[activityIndex]?.[friend] === 'up’ ? null : 'up’)}
 
-                              className={`tekst-xs ${day.votes[activityIndex]?.[friend] === ‘up’ ? ‘tekst-green-600’ : ‘tekst-gray-400’} hover:tekst-green-700 focus:outline-none`}
+                              className={'tekst-xs ${day.votes[activityIndex]?.[friend] === 'up’ ? 'tekst-green-600’ : 'tekst-gray-400’} hover:tekst-green-700 focus:outline-none'}
 
-                              aria-label={`Vote ${day.votes[activityIndex]?.[friend] === ‘up’ ? ‘remove’ : ‘add’} for ${activity} by ${friend}`}
+                              aria-label={'Vote ${day.votes[activityIndex]?.[friend] === 'up’ ? 'remove’ : 'add’} for ${activity} by ${friend}'}
 
                             >
 
@@ -853,23 +859,23 @@ const BCRoadTripPlanner = () => {
 
 {/* FUN FACTS */}
 
-      <div className=“flex justify-center”>
+      <div className="flex justify-center">
 
         <button
 
           onClick={getRandomFunFact}
 
-          className=“px-6 py-3 bg-purple-600 tekst-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg”
+          className="px-6 py-3 bg-purple-600 tekst-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
 
-          aria-label=“Get a random BC fun fact”
+          aria-label="Get a random BC fun fact"
 
         >
 
-          <span className=“tekst-xl”>🤯</span>
+          <span className="tekst-xl">🤯</span>
 
-          <span className=“font-semibold”>BC Fun Facts</span>
+          <span className="font-semibold">BC Fun Facts</span>
 
-          <span className=“tekst-sm opacity-90”>(Prepare to be amused)</span>
+          <span className="tekst-sm opacity-90">(Prepare to be amused)</span>
 
         </button>
 
@@ -877,19 +883,19 @@ const BCRoadTripPlanner = () => {
 
       {currentFunFact && (
 
-        <div className=“bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-purple-200 rounded-xl p-6”>
+        <div className="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-purple-200 rounded-xl p-6">
 
-          <div className=“flex justify-between items-start mb-3”>
+          <div className="flex justify-between items-start mb-3">
 
-            <h3 className=“tekst-xl font-bold tekst-purple-800”>{currentFunFact.title}</h3>
+            <h3 className="tekst-xl font-bold tekst-purple-800">{currentFunFact.title}</h3>
 
             <button
 
               onClick={() => setCurrentFunFact(null)}
 
-              className=“tekst-purple-600 hover:tekst-purple-800 tekst-xl”
+              className="tekst-purple-600 hover:tekst-purple-800 tekst-xl"
 
-              aria-label=“Close fun fact”
+              aria-label="Close fun fact"
 
             >
 
@@ -899,23 +905,23 @@ const BCRoadTripPlanner = () => {
 
           </div>
 
-          <p className=“tekst-purple-700 mb-3 leading-relaxed”>{currentFunFact.fact}</p>
+          <p className="tekst-purple-700 mb-3 leading-relaxed">{currentFunFact.fact}</p>
 
-          <div className=“bg-purple-100 rounded-lg p-3 border-l-4 border-purple-400”>
+          <div className="bg-purple-100 rounded-lg p-3 border-l-4 border-purple-400">
 
-            <p className=“tekst-purple-800 font-medium”>{currentFunFact.tip}</p>
+            <p className="tekst-purple-800 font-medium">{currentFunFact.tip}</p>
 
           </div>
 
-          <div className=“mt-4 flex justify-center”>
+          <div className="mt-4 flex justify-center">
 
             <button
 
               onClick={getRandomFunFact}
 
-              className=“px-4 py-2 bg-purple-500 tekst-white rounded hover:bg-purple-600 transition-colors tekst-sm”
+              className="px-4 py-2 bg-purple-500 tekst-white rounded hover:bg-purple-600 transition-colors tekst-sm"
 
-              aria-label=“Get another random BC fun fact”
+              aria-label="Get another random BC fun fact"
 
             >
 
@@ -1129,41 +1135,41 @@ const BCRoadTripPlanner = () => {
 
   Return (
 
-    <div className=“max-w-4xl mx-auto p-4 bg-white”>
+    <div className="max-w-4xl mx-auto p-4 bg-white">
 
-      <div className=“mb-6”>
+      <div className="mb-6">
 
-        <h1 className=“tekst-3xl font-bold tekst-gray-800 mb-2”>
+        <h1 className="tekst-3xl font-bold tekst-gray-800 mb-2">
 
           🚐 BC Bros Road Trip Planner
 
         </h1>
 
-        <p className=“tekst-gray-600”>July 2026 • 10 Days • Markus’s 40th Birthday • International Legends</p>
+        <p className="tekst-gray-600">July 2026 • 10 Days • Markus’s 40th Birthday • International Legends</p>
 
       </div>
 
-      <div className=“flex gap-2 mb-6 bg-gray-100 rounded-lg p-1”>
+      <div className="flex gap-2 mb-6 bg-gray-100 rounded-lg p-1">
 
         <button
 
-          onClick={() => setCurrentSection(‘overview’)}
+          onClick={() => setCurrentSection('overview’)}
 
-          className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+          className={'flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
 
-            currentSection === ‘overview’
+            currentSection === 'overview’
 
-              ? ‘bg-white tekst-gray-800 shadow-sm’
+              ? 'bg-white tekst-gray-800 shadow-sm’
 
-              : ‘tekst-gray-600 hover:tekst-gray-800’
+              : 'tekst-gray-600 hover:tekst-gray-800’
 
-          }`}
+          }'}
 
-          Aria-label=“View trip overview”
+          Aria-label="View trip overview"
 
         >
 
-          <Star className=“w-4 h-4 inline mr-1” />
+          <Star className="w-4 h-4 inline mr-1" />
 
           Overview
 
@@ -1171,23 +1177,23 @@ const BCRoadTripPlanner = () => {
 
         <button
 
-          onClick={() => setCurrentSection(‘itinerary’)}
+          onClick={() => setCurrentSection('itinerary’)}
 
-          className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+          className={'flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
 
-            currentSection === ‘itinerary’
+            currentSection === 'itinerary’
 
-              ? ‘bg-white tekst-gray-800 shadow-sm’
+              ? 'bg-white tekst-gray-800 shadow-sm’
 
-              : ‘tekst-gray-600 hover:tekst-gray-800’
+              : 'tekst-gray-600 hover:tekst-gray-800’
 
-          }`}
+          }'}
 
-          Aria-label=“View itinerary”
+          Aria-label="View itinerary"
 
         >
 
-          <Calendar className=“w-4 h-4 inline mr-1” />
+          <Calendar className="w-4 h-4 inline mr-1" />
 
           Itinerary
 
@@ -1195,23 +1201,23 @@ const BCRoadTripPlanner = () => {
 
         <button
 
-          onClick={() => setCurrentSection(‘chat’)}
+          onClick={() => setCurrentSection('chat’)}
 
-          className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+          className={'flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
 
-            currentSection === ‘chat’
+            currentSection === 'chat’
 
-              ? ‘bg-white tekst-gray-800 shadow-sm’
+              ? 'bg-white tekst-gray-800 shadow-sm’
 
-              : ‘tekst-gray-600 hover:tekst-gray-800’
+              : 'tekst-gray-600 hover:tekst-gray-800’
 
-          }`}
+          }'}
 
-          Aria-label=“Chat with Nanook”
+          Aria-label="Chat with Nanook"
 
         >
 
-          <Coffee className=“w-4 h-4 inline mr-1” />
+          <Coffee className="w-4 h-4 inline mr-1" />
 
           Chat with Nanook
 
@@ -1219,11 +1225,11 @@ const BCRoadTripPlanner = () => {
 
       </div>
 
-      {currentSection === ‘overview’ && renderOverview()}
+      {currentSection === 'overview’ && renderOverview()}
 
-      {currentSection === ‘itinerary’ && renderItinerary()}
+      {currentSection === 'itinerary’ && renderItinerary()}
 
-      {currentSection === ‘chat’ && renderChat()}
+      {currentSection === 'chat’ && renderChat()}
 
     </div>
 
