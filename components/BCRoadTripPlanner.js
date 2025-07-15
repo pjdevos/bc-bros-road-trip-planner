@@ -409,7 +409,7 @@ const BCRoadTripPlanner = () => {
 
 // --- RENDER OVERVIEW (all collapsible/cleaned) ---
 
-  Const renderOverview = () => (
+  const renderOverview = () => (
 
     <div className=”space-y-6”>
 
