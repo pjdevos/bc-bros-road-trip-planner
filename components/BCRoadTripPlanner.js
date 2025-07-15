@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -64,21 +63,30 @@ const BCRoadTripPlanner = () => {
   ];
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const cachedItinerary = localStorage.getItem('bcRoadTripItinerary');
-      const cachedConversation = localStorage.getItem('bcRoadTripConversation');
-      const cachedWeather = localStorage.getItem('bcRoadTripWeather');
-      const cachedContributions = localStorage.getItem('bcRoadTripContributions');
-      if (cachedItinerary) setEditableItinerary(JSON.parse(cachedItinerary));
-      if (cachedConversation) setConversation(JSON.parse(cachedConversation).slice(-50));
-      if (cachedWeather) setWeatherData(JSON.parse(cachedWeather));
-      if (cachedContributions) setContributions(prev => ({ ...prev, ...JSON.parse(cachedContributions) }));
+  if (typeof window !== 'undefined') {
+    const cachedItinerary = localStorage.getItem('bcRoadTripItinerary');
+    const cachedConversation = localStorage.getItem('bcRoadTripConversation');
+    const cachedWeather = localStorage.getItem('bcRoadTripWeather');
+    const cachedContributions = localStorage.getItem('bcRoadTripContributions');
+    if (cachedItinerary) setEditableItinerary(JSON.parse(cachedItinerary));
+    if (cachedConversation) setConversation(JSON.parse(cachedConversation).slice(-50));
+    if (cachedWeather) setWeatherData(JSON.parse(cachedWeather));
+    if (cachedContributions) setContributions(prev => ({ ...prev, ...JSON.parse(cachedContributions) }));
 
-      const handleOnline = () => setIsOnline(true);
-      const handleOffline = () =>    window.removeEventListener('offline', handleOffline);
-      };
-    }
-  }, []);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    setIsOnline(navigator.onLine);
+
+    // Proper cleanup!
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }
+}, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
