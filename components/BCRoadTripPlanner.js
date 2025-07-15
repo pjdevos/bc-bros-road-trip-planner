@@ -424,26 +424,6 @@ Respond with a JSON object:
             style={{ maxHeight: '400px' }}
           />
         </div>
-        
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
-            <Mountain className="w-8 h-8 text-orange-600 mb-2" />
-            <h3 className="font-bold text-orange-800">Desert to Ocean</h3>
-            <p className="text-sm text-orange-700">Wine country, mountain lakes, Pacific surfing, and incredible diversity</p>
-          </div>
-          
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-            <Compass className="w-8 h-8 text-blue-600 mb-2" />
-            <h3 className="font-bold text-blue-800">Hidden Gems</h3>
-            <p className="text-sm text-blue-700">Hot springs, secret beaches, island adventures perfect for your crew</p>
-          </div>
-          
-          <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-            <Users className="w-8 h-8 text-purple-600 mb-2" />
-            <h3 className="font-bold text-purple-800">Epic Experiences</h3>
-            <p className="text-sm text-purple-700">Perfect for 10 international legends creating unforgettable memories</p>
-          </div>
-        </div>
 
         <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
           <h3 className="font-bold text-yellow-800 mb-2">💰 Budget Planner</h3>
@@ -451,94 +431,103 @@ Respond with a JSON object:
             <div className="text-sm">
               <p><strong>Total Estimated Cost:</strong> ${totalBudget.toFixed(2)}</p>
               <p><strong>Total Contributions:</strong> ${totalContributions.toFixed(2)}</p>
-              <p className="mt-2"><strong>Breakdown by Day:</strong></p>
-              <ul className="list-disc pl-5">
-                {editableItinerary.map(day => (
-                  <li key={day.day}>
-                    Day {day.day} ({day.location}): Activities ${day.costs.activities.toFixed(2)}, Accommodations ${day.costs.accommodations.toFixed(2)}
-                  </li>
-                ))}
-              </ul>
             </div>
-            <div>
-              <h4 className="font-semibold text-yellow-700 mb-2">Enter Estimated Costs:</h4>
-              <div className="space-y-2">
-                {editableItinerary.map((day, dayIndex) => (
-                  <div key={day.day} className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Day {day.day} ({day.location}):</span>
-                    <input
-                      type="number"
-                      value={day.costs.activities}
-                      onChange={(e) => updateDayCosts(dayIndex, 'activities', e.target.value)}
-                      className="px-2 py-1 border border-gray-300 rounded w-24"
-                      placeholder="Activities"
-                      aria-label={`Activities cost for Day ${day.day}`}
-                    />
-                    <input
-                      type="number"
-                      value={day.costs.accommodations}
-                      onChange={(e) => updateDayCosts(dayIndex, 'accommodations', e.target.value)}
-                      className="px-2 py-1 border border-gray-300 rounded w-24"
-                      placeholder="Accommodations"
-                      aria-label={`Accommodations cost for Day ${day.day}`}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-yellow-700 mb-2">Contributions:</h4>
-              <div className="grid md:grid-cols-2 gap-2 text-sm">
-                {friends.map(friend => (
-                  <div key={friend}>
-                    <strong>{friend}:</strong> ${contributions[friend]?.reduce((sum, c) => sum + c.amount, 0) || 0} ({contributions[friend]?.length || 0} contributions)
-                    {contributions[friend]?.map((c, idx) => (
-                      <p key={idx} className="text-xs text-gray-600">• ${c.amount} for {c.description}</p>
+            <details className="group">
+              <summary className="font-semibold text-yellow-700 mb-2 cursor-pointer list-none">
+                <span className="transition-colors group-open:text-yellow-900">📊 Breakdown by Day, Costs, and Contributions</span>
+              </summary>
+              <div className="mt-2 space-y-4">
+                <div>
+                  <p className="mt-2"><strong>Breakdown by Day:</strong></p>
+                  <ul className="list-disc pl-5">
+                    {editableItinerary.map(day => (
+                      <li key={day.day}>
+                        Day {day.day} ({day.location}): Activities ${day.costs.activities.toFixed(2)}, Accommodations ${day.costs.accommodations.toFixed(2)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-yellow-700 mb-2">Enter Estimated Costs:</h4>
+                  <div className="space-y-2">
+                    {editableItinerary.map((day, dayIndex) => (
+                      <div key={day.day} className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Day {day.day} ({day.location}):</span>
+                        <input
+                          type="number"
+                          value={day.costs.activities}
+                          onChange={(e) => updateDayCosts(dayIndex, 'activities', e.target.value)}
+                          className="px-2 py-1 border border-gray-300 rounded w-24"
+                          placeholder="Activities"
+                          aria-label={`Activities cost for Day ${day.day}`}
+                        />
+                        <input
+                          type="number"
+                          value={day.costs.accommodations}
+                          onChange={(e) => updateDayCosts(dayIndex, 'accommodations', e.target.value)}
+                          className="px-2 py-1 border border-gray-300 rounded w-24"
+                          placeholder="Accommodations"
+                          aria-label={`Accommodations cost for Day ${day.day}`}
+                        />
+                      </div>
                     ))}
                   </div>
-                ))}
-              </div>
-              <div className="mt-4">
-                <h5 className="text-sm font-semibold text-yellow-700">Add Contribution:</h5>
-                <div className="flex gap-2 mt-2">
-                  <select
-                    value={contributions.tempFriend || ''}
-                    onChange={(e) => setContributions(prev => ({ ...prev, tempFriend: e.target.value }))}
-                    className="px-2 py-1 border border-gray-300 rounded"
-                    aria-label="Select friend for contribution"
-                  >
-                    <option value="">Select Friend</option>
-                    {friends.map(f => <option key={f} value={f}>{f}</option>)}
-                  </select>
-                  <input
-                    type="number"
-                    placeholder="Amount"
-                    className="px-2 py-1 border border-gray-300 rounded w-24"
-                    onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 }))}
-                    aria-label="Contribution amount"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Description"
-                    className="px-2 py-1 border border-gray-300 rounded flex-1"
-                    onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value }))}
-                    aria-label="Contribution description"
-                  />
-                  <button
-                    onClick={() => {
-                      const { tempFriend, tempAmount, tempDescription } = contributions;
-                      if (tempFriend && tempAmount && tempDescription) {
-                        handleContribution(tempFriend, tempAmount, tempDescription);
-                      }
-                    }}
-                    className="px-2 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
-                    aria-label="Add contribution"
-                  >
-                    Add
-                  </button>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-yellow-700 mb-2">Contributions:</h4>
+                  <div className="grid md:grid-cols-2 gap-2 text-sm">
+                    {friends.map(friend => (
+                      <div key={friend}>
+                        <strong>{friend}:</strong> ${contributions[friend]?.reduce((sum, c) => sum + c.amount, 0) || 0} ({contributions[friend]?.length || 0} contributions)
+                        {contributions[friend]?.map((c, idx) => (
+                          <p key={idx} className="text-xs text-gray-600">• ${c.amount} for {c.description}</p>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4">
+                    <h5 className="text-sm font-semibold text-yellow-700">Add Contribution:</h5>
+                    <div className="flex gap-2 mt-2">
+                      <select
+                        value={contributions.tempFriend || ''}
+                        onChange={(e) => setContributions(prev => ({ ...prev, tempFriend: e.target.value }))}
+                        className="px-2 py-1 border border-gray-300 rounded"
+                        aria-label="Select friend for contribution"
+                      >
+                        <option value="">Select Friend</option>
+                        {friends.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                      <input
+                        type="number"
+                        placeholder="Amount"
+                        className="px-2 py-1 border border-gray-300 rounded w-24"
+                        onChange={(e) => setContributions(prev => ({ ...prev, tempAmount: parseFloat(e.target.value) || 0 }))}
+                        aria-label="Contribution amount"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Description"
+                        className="px-2 py-1 border border-gray-300 rounded flex-1"
+                        onChange={(e) => setContributions(prev => ({ ...prev, tempDescription: e.target.value }))}
+                        aria-label="Contribution description"
+                      />
+                      <button
+                        onClick={() => {
+                          const { tempFriend, tempAmount, tempDescription } = contributions;
+                          if (tempFriend && tempAmount && tempDescription) {
+                            handleContribution(tempFriend, tempAmount, tempDescription);
+                          }
+                        }}
+                        className="px-2 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                        aria-label="Add contribution"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </details>
           </div>
         </div>
 
@@ -546,30 +535,34 @@ Respond with a JSON object:
           <h3 className="font-bold text-blue-800 mb-2">🌤️ Weather Forecast</h3>
           <div className="grid md:grid-cols-2 gap-2 text-sm">
             {locations.map(loc => (
-              <div key={loc.name}>
-                <strong>{loc.name}:</strong>
-                {weatherData[loc.name]?.current ? (
-                  <div>
-                    <p>Current: {weatherData[loc.name].current.temp}°C, {weatherData[loc.name].current.condition}
-                      {weatherData[loc.name].current.icon && (
-                        <img
-                          src={`http://openweathermap.org/img/wn/${weatherData[loc.name].current.icon}.png`}
-                          alt={weatherData[loc.name].current.condition}
-                          className="inline w-6 h-6 ml-1"
-                        />
-                      )}
-                    </p>
-                    <p>5-Day Forecast:</p>
-                    <ul className="text-xs list-disc pl-5">
-                      {weatherData[loc.name].forecast?.map((f, idx) => (
-                        <li key={idx}>{f.date}: {f.temp}°C, {f.condition}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <p>Weather data unavailable</p>
-                )}
-              </div>
+              <details key={loc.name} className="group">
+                <summary className="font-semibold text-blue-700 cursor-pointer list-none">
+                  <span className="transition-colors group-open:text-blue-900">{loc.name}</span>
+                </summary>
+                <div className="mt-2">
+                  {weatherData[loc.name]?.current ? (
+                    <div>
+                      <p>Current: {weatherData[loc.name].current.temp}°C, {weatherData[loc.name].current.condition}
+                        {weatherData[loc.name].current.icon && (
+                          <img
+                            src={`http://openweathermap.org/img/wn/${weatherData[loc.name].current.icon}.png`}
+                            alt={weatherData[loc.name].current.condition}
+                            className="inline w-6 h-6 ml-1"
+                          />
+                        )}
+                      </p>
+                      <p>5-Day Forecast:</p>
+                      <ul className="text-xs list-disc pl-5">
+                        {weatherData[loc.name].forecast?.map((f, idx) => (
+                          <li key={idx}>{f.date}: {f.temp}°C, {f.condition}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p>Weather data unavailable</p>
+                  )}
+                </div>
+              </details>
             ))}
           </div>
         </div>
