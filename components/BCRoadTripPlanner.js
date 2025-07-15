@@ -1,1240 +1,2130 @@
-'use client';
 
 
+ 
 
-import React, { useState, useEffect } from 'react';
+'use
 
-import { MapPin, Compass, Coffee, Mountain, Calendar, Users, Zap, Star, Map } from 'lucide-react';
+client';
 
+ 
 
+import
 
-const BCRoadTripPlanner = () => {
+React, { useState, useEffect } from 'react';
 
-  const defaultItinerary = [
+import {
 
-    { day: 1, location: "Vancouver → Osoyoos", highlight: "Desert wine country adventure", activities: ["Early departure from Vancouver", "Chilliwack supply stop", "Osoyoos Desert Centre", "Wine tasting"] },
+MapPin, Compass, Coffee, Mountain, Calendar, Users, Zap, Star, Map } from
 
-    { day: 2, location: "Osoyoos → Kelowna", highlight: "Okanagan Lake paradise", activities: ["Nk'Mip Desert Cultural Centre", "Drive along Okanagan Lake", "Fintry Provincial Park setup", "Lakeside swimming"] },
+'lucide-react';
 
-    { day: 3, location: "Kelowna Rest Day", highlight: "Wine tours and lake activities", activities: ["Local winery visits", "Big White Scenic Chairlift", "Okanagan Lake water sports", "Downtown Kelowna"] },
+ 
 
-    { day: 4, location: "Kelowna → Pemberton", highlight: "Mountain valley transition", activities: ["Coquihalla Highway drive", "Nairn Falls Provincial Park", "Nairn Falls hike", "Mountain photography"] },
+const
 
-    { day: 5, location: "Pemberton → Tofino", highlight: "Sea-to-Sky to Pacific Ocean", activities: ["Sea-to-Sky Highway", "Horseshoe Bay ferry", "Cathedral Grove", "First Pacific sunset"] },
+BCRoadTripPlanner = () => {
 
-    { day: 6, location: "Tofino Adventures", highlight: "Surf, whales, and hot springs", activities: ["Surfing lessons", "Hot Springs Cove boat tour", "Whale watching", "Rainforest boardwalk trails"] },
+  const
 
-    { day: 7, location: "Tofino → Victoria", highlight: "West coast to capital city", activities: ["Final Tofino beach walk", "Drive through Island interior", "Goldstream Provincial Park", "Victoria Inner Harbour"] },
+defaultItinerary = [
 
-    { day: 8, location: "Victoria Exploration", highlight: "Gardens and royal treatment", activities: ["Butchart Gardens", "Royal BC Museum", "Inner Harbour stroll", "Beacon Hill Park peacocks"] },
+    {
 
-    { day: 9, location: "Victoria → Vancouver", highlight: "Ferry crossing finale", activities: ["Swartz Bay to Tsawwassen ferry", "Optional Cultus Lake stop", "Trip reflection", "Final group dinner"] },
+day: 1, location: "Vancouver → Osoyoos", highlight: "Desert wine
 
-    { day: 10, location: "Vancouver Return", highlight: "Epic journey complete", activities: ["RV return and cleanup", "Final supply run", "Airport departures", "Legendary memories made"] }
+country adventure", activities: ["Early departure from
 
-  ];
+Vancouver", "Chilliwack supply stop", "Osoyoos Desert
 
+Centre", "Wine tasting"] },
 
+    {
 
-  const friends = ["Markus", "Tom", "Ramon", "Churchill", "Emil", "Henning", "Paddy", "Radu", "Tudor", "P-J"];
+day: 2, location: "Osoyoos → Kelowna", highlight: "Okanagan Lake
 
-  const locations = [
+paradise", activities: ["Nk'Mip Desert Cultural Centre",
 
-    { name: "Vancouver", lat: 49.2827, lng: -123.1207 },
+"Drive along Okanagan Lake", "Fintry Provincial Park setup",
 
-    { name: "Osoyoos", lat: 49.0325, lng: -119.4525 },
+"Lakeside swimming"] },
 
-    { name: "Kelowna", lat: 49.8880, lng: -119.4960 },
+    {
 
-    { name: "Pemberton", lat: 50.3192, lng: -122.7948 },
+day: 3, location: "Kelowna Rest Day", highlight: "Wine tours and
 
-    { name: "Tofino", lat: 49.1533, lng: -125.9060 },
+lake activities", activities: ["Local winery visits", "Big
 
-    { name: "Victoria", lat: 48.4284, lng: -123.3656 }
+White Scenic Chairlift", "Okanagan Lake water sports",
 
-  ];
+"Downtown Kelowna"] },
 
+    {
 
+day: 4, location: "Kelowna → Pemberton", highlight: "Mountain
 
-  // --- STATES ---
+valley transition", activities: ["Coquihalla Highway drive",
 
-  const [currentSection, setCurrentSection] = useState('overview');
+"Nairn Falls Provincial Park", "Nairn Falls hike", "Mountain
 
-  const [selectedDay, setSelectedDay] = useState(null);
+photography"] },
 
-  const [conversation, setConversation] = useState([]);
+    {
 
-  const [isLoading, setIsLoading] = useState(false);
+day: 5, location: "Pemberton → Tofino", highlight: "Sea-to-Sky
 
-  const [customQuestion, setCustomQuestion] = useState('');
+to Pacific Ocean", activities: ["Sea-to-Sky Highway",
 
-  const [isEditing, setIsEditing] = useState(false);
+"Horseshoe Bay ferry", "Cathedral Grove", "First
 
-  const [editableItinerary, setEditableItinerary] = useState(
+Pacific sunset"] },
 
-    defaultItinerary.map(day => ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} }))
+    {
 
-  );
+day: 6, location: "Tofino Adventures", highlight: "Surf, whales,
 
-  const [showMap, setShowMap] = useState(false);
+and hot springs", activities: ["Surfing lessons", "Hot
 
-  const [mapLoaded, setMapLoaded] = useState(false);
+Springs Cove boat tour", "Whale watching", "Rainforest
 
-  const [currentFunFact, setCurrentFunFact] = useState(null);
+boardwalk trails"] },
 
-  const [followUpQuestion, setFollowUpQuestion] = useState('');
+    {
 
-  const [followUpMessageId, setFollowUpMessageId] = useState(null);
+day: 7, location: "Tofino → Victoria", highlight: "West coast to
 
-  const [isOnline, setIsOnline] = useState(true);
+capital city", activities: ["Final Tofino beach walk",
 
-  const [weatherData, setWeatherData] = useState({});
+"Drive through Island interior", "Goldstream Provincial Park",
 
-  const [contributions, setContributions] = useState({ tempFriend: '', tempAmount: 0, tempDescription: '' });
+"Victoria Inner Harbour"] },
 
+    {
 
+day: 8, location: "Victoria Exploration", highlight: "Gardens
 
-  // Dropdown states for new collapsibles
+and royal treatment", activities: ["Butchart Gardens",
 
-  const [showBreakdown, setShowBreakdown] = useState(false);
+"Royal BC Museum", "Inner Harbour stroll", "Beacon
 
-  const [showCosts, setShowCosts] = useState(false);
+Hill Park peacocks"] },
 
-  const [showContributions, setShowContributions] = useState(false);
+    {
 
-  const [openWeather, setOpenWeather] = useState({});
+day: 9, location: "Victoria → Vancouver", highlight: "Ferry
 
-// --- FUN FACTS ---
+crossing finale", activities: ["Swartz Bay to Tsawwassen ferry",
 
-  const bcFunFacts = [
+"Optional Cultus Lake stop", "Trip reflection", "Final
 
-    {
+group dinner"] },
 
-      title: "Raincouver Is Real",
+    {
 
-      fact: "Vancouver gets so much rain that locals joke about owning multiple rain jackets, each for a different level of wetness — from 'misty drizzle' to 'horizontal sideways rain.'",
+day: 10, location: "Vancouver Return", highlight: "Epic journey
 
-      tip: "☔ Locals don't even use umbrellas. That's how you spot a tourist."
+complete", activities: ["RV return and cleanup", "Final
 
-    },
+supply run", "Airport departures", "Legendary memories
 
-    // Add more fun facts as you wish!
+made"] }
 
-  ];
+  ];
 
+ 
 
+  const
 
-  useEffect(() => {
+friends = ["Markus", "Tom", "Ramon",
 
-    if (typeof window !== 'undefined') {
+"Churchill", "Emil", "Henning",
 
-      const cachedItinerary = localStorage.getItem('bcRoadTripItinerary');
+"Paddy", "Radu", "Tudor", "P-J"];
 
-      const cachedConversation = localStorage.getItem('bcRoadTripConversation');
+  const
 
-      const cachedWeather = localStorage.getItem('bcRoadTripWeather');
+locations = [
 
-      const cachedContributions = localStorage.getItem('bcRoadTripContributions');
+    {
 
-      if (cachedItinerary) setEditableItinerary(JSON.parse(cachedItinerary));
+name: "Vancouver", lat: 49.2827, lng: -123.1207 },
 
-      if (cachedConversation) setConversation(JSON.parse(cachedConversation).slice(-50));
+    {
 
-      if (cachedWeather) setWeatherData(JSON.parse(cachedWeather));
+name: "Osoyoos", lat: 49.0325, lng: -119.4525 },
 
-      if (cachedContributions) setContributions(prev => ({ ...prev, ...JSON.parse(cachedContributions) }));
+    {
 
+name: "Kelowna", lat: 49.8880, lng: -119.4960 },
 
+    {
 
-      const handleOnline = () => setIsOnline(true);
+name: "Pemberton", lat: 50.3192, lng: -122.7948 },
 
-      const handleOffline = () => setIsOnline(false);
+    {
 
-      window.addEventListener('online', handleOnline);
+name: "Tofino", lat: 49.1533, lng: -125.9060 },
 
-      window.addEventListener('offline', handleOffline);
+    {
 
-      setIsOnline(navigator.onLine);
+name: "Victoria", lat: 48.4284, lng: -123.3656 }
 
+  ];
 
+ 
 
-      return () => {
+  //
 
-        window.removeEventListener('online', handleOnline);
+--- STATES ---
 
-        window.removeEventListener('offline', handleOffline);
+  const
 
-      };
+[currentSection, setCurrentSection] = useState('overview');
 
-    }
+  const
 
-  }, []);
+[selectedDay, setSelectedDay] = useState(null);
 
+  const
 
+[conversation, setConversation] = useState([]);
 
-  useEffect(() => {
+  const
 
-    if (typeof window !== 'undefined') {
+[isLoading, setIsLoading] = useState(false);
 
-      localStorage.setItem('bcRoadTripItinerary', JSON.stringify(editableItinerary));
+  const
 
-      localStorage.setItem('bcRoadTripConversation', JSON.stringify(conversation.slice(-50)));
+[customQuestion, setCustomQuestion] = useState('');
 
-      localStorage.setItem('bcRoadTripContributions', JSON.stringify({
+  const
 
-        ...contributions,
+[isEditing, setIsEditing] = useState(false);
 
-        tempFriend: undefined,
+  const
 
-        tempAmount: undefined,
+[editableItinerary, setEditableItinerary] = useState(
 
-        tempDescription: undefined
+    defaultItinerary.map(day
 
-      }));
+=> ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {},
 
-      localStorage.setItem('bcRoadTripWeather', JSON.stringify(weatherData));
+votes: {} }))
 
-    }
+  );
 
-  }, [editableItinerary, conversation, contributions, weatherData]);
+  const
 
+[showMap, setShowMap] = useState(false);
 
+  const
 
-  // --- WEATHER FETCH ---
+[mapLoaded, setMapLoaded] = useState(false);
 
-  const fetchWeather = async () => {
+  const
 
-    const apiKey = process.env.NEXT_PUBLIC_OPENWEATHERMAP_API_KEY || 'b4852d0dab1e53207f5a738c8564f18b';
+[currentFunFact, setCurrentFunFact] = useState(null);
 
-    const now = Date.now();
+  const
 
-    const cacheDuration = 6 * 60 * 60 * 1000;
+[followUpQuestion, setFollowUpQuestion] = useState('');
 
-    const cachedWeather = JSON.parse(localStorage.getItem('bcRoadTripWeather') || '{}');
+  const
 
-    for (const loc of locations) {
+[followUpMessageId, setFollowUpMessageId] = useState(null);
 
-      if (cachedWeather[loc.name] && now - cachedWeather[loc.name].timestamp < cacheDuration) {
+  const
 
-        continue;
+[isOnline, setIsOnline] = useState(true);
 
-      }
+  const
 
-      try {
+[weatherData, setWeatherData] = useState({});
 
-        const res = await fetch(
+  const
 
-          'https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lng}&units=metric&appid=${apiKey}'
+[contributions, setContributions] = useState({ tempFriend: '', tempAmount: 0,
 
-        );
+tempDescription: '' });
 
-        if (!res.ok) throw new Error('Weather API error for ${loc.name}: ${res.status}');
+ 
 
-        const data = await res.json();
+  //
 
-        setWeatherData(prev => ({
+Dropdown states for new collapsibles
 
-          ...prev,
+  const
 
-          [loc.name]: {
+[showBreakdown, setShowBreakdown] = useState(false);
 
-            current: {
+  const
 
-              temp: Math.round(data.list[0].main.temp),
+[showCosts, setShowCosts] = useState(false);
 
-              condition: data.list[0].weather[0].main,
+  const
 
-              icon: data.list[0].weather[0].icon
+[showContributions, setShowContributions] = useState(false);
 
-            },
+  const
 
-            forecast: data.list.slice(0, 5).map(item => ({
+[openWeather, setOpenWeather] = useState({});
 
-              date: new Date(item.dt * 1000).toLocaleDateString(),
+// --- FUN
 
-              temp: Math.round(item.main.temp),
+FACTS ---
 
-              condition: item.weather[0].main
+  const
 
-            })),
+bcFunFacts = [
 
-            timestamp: now
+    {
 
-          }
+      title:
 
-        }));
+"Raincouver Is Real",
 
-      } catch (error) {
+      fact:
 
-        console.error('Failed to fetch weather for ${loc.name}:', error);
+"Vancouver gets so much rain that locals joke about owning multiple rain
 
-        setWeatherData(prev => ({
+jackets, each for a different level of wetness — from 'misty drizzle' to
 
-          ...prev,
+'horizontal sideways rain.'",
 
-          [loc.name]: {
+      tip:
 
-            current: { temp: 'N/A', condition: 'Unavailable', icon: '' },
+"☔ Locals
 
-            forecast: [],
+don't even use umbrellas. That's how you spot a tourist."
 
-            timestamp: now
+    },
 
-          }
+    //
 
-        }));
+Add more fun facts as you wish!
 
-      }
+  ];
 
-    }
+ 
 
-    if (typeof window !== 'undefined') {
+  useEffect(()
 
-      localStorage.setItem('bcRoadTripWeather', JSON.stringify(weatherData));
+=> {
 
-    }
+    if
 
-  };
+(typeof window !== 'undefined') {
 
+      const
 
+cachedItinerary = localStorage.getItem('bcRoadTripItinerary');
 
-  useEffect(() => {
+      const
 
-    if (isOnline) fetchWeather();
+cachedConversation = localStorage.getItem('bcRoadTripConversation');
 
-  }, [isOnline]);
+      const
 
+cachedWeather = localStorage.getItem('bcRoadTripWeather');
 
+      const
 
-  const getRandomFunFact = () => {
+cachedContributions = localStorage.getItem('bcRoadTripContributions');
 
-    const randomIndex = Math.floor(Math.random() * bcFunFacts.length);
+      if
 
-    setCurrentFunFact(bcFunFacts[randomIndex]);
+(cachedItinerary) setEditableItinerary(JSON.parse(cachedItinerary));
 
-  };
+      if
 
+(cachedConversation) setConversation(JSON.parse(cachedConversation).slice(-50));
 
+      if
 
-  // --- HELPERS FOR VOTES, ASSIGNMENTS, ETC. ---
+(cachedWeather) setWeatherData(JSON.parse(cachedWeather));
 
-  const handleVote = (dayIndex, activityIndex, friend, vote) => {
+      if
 
-    const updated = [...editableItinerary];
+(cachedContributions) setContributions(prev => ({ ...prev,
 
-    if (!updated[dayIndex].votes[activityIndex]) updated[dayIndex].votes[activityIndex] = {};
+...JSON.parse(cachedContributions) }));
 
-    updated[dayIndex].votes[activityIndex][friend] = vote;
+ 
 
-    setEditableItinerary(updated);
+      const
 
-  };
+handleOnline = () => setIsOnline(true);
 
+      const
 
+handleOffline = () => setIsOnline(false);
 
-  const handleAssign = (dayIndex, activityIndex, friend) => {
+      window.addEventListener('online',
 
-    const updated = [...editableItinerary];
+handleOnline);
 
-    updated[dayIndex].assignments[activityIndex] = friend;
+      window.addEventListener('offline',
 
-    setEditableItinerary(updated);
+handleOffline);
 
-  };
+      setIsOnline(navigator.onLine);
 
+ 
 
+      return
 
-  const handleContribution = (friend, amount, description) => {
+() => {
 
-    setContributions(prev => ({
+        window.removeEventListener('online',
 
-      ...prev,
+handleOnline);
 
-      [friend]: [...(prev[friend] || []), { amount, description, timestamp: Date.now() }],
+        window.removeEventListener('offline',
 
-      tempFriend: '',
+handleOffline);
 
-      tempAmount: 0,
+      };
 
-      tempDescription: ''
+    }
 
-    }));
+  },
 
-  };
+[]);
 
+ 
 
+  useEffect(()
 
-  const updateDayCosts = (dayIndex, field, value) => {
+=> {
 
-    const updated = [...editableItinerary];
+    if
 
-    updated[dayIndex].costs[field] = parseFloat(value) || 0;
+(typeof window !== 'undefined') {
 
-    setEditableItinerary(updated);
+      localStorage.setItem('bcRoadTripItinerary',
 
-  };
+JSON.stringify(editableItinerary));
 
+      localStorage.setItem('bcRoadTripConversation',
 
+JSON.stringify(conversation.slice(-50)));
 
-  const quickQuestions = [
+      localStorage.setItem('bcRoadTripContributions',
 
-    "What are the most epic activities for our diverse route from desert to ocean?",
+JSON.stringify({
 
-    "Hidden gems between Osoyoos wine country and Tofino beaches?",
+        ...contributions,
 
-    "Best RV camping spots and ferry booking tips for our route?",
+        tempFriend:
 
-    "What should we pack for desert, lakes, mountains AND ocean? (Philosophical debates included)",
+undefined,
 
-    "Local wine, craft breweries, and food along our new route? (Henning's dive bar radar activated)",
+        tempAmount:
 
-    "Emergency backup plans if BC ferries are delayed? (Radu will probably suggest crypto trading while waiting)"
+undefined,
 
-  ];
+        tempDescription:
 
+undefined
 
+      }));
 
-  // --- TOTALS ---
+      localStorage.setItem('bcRoadTripWeather',
 
-  const totalBudget = editableItinerary.reduce((sum, day) => sum + day.costs.activities + day.costs.accommodations, 0);
+JSON.stringify(weatherData));
 
-  const totalContributions = Object.values(contributions)
+    }
 
-    .filter(f => f && Array.isArray(f))
+  },
 
-    .flat()
+[editableItinerary, conversation, contributions, weatherData]);
 
-    .reduce((sum, c) => sum + c.amount, 0) || 0;
+ 
 
-// --- RENDER OVERVIEW (all collapsible/cleaned) ---
+  //
 
-  const renderOverview = () => (
+--- WEATHER FETCH ---
 
-    <div className="space-y-6">
+  const
 
-      {!isOnline && (
+fetchWeather = async () => {
 
-        <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 tekst-yellow-800">
+    const
 
-          <p>📡 Offline Mode: Using cached data. Some features may be limited until you're back online!</p>
+apiKey = process.env.NEXT_PUBLIC_OPENWEATHERMAP_API_KEY ||
 
-        </div>
+'b4852d0dab1e53207f5a738c8564f18b';
 
-      )}
+    const
 
+now = Date.now();
 
+    const
 
-      <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 tekst-white">
+cacheDuration = 6 * 60 * 60 * 1000;
 
-        <h2 className="tekst-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
+    const
 
-        <p className="tekst-lg">Markus’s epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
+cachedWeather = JSON.parse(localStorage.getItem('bcRoadTripWeather') || '{}');
 
-      </div>
+    for
 
+(const loc of locations) {
 
+      if
 
-      <div className="flex justify-center">
+(cachedWeather[loc.name] && now - cachedWeather[loc.name].timestamp
 
-        <img
+< cacheDuration) {
 
-          Src=https://i.imgur.com/nG9m1vO.png
+        continue;
 
-          Alt="Markus’s 40th Birthday BC Adventure"
+      }
 
-          className="rounded-xl shadow-lg max-w-full h-auto"
+      try
 
-          style={{ maxHeight: '400px’ }}
+{
 
-        />
+        const
 
-      </div>
+res = await fetch(
 
+          'https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lng}&units=metric&appid=${apiKey}'
 
+        );
 
+        if
 
+(!res.ok) throw new Error('Weather API error for ${loc.name}: ${res.status}');
 
-      {/* BUDGET PLANNER */}
+        const
 
-      <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
+data = await res.json();
 
-        <h3 className="font-bold tekst-yellow-800 mb-2">💰 Budget Planner</h3>
+        setWeatherData(prev
 
-        <div className="space-y-4 tekst-sm">
+=> ({
 
-          <p><strong>Total Estimated Cost:</strong> ${totalBudget.toFixed(2)}</p>
+          ...prev,
 
-          <p><strong>Total Contributions:</strong> ${totalContributions.toFixed(2)}</p>
+          [loc.name]:
 
+{
 
+            current:
 
-          {/* Breakdown by Day */}
+{
 
-          <button onClick={() => setShowBreakdown(v => !v)} className="w-full tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between">
+              temp:
 
-            Breakdown by Day {showBreakdown ? '▲’ : '▼’}
+Math.round(data.list[0].main.temp),
 
-          </button>
+              condition:
 
-          {showBreakdown && (
+data.list[0].weather[0].main,
 
-            <ul className="list-disc pl-5">
+              icon:
 
-              {editableItinerary.map(day => (
+data.list[0].weather[0].icon
 
-                <li key={day.day}>
+            },
 
-                  Day {day.day} ({day.location}): Activities ${day.costs.activities.toFixed(2)}, Accommodations ${day.costs.accommodations.toFixed(2)}
+            forecast:
 
-                </li>
+data.list.slice(0, 5).map(item => ({
 
-              ))}
+              date:
 
-            </ul>
+new Date(item.dt * 1000).toLocaleDateString(),
 
-          )}
+              temp:
 
+Math.round(item.main.temp),
 
+              condition:
 
-          {/* Enter Estimated Costs */}
+item.weather[0].main
 
-          <button onClick={() => setShowCosts(v => !v)} className="w-full tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between">
+            })),
 
-            Enter Estimated Costs {showCosts ? '▲’ : '▼’}
+            timestamp:
 
-          </button>
+now
 
-          {showCosts && (
+          }
 
-            <div className="space-y-2">
+        }));
 
-              {editableItinerary.map((day, dayIndex) => (
+      }
 
-                <div key={day.day} className="flex items-center gap-2">
+catch (error) {
 
-                  <span>Day {day.day} ({day.location}):</span>
+        console.error('Failed
 
-                  <input
+to fetch weather for ${loc.name}:', error);
 
-                    Type="number"
+        setWeatherData(prev
 
-                    Value={day.costs.activities}
+=> ({
 
-                    onChange={€ => updateDayCosts(dayIndex, 'activities’, e.target.value)}
+          ...prev,
 
-                    className="px-2 py-1 border border-gray-300 rounded w-24"
+          [loc.name]:
 
-                    placeholder="Activities"
+{
 
-                  />
+            current:
 
-                  <input
+{ temp: 'N/A', condition: 'Unavailable', icon: '' },
 
-                    Type="number"
+            forecast:
 
-                    Value={day.costs.accommodations}
+[],
 
-                    onChange={€ => updateDayCosts(dayIndex, 'accommodations’, e.target.value)}
+            timestamp:
 
-                    className="px-2 py-1 border border-gray-300 rounded w-24"
+now
 
-                    placeholder="Accommodations"
+          }
 
-                  />
+        }));
 
-                </div>
+      }
 
-              ))}
+    }
 
-            </div>
+    if
 
-          )}
+(typeof window !== 'undefined') {
 
+      localStorage.setItem('bcRoadTripWeather',
 
+JSON.stringify(weatherData));
 
-          {/* Contributions */}
+    }
 
-          <button onClick={() => setShowContributions(v => !v)} className="w-full tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between">
+  };
 
-            Contributions {showContributions ? '▲’ : '▼’}
+ 
 
-          </button>
+  useEffect(()
 
-          {showContributions && (
+=> {
 
-            <div>
+    if
 
-              <div className="grid md:grid-cols-2 gap-2">
+(isOnline) fetchWeather();
 
-                {friends.map(friend => (
+  },
 
-                  <div key={friend}>
+[isOnline]);
 
-                    <strong>{friend}:</strong> ${contributions[friend]?.reduce((sum, c) => sum + c.amount, 0) || 0} ({contributions[friend]?.length || 0} contributions)
+ 
 
-                    {contributions[friend]?.map((c, idx) => (
+  const
 
-                      <p key={idx} className="tekst-xs tekst-gray-600">• ${c.amount} for {c.description}</p>
+getRandomFunFact = () => {
 
-                    ))}
+    const
 
-                  </div>
+randomIndex = Math.floor(Math.random() * bcFunFacts.length);
 
-                ))}
+    setCurrentFunFact(bcFunFacts[randomIndex]);
 
-              </div>
+  };
 
-              <div className="mt-4">
+ 
 
-                <h5 className="tekst-sm font-semibold tekst-yellow-700">Add Contribution:</h5>
+  //
 
-                <div className="flex gap-2 mt-2">
+--- HELPERS FOR VOTES, ASSIGNMENTS, ETC. ---
 
-                  <select
+  const
 
-                    Value={contributions.tempFriend || '’}
+handleVote = (dayIndex, activityIndex, friend, vote) => {
 
-                    onChange={€ => setContributions(prev => ({ …prev, tempFriend: e.target.value }))}
+    const
 
-                    className="px-2 py-1 border border-gray-300 rounded"
+updated = [...editableItinerary];
 
-                  >
+    if
 
-                    <option value="">Select Friend</option>
+(!updated[dayIndex].votes[activityIndex])
 
-                    {friends.map(f => <option key={f} value={f}>{f}</option>)}
+updated[dayIndex].votes[activityIndex] = {};
 
-                  </select>
+    updated[dayIndex].votes[activityIndex][friend]
 
-                  <input
+= vote;
 
-                    Type="number"
+    setEditableItinerary(updated);
 
-                    Placeholder="Amount"
+  };
 
-                    className="px-2 py-1 border border-gray-300 rounded w-24"
+ 
 
-                    onChange={€ => setContributions(prev => ({ …prev, tempAmount: parseFloat(e.target.value) || 0 }))}
+  const
 
-                  />
+handleAssign = (dayIndex, activityIndex, friend) => {
 
-                  <input
+    const
 
-                    Type="tekst"
+updated = [...editableItinerary];
 
-                    Placeholder="Description"
+    updated[dayIndex].assignments[activityIndex]
 
-                    className="px-2 py-1 border border-gray-300 rounded flex-1"
+= friend;
 
-                    onChange={€ => setContributions(prev => ({ …prev, tempDescription: e.target.value }))}
+    setEditableItinerary(updated);
 
-                  />
+  };
 
-                  <button
+ 
 
-                    onClick={() => {
+  const
 
-                      const { tempFriend, tempAmount, tempDescription } = contributions;
+handleContribution = (friend, amount, description) => {
 
-                      if (tempFriend && tempAmount && tempDescription) {
+    setContributions(prev
 
-                        handleContribution(tempFriend, tempAmount, tempDescription);
+=> ({
 
-                      }
+      ...prev,
 
-                    }}
+      [friend]:
 
-                    className="px-2 py-1 bg-yellow-600 tekst-white rounded hover:bg-yellow-700"
+[...(prev[friend] || []), { amount, description, timestamp: Date.now() }],
 
-                  >
+      tempFriend:
 
-                    Add
+'',
 
-                  </button>
+      tempAmount:
 
-                </div>
+0,
 
-              </div>
+      tempDescription:
 
-            </div>
+''
 
-          )}
+    }));
 
-        </div>
+  };
 
-      </div>
+ 
 
-{/* WEATHER FORECAST */}
+  const
 
-      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+updateDayCosts = (dayIndex, field, value) => {
 
-        <h3 className="font-bold tekst-blue-800 mb-2">🌤️ Weather Forecast</h3>
+    const
 
-        <div className="space-y-2 tekst-sm">
+updated = [...editableItinerary];
 
-          {locations.map(loc => (
+    updated[dayIndex].costs[field]
 
-            <div key={loc.name} className="mb-1">
+= parseFloat(value) || 0;
 
-              <button
+    setEditableItinerary(updated);
 
-                className="w-full tekst-left font-semibold tekst-blue-700 flex justify-between py-1"
+  };
 
-                onClick={() => setOpenWeather(prev => ({ …prev, [loc.name]: !prev[loc.name] }))}
+ 
 
-                aria-expanded={!!openWeather[loc.name]}
+  const
 
-              >
+quickQuestions = [
 
-                {loc.name} {openWeather[loc.name] ? '▲’ : '▼’}
+    "What
 
-              </button>
+are the most epic activities for our diverse route from desert to ocean?",
 
-              {openWeather[loc.name] && (
+    "Hidden
 
-                weatherData[loc.name]?.current ? (
+gems between Osoyoos wine country and Tofino beaches?",
 
-                  <div className="pl-4">
+    "Best
 
-                    <p>
+RV camping spots and ferry booking tips for our route?",
 
-                      Current: {weatherData[loc.name].current.temp}°C, {weatherData[loc.name].current.condition}
+    "What
 
-                      {weatherData[loc.name].current.icon && (
+should we pack for desert, lakes, mountains AND ocean? (Philosophical debates
 
-                        <img
+included)",
 
-                          Src={'http://openweathermap.org/img/wn/${weatherData[loc.name].current.icon}.png'}
+    "Local
 
-                          Alt={weatherData[loc.name].current.condition}
+wine, craft breweries, and food along our new route? (Henning's dive bar radar
 
-                          className="inline w-6 h-6 ml-1"
+activated)",
 
-                        />
+    "Emergency
 
-                      )}
+backup plans if BC ferries are delayed? (Radu will probably suggest crypto
 
-                    </p>
+trading while waiting)"
 
-                    <p>5-Day Forecast:</p>
+  ];
 
-                    <ul className="tekst-xs list-disc pl-5">
+ 
 
-                      {weatherData[loc.name].forecast?.map((f, idx) => (
+  //
 
-                        <li key={idx}>{f.date}: {f.temp}°C, {f.condition}</li>
+--- TOTALS ---
 
-                      ))}
+  const
 
-                    </ul>
+totalBudget = editableItinerary.reduce((sum, day) => sum +
 
-                  </div>
+day.costs.activities + day.costs.accommodations, 0);
 
-                ) : (
+  const
 
-                  <div className="pl-4 tekst-gray-500">Weather data unavailable</div>
+totalContributions = Object.values(contributions)
 
-                )
+    .filter(f
 
-              )}
+=> f && Array.isArray(f))
 
-            </div>
+    .flat()
 
-          ))}
+    .reduce((sum,
 
-        </div>
+c) => sum + c.amount, 0) || 0;
 
-      </div>
+// ---
 
+RENDER OVERVIEW (all collapsible/cleaned) ---
 
+  const
 
-      {/* GROUP COORDINATION */}
+renderOverview = () => (
 
-      <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+    <div
 
-        <h3 className="font-bold tekst-purple-800 mb-2">🤝 Group Coordination</h3>
+className="space-y-6">
 
-        <div className="space-y-4">
+      {!isOnline
 
-          <div>
+&& (
 
-            <h4 className="font-semibold tekst-purple-700 mb-2">Activity Assignments & Votes:</h4>
+        <div
 
-            {editableItinerary.map((day, dayIndex) => (
+className="bg-yellow-100 border border-yellow-400 rounded-lg p-4
 
-              <div key={day.day} className="mb-2">
+tekst-yellow-800">
 
-                <button
+          <p>📡 Offline Mode: Using cached data.
 
-                  onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
+Some features may be limited until you're back online!</p>
 
-                  className="w-full tekst-left p-2 bg-white border border-gray-200 rounded hover:bg-gray-50 focus:outline-none"
+        </div>
 
-                  aria-expanded={selectedDay === day.day}
+      )}
 
-                  aria-label={'Toggle activities for Day ${day.day} (${day.location})'}
+ 
 
-                >
+      <div
 
-                  <span className="tekst-sm font-medium">Day {day.day} ({day.location})</span>
+className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6
 
-                  <span className="ml-2">{selectedDay === day.day ? '▲’ : '▼’}</span>
+tekst-white">
 
-                </button>
+        <h2
 
-                {selectedDay === day.day && (
+className="tekst-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
 
-                  <div className="mt-2 pl-4 space-y-2">
+        <p
 
-                    {day.activities.map((activity, activityIndex) => (
+className="tekst-lg">Markus's epic 40th birthday adventure! Desert
 
-                      <div key={activityIndex} className="flex items-center gap-2">
+wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10
 
-                        <span>{activity}</span>
+international legends, 10 unforgettable days!</p>
 
-                        <select
+      </div>
 
-                          Value={day.assignments[activityIndex] || '’}
+ 
 
-                          onChange={€ => handleAssign(dayIndex, activityIndex, e.target.value)}
+      <div
 
-                          className="px-2 py-1 border border-gray-300 rounded tekst-xs"
+className="flex justify-center">
 
-                          aria-label={'Assign ${activity} for Day ${day.day}'}
+        <img
 
-                        >
+          src="https://i.imgur.com/nG9m1vO.png"
 
-                          <option value="">Assign…</option>
+          alt="Markus's
 
-                          {friends.map(f => <option key={f} value={f}>{f}</option>)}
+40th Birthday BC Adventure"
 
-                        </select>
+          className="rounded-xl
 
-                        <div className="flex gap-1">
+shadow-lg max-w-full h-auto"
 
-                          {friends.map(friend => (
+          style={{
 
-                            <button
+maxHeight: '400px'}}
 
-                              Key={friend}
+        />
 
-                              onClick={() => handleVote(dayIndex, activityIndex, friend, day.votes[activityIndex]?.[friend] === 'up’ ? null : 'up’)}
+      </div>
 
-                              className={'tekst-xs ${day.votes[activityIndex]?.[friend] === 'up’ ? 'tekst-green-600’ : 'tekst-gray-400’} hover:tekst-green-700 focus:outline-none'}
+ 
 
-                              aria-label={'Vote ${day.votes[activityIndex]?.[friend] === 'up’ ? 'remove’ : 'add’} for ${activity} by ${friend}'}
+      {/*
 
-                            >
+BUDGET PLANNER */}
 
-                              👍
+      <div
 
-                            </button>
+className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
 
-                          ))}
+        <h3
 
-                        </div>
+className="font-bold tekst-yellow-800 mb-2">💰 Budget Planner</h3>
 
-                      </div>
+        <div
 
-                    ))}
+className="space-y-4 tekst-sm">
 
-                  </div>
+          <p><strong>Total
 
-                )}
+Estimated Cost:</strong> ${totalBudget.toFixed(2)}</p>
 
-              </div>
+          <p><strong>Total
 
-            ))}
+Contributions:</strong> ${totalContributions.toFixed(2)}</p>
 
-          </div>
+ 
 
-        </div>
+          {/*
 
-      </div>
+Breakdown by Day */}
 
-{/* FUN FACTS */}
+          <button
 
-      <div className="flex justify-center">
+onClick={() => setShowBreakdown(v => !v)} className="w-full
 
-        <button
+tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between">
 
-          onClick={getRandomFunFact}
+            Breakdown
 
-          className="px-6 py-3 bg-purple-600 tekst-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
+by Day {showBreakdown ? '▲': '▼'}
 
-          aria-label="Get a random BC fun fact"
+          </button>
 
-        >
+          {showBreakdown
 
-          <span className="tekst-xl">🤯</span>
+&& (
 
-          <span className="font-semibold">BC Fun Facts</span>
+            <ul
 
-          <span className="tekst-sm opacity-90">(Prepare to be amused)</span>
+className="list-disc pl-5">
 
-        </button>
+              {editableItinerary.map(day
 
-      </div>
+=> (
 
-      {currentFunFact && (
+                <li
 
-        <div className="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-purple-200 rounded-xl p-6">
+key={day.day}>
 
-          <div className="flex justify-between items-start mb-3">
+                  Day
 
-            <h3 className="tekst-xl font-bold tekst-purple-800">{currentFunFact.title}</h3>
+{day.day} ({day.location}): Activities ${day.costs.activities.toFixed(2)},
 
-            <button
+Accommodations ${day.costs.accommodations.toFixed(2)}
 
-              onClick={() => setCurrentFunFact(null)}
+                </li>
 
-              className="tekst-purple-600 hover:tekst-purple-800 tekst-xl"
+              ))}
 
-              aria-label="Close fun fact"
+            </ul>
 
-            >
+          )}
 
-              ✕
+ 
 
-            </button>
+          {/*
 
-          </div>
+Enter Estimated Costs */}
 
-          <p className="tekst-purple-700 mb-3 leading-relaxed">{currentFunFact.fact}</p>
+          <button
 
-          <div className="bg-purple-100 rounded-lg p-3 border-l-4 border-purple-400">
+onClick={() => setShowCosts(v => !v)} className="w-full tekst-left
 
-            <p className="tekst-purple-800 font-medium">{currentFunFact.tip}</p>
+py-2 font-semibold tekst-yellow-700 flex justify-between">
 
-          </div>
+            Enter
 
-          <div className="mt-4 flex justify-center">
+Estimated Costs {showCosts ? '▲': '▼'}
 
-            <button
+          </button>
 
-              onClick={getRandomFunFact}
+          {showCosts
 
-              className="px-4 py-2 bg-purple-500 tekst-white rounded hover:bg-purple-600 transition-colors tekst-sm"
+&& (
 
-              aria-label="Get another random BC fun fact"
+            <div
 
-            >
+className="space-y-2">
 
-              🎲 Another Fun Fact!
+              {editableItinerary.map((day,
 
-            </button>
+dayIndex) => (
 
-          </div>
+                <div
 
-        </div>
+key={day.day} className="flex items-center gap-2">
 
-      )}
+                  <span>Day
 
-    </div>
+{day.day} ({day.location}):</span>
 
-  );
+                  <input
 
-// --- RENDER ITINERARY ---
+                    Type="number"
 
-  const renderItinerary = () => {
+                    Value={day.costs.activities}
 
-    const currentItinerary = isEditing ? editableItinerary : defaultItinerary;
+                    onChange={€
 
-    const updateDay = (dayIndex, field, value) => {
+=> updateDayCosts(dayIndex, 'activities', e.target.value)}
 
-      if (!value.trim()) return;
+                    className="px-2
 
-      const updated = [...editableItinerary];
+py-1 border border-gray-300 rounded w-24"
 
-      if (field === 'activities') {
+                    placeholder="Activities"
 
-        updated[dayIndex].activities = value.split(',').map(a => a.trim()).filter(a => a);
+                  />
 
-      } else {
+                  <input
 
-        updated[dayIndex][field] = value.trim();
+                    Type="number"
 
-      }
+                    Value={day.costs.accommodations}
 
-      setEditableItinerary(updated);
+                    onChange={€
 
-    };
+=> updateDayCosts(dayIndex, 'accommodations', e.target.value)}
 
-    const addActivity = (dayIndex) => {
+                    className="px-2
 
-      const updated = [...editableItinerary];
+py-1 border border-gray-300 rounded w-24"
 
-      updated[dayIndex].activities.push('New activity');
+                    placeholder="Accommodations"
 
-      setEditableItinerary(updated);
+                  />
 
-    };
+                </div>
 
-    const removeActivity = (dayIndex, activityIndex) => {
+              ))}
 
-      const updated = [...editableItinerary];
+            </div>
 
-      updated[dayIndex].activities.splice(activityIndex, 1);
+          )}
 
-      setEditableItinerary(updated);
+ 
 
-    };
+          {/*
 
-    const resetItinerary = () => {
+Contributions */}
 
-      setEditableItinerary(defaultItinerary.map(day => ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} })));
+          <button
 
-      setIsEditing(false);
+onClick={() => setShowContributions(v => !v)} className="w-full
 
-    };
+tekst-left py-2 font-semibold tekst-yellow-700 flex justify-between">
 
-    return (
+            Contributions
 
-      <div className="space-y-4">
+{showContributions ? '▲': '▼'}
 
-        <div className="flex justify-between items-center">
+          </button>
 
-          <h2 className="text-xl font-bold text-gray-800">🗺️ Your 10-Day Adventure Map</h2>
+          {showContributions
 
-          <div className="flex gap-2">
+&& (
 
-            <button
+            <div>
 
-              onClick={() => setShowMap(!showMap)}
+              <div
 
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-2"
+className="grid md:grid-cols-2 gap-2">
 
-              aria-label={showMap ? "Hide route map" : "Show route map"}
+                {friends.map(friend
 
-            >
+=> (
 
-              <Map className="w-4 h-4" />
+                  <div
 
-              {showMap ? 'Hide Map' : 'Show Route Map'}
+key={friend}>
 
-            </button>
+                    <strong>{friend}:</strong>
 
-            {isEditing ? (
+${contributions[friend]?.reduce((sum, c) => sum + c.amount, 0) || 0}
 
-              <>
+({contributions[friend]?.length || 0} contributions)
 
-                <button
+                    {contributions[friend]?.map((c,
 
-                  onClick={() => setIsEditing(false)}
+idx) => (
 
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                      <p
 
-                  aria-label="Save itinerary changes"
+key={idx} className="tekst-xs tekst-gray-600">• ${c.amount} for
 
-                >
+{c.description}</p>
 
-                  Save Changes
+                    ))}
 
-                </button>
+                  </div>
 
-                <button
+                ))}
 
-                  onClick={resetItinerary}
+              </div>
 
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+              <div
 
-                  aria-label="Reset itinerary"
+className="mt-4">
 
-                >
+                <h5
 
-                  Reset
+className="tekst-sm font-semibold tekst-yellow-700">Add
 
-                </button>
+Contribution:</h5>
 
-              </>
+                <div
 
-            ) : (
+className="flex gap-2 mt-2">
 
-              <button
+                  <select
 
-                onClick={() => {
+                    Value={contributions.tempFriend
 
-                  setEditableItinerary(defaultItinerary.map(day => ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} })));
+|| ''}
 
-                  setIsEditing(true);
+                    onChange={€
 
-                }}
+=> setContributions(prev => ({ …prev, tempFriend: e.target.value }))}
 
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                    className="px-2
 
-                aria-label="Edit itinerary"
+py-1 border border-gray-300 rounded"
 
-              >
+                  >
 
-                Edit Itinerary
+                    <option
 
-              </button>
+value="">Select Friend</option>
 
-            )}
+                    {friends.map(f
 
-          </div>
+=> <option key={f} value={f}>{f}</option>)}
 
-        </div>
+                  </select>
 
-        {/* Your itinerary/map content here */}
+                  <input
 
-      </div>
+                    Type="number"
 
-    );
+                    Placeholder="Amount"
 
-  };
+                    className="px-2
 
+py-1 border border-gray-300 rounded w-24"
 
+                    onChange={€
 
-  // --- RENDER CHAT ---
+=> setContributions(prev => ({ …prev, tempAmount:
 
-  const renderChat = () => (
+parseFloat(e.target.value) || 0 }))}
 
-    <div className="space-y-4">
+                  />
 
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
+                  <input
 
-        <div className="flex items-center gap-4">
+                    Type="tekst"
 
-          <img
+                    Placeholder="Description"
 
-            src="https://i.imgur.com/xtAl4ow.png"
+                    className="px-2
 
-            alt="Nanook - Your BC Guide"
+py-1 border border-gray-300 rounded flex-1"
 
-            className="w-16 h-16 rounded-full border-3 border-white shadow-lg"
+                    onChange={€
 
-          />
+=> setContributions(prev => ({ …prev, tempDescription: e.target.value }))}
 
-          <div>
+                  />
 
-            <h2 className="text-xl font-bold mb-1">🤙 Chat with Nanook!</h2>
+                  <button
 
-            <p className="text-lg mb-1">Your cheeky BC guide with insider knowledge!</p>
+                    onClick={()
 
-            <p className="text-sm opacity-90">Former number-cruncher turned wilderness enthusiast. Ready to help you legends plan the most epic BC adventure ever!</p>
+=> {
 
-          </div>
+                      const
 
-        </div>
+{ tempFriend, tempAmount, tempDescription } = contributions;
 
-      </div>
+                      if
 
-      {/* ...your chat UI and logic remain as before... */}
+(tempFriend && tempAmount && tempDescription) {
 
-    </div>
+                        handleContribution(tempFriend,
 
-  );
+tempAmount, tempDescription);
 
-// --- MAIN RETURN ---
+                      }
 
-  Return (
+                    }}
 
-    <div className="max-w-4xl mx-auto p-4 bg-white">
+                    className="px-2
 
-      <div className="mb-6">
+py-1 bg-yellow-600 tekst-white rounded hover:bg-yellow-700"
 
-        <h1 className="tekst-3xl font-bold tekst-gray-800 mb-2">
+                  >
 
-          🚐 BC Bros Road Trip Planner
+                    Add
 
-        </h1>
+                  </button>
 
-        <p className="tekst-gray-600">July 2026 • 10 Days • Markus’s 40th Birthday • International Legends</p>
+                </div>
 
-      </div>
+              </div>
 
-      <div className="flex gap-2 mb-6 bg-gray-100 rounded-lg p-1">
+            </div>
 
-        <button
+          )}
 
-          onClick={() => setCurrentSection('overview’)}
+        </div>
 
-          className={'flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+      </div>
 
-            currentSection === 'overview’
+{/* WEATHER
 
-              ? 'bg-white tekst-gray-800 shadow-sm’
+FORECAST */}
 
-              : 'tekst-gray-600 hover:tekst-gray-800’
+      <div
 
-          }'}
+className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
 
-          Aria-label="View trip overview"
+        <h3
 
-        >
+className="font-bold tekst-blue-800 mb-2">🌤️ Weather Forecast</h3>
 
-          <Star className="w-4 h-4 inline mr-1" />
+        <div
 
-          Overview
+className="space-y-2 tekst-sm">
 
-        </button>
+          {locations.map(loc
 
-        <button
+=> (
 
-          onClick={() => setCurrentSection('itinerary’)}
+            <div
 
-          className={'flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+key={loc.name} className="mb-1">
 
-            currentSection === 'itinerary’
+              <button
 
-              ? 'bg-white tekst-gray-800 shadow-sm’
+                className="w-full
 
-              : 'tekst-gray-600 hover:tekst-gray-800’
+tekst-left font-semibold tekst-blue-700 flex justify-between py-1"
 
-          }'}
+                onClick={()
 
-          Aria-label="View itinerary"
+=> setOpenWeather(prev => ({ …prev, [loc.name]: !prev[loc.name] }))}
 
-        >
+                aria-expanded={!!openWeather[loc.name]}
 
-          <Calendar className="w-4 h-4 inline mr-1" />
+              >
 
-          Itinerary
+                {loc.name}
 
-        </button>
+{openWeather[loc.name] ? '▲': '▼'}
 
-        <button
+              </button>
 
-          onClick={() => setCurrentSection('chat’)}
+              {openWeather[loc.name]
 
-          className={'flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+&& (
 
-            currentSection === 'chat’
+                weatherData[loc.name]?.current
 
-              ? 'bg-white tekst-gray-800 shadow-sm’
+? (
 
-              : 'tekst-gray-600 hover:tekst-gray-800’
+                  <div
 
-          }'}
+className="pl-4">
 
-          Aria-label="Chat with Nanook"
+                    <p>
 
-        >
+                      Current:
 
-          <Coffee className="w-4 h-4 inline mr-1" />
+{weatherData[loc.name].current.temp}°C,
 
-          Chat with Nanook
+{weatherData[loc.name].current.condition}
 
-        </button>
+                      {weatherData[loc.name].current.icon
 
-      </div>
+&& (
 
-      {currentSection === 'overview’ && renderOverview()}
+                        <img
 
-      {currentSection === 'itinerary’ && renderItinerary()}
+                          src={'http://openweathermap.org/img/wn/${weatherData[loc.name].current.icon}.png'}
 
-      {currentSection === 'chat’ && renderChat()}
+                          alt={weatherData[loc.name].current.condition}
 
-    </div>
+                          className="inline
 
-  );
+w-6 h-6 ml-1"
+
+                        />
+
+                      )}
+
+                    </p>
+
+                    <p>5-Day
+
+Forecast:</p>
+
+                    <ul
+
+className="tekst-xs list-disc pl-5">
+
+                      {weatherData[loc.name].forecast?.map((f,
+
+idx) => (
+
+                        <li
+
+key={idx}>{f.date}: {f.temp}°C, {f.condition}</li>
+
+                      ))}
+
+                    </ul>
+
+                  </div>
+
+                )
+
+: (
+
+                  <div
+
+className="pl-4 tekst-gray-500">Weather data unavailable</div>
+
+                )
+
+              )}
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+
+ 
+
+      {/*
+
+GROUP COORDINATION */}
+
+      <div
+
+className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+
+        <h3
+
+className="font-bold tekst-purple-800 mb-2">🤝 Group Coordination</h3>
+
+        <div
+
+className="space-y-4">
+
+          <div>
+
+            <h4
+
+className="font-semibold tekst-purple-700 mb-2">Activity
+
+Assignments & Votes:</h4>
+
+            {editableItinerary.map((day,
+
+dayIndex) => (
+
+              <div
+
+key={day.day} className="mb-2">
+
+                <button
+
+                  onClick={()
+
+=> setSelectedDay(selectedDay === day.day ? null : day.day)}
+
+                  className="w-full
+
+tekst-left p-2 bg-white border border-gray-200 rounded hover:bg-gray-50
+
+focus:outline-none"
+
+                  aria-expanded={selectedDay
+
+=== day.day}
+
+                  aria-label={'Toggle
+
+activities for Day ${day.day} (${day.location})'}
+
+                >
+
+                  <span
+
+className="tekst-sm font-medium">Day {day.day}
+
+({day.location})</span>
+
+                  <span
+
+className="ml-2">{selectedDay === day.day ? '▲': '▼'}</span>
+
+                </button>
+
+                {selectedDay
+
+=== day.day && (
+
+                  <div
+
+className="mt-2 pl-4 space-y-2">
+
+                    {day.activities.map((activity,
+
+activityIndex) => (
+
+                      <div
+
+key={activityIndex} className="flex items-center gap-2">
+
+                        <span>{activity}</span>
+
+                        <select
+
+                          Value={day.assignments[activityIndex]
+
+|| ''}
+
+                          onChange={€
+
+=> handleAssign(dayIndex, activityIndex, e.target.value)}
+
+                          className="px-2
+
+py-1 border border-gray-300 rounded tekst-xs"
+
+                          aria-label={'Assign
+
+${activity} for Day ${day.day}'}
+
+                        >
+
+                          <option
+
+value="">Assign…</option>
+
+                          {friends.map(f
+
+=> <option key={f} value={f}>{f}</option>)}
+
+                        </select>
+
+                        <div
+
+className="flex gap-1">
+
+                          {friends.map(friend
+
+=> (
+
+                            <button
+
+                              Key={friend}
+
+                              onClick={()
+
+=> handleVote(dayIndex, activityIndex, friend,
+
+day.votes[activityIndex]?.[friend] === 'up'? null : 'up')}
+
+                              className={'tekst-xs
+
+${day.votes[activityIndex]?.[friend] === 'up'? 'tekst-green-600':
+
+'tekst-gray-400'} hover:tekst-green-700 focus:outline-none'}
+
+                              aria-label={'Vote
+
+${day.votes[activityIndex]?.[friend] === 'up'? 'remove': 'add'} for ${activity}
+
+by ${friend}'}
+
+                            >
+
+                              👍
+
+                            </button>
+
+                          ))}
+
+                        </div>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+
+                )}
+
+              </div>
+
+            ))}
+
+          </div>
+
+        </div>
+
+      </div>
+
+{/* FUN
+
+FACTS */}
+
+      <div
+
+className="flex justify-center">
+
+        <button
+
+          onClick={getRandomFunFact}
+
+          className="px-6
+
+py-3 bg-purple-600 tekst-white rounded-lg hover:bg-purple-700 transition-colors
+
+flex items-center gap-2 shadow-lg"
+
+          aria-label="Get
+
+a random BC fun fact"
+
+        >
+
+          <span
+
+className="tekst-xl">🤯</span>
+
+          <span
+
+className="font-semibold">BC Fun Facts</span>
+
+          <span
+
+className="tekst-sm opacity-90">(Prepare to be amused)</span>
+
+        </button>
+
+      </div>
+
+      {currentFunFact
+
+&& (
+
+        <div
+
+className="bg-gradient-to-r from-pink-50 to-purple-50 border-2
+
+border-purple-200 rounded-xl p-6">
+
+          <div
+
+className="flex justify-between items-start mb-3">
+
+            <h3
+
+className="tekst-xl font-bold
+
+tekst-purple-800">{currentFunFact.title}</h3>
+
+            <button
+
+              onClick={()
+
+=> setCurrentFunFact(null)}
+
+              className="tekst-purple-600
+
+hover:tekst-purple-800 tekst-xl"
+
+              aria-label="Close
+
+fun fact"
+
+            >
+
+              ✕
+
+            </button>
+
+          </div>
+
+          <p
+
+className="tekst-purple-700 mb-3
+
+leading-relaxed">{currentFunFact.fact}</p>
+
+          <div
+
+className="bg-purple-100 rounded-lg p-3 border-l-4 border-purple-400">
+
+            <p
+
+className="tekst-purple-800
+
+font-medium">{currentFunFact.tip}</p>
+
+          </div>
+
+          <div
+
+className="mt-4 flex justify-center">
+
+            <button
+
+              onClick={getRandomFunFact}
+
+              className="px-4
+
+py-2 bg-purple-500 tekst-white rounded hover:bg-purple-600 transition-colors
+
+tekst-sm"
+
+              aria-label="Get
+
+another random BC fun fact"
+
+            >
+
+              🎲 Another Fun Fact!
+
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </div>
+
+  );
+
+// ---
+
+RENDER ITINERARY ---
+
+  const
+
+renderItinerary = () => {
+
+    const
+
+currentItinerary = isEditing ? editableItinerary : defaultItinerary;
+
+    const
+
+updateDay = (dayIndex, field, value) => {
+
+      if
+
+(!value.trim()) return;
+
+      const
+
+updated = [...editableItinerary];
+
+      if
+
+(field === 'activities') {
+
+        updated[dayIndex].activities
+
+= value.split(',').map(a => a.trim()).filter(a => a);
+
+      }
+
+else {
+
+        updated[dayIndex][field]
+
+= value.trim();
+
+      }
+
+      setEditableItinerary(updated);
+
+    };
+
+    const
+
+addActivity = (dayIndex) => {
+
+      const
+
+updated = [...editableItinerary];
+
+      updated[dayIndex].activities.push('New
+
+activity');
+
+      setEditableItinerary(updated);
+
+    };
+
+    const
+
+removeActivity = (dayIndex, activityIndex) => {
+
+      const
+
+updated = [...editableItinerary];
+
+      updated[dayIndex].activities.splice(activityIndex,
+
+1);
+
+      setEditableItinerary(updated);
+
+    };
+
+    const
+
+resetItinerary = () => {
+
+      setEditableItinerary(defaultItinerary.map(day
+
+=> ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {},
+
+votes: {} })));
+
+      setIsEditing(false);
+
+    };
+
+    return
+
+(
+
+      <div
+
+className="space-y-4">
+
+        <div
+
+className="flex justify-between items-center">
+
+          <h2
+
+className="text-xl font-bold text-gray-800">🗺️ Your 10-Day Adventure Map</h2>
+
+          <div
+
+className="flex gap-2">
+
+            <button
+
+              onClick={()
+
+=> setShowMap(!showMap)}
+
+              className="px-4
+
+py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex
+
+items-center gap-2"
+
+              aria-label={showMap
+
+? "Hide route map" : "Show route map"}
+
+            >
+
+              <Map
+
+className="w-4 h-4" />
+
+              {showMap
+
+? 'Hide Map' : 'Show Route Map'}
+
+            </button>
+
+            {isEditing
+
+? (
+
+              <>
+
+                <button
+
+                  onClick={()
+
+=> setIsEditing(false)}
+
+                  className="px-4
+
+py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+
+                  aria-label="Save
+
+itinerary changes"
+
+                >
+
+                  Save
+
+Changes
+
+                </button>
+
+                <button
+
+                  onClick={resetItinerary}
+
+                  className="px-4
+
+py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+
+                  aria-label="Reset
+
+itinerary"
+
+                >
+
+                  Reset
+
+                </button>
+
+              </>
+
+            )
+
+: (
+
+              <button
+
+                onClick={()
+
+=> {
+
+                  setEditableItinerary(defaultItinerary.map(day
+
+=> ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {},
+
+votes: {} })));
+
+                  setIsEditing(true);
+
+                }}
+
+                className="px-4
+
+py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+
+                aria-label="Edit
+
+itinerary"
+
+              >
+
+                Edit
+
+Itinerary
+
+              </button>
+
+            )}
+
+          </div>
+
+        </div>
+
+        {/*
+
+Your itinerary/map content here */}
+
+      </div>
+
+    );
+
+  };
+
+ 
+
+  //
+
+--- RENDER CHAT ---
+
+  const
+
+renderChat = () => (
+
+    <div
+
+className="space-y-4">
+
+      <div
+
+className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6
+
+text-white">
+
+        <div
+
+className="flex items-center gap-4">
+
+          <img
+
+            src="https://i.imgur.com/xtAl4ow.png"
+
+            alt="Nanook
+
+- Your BC Guide"
+
+            className="w-16
+
+h-16 rounded-full border-3 border-white shadow-lg"
+
+          />
+
+          <div>
+
+            <h2
+
+className="text-xl font-bold mb-1">🤙 Chat with Nanook!</h2>
+
+            <p
+
+className="text-lg mb-1">Your cheeky BC guide with insider
+
+knowledge!</p>
+
+            <p
+
+className="text-sm opacity-90">Former number-cruncher turned
+
+wilderness enthusiast. Ready to help you legends plan the most epic BC
+
+adventure ever!</p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/*
+
+...your chat UI and logic remain as before... */}
+
+    </div>
+
+  );
+
+// --- MAIN
+
+RETURN ---
+
+  Return
+
+(
+
+    <div
+
+className="max-w-4xl mx-auto p-4 bg-white">
+
+      <div
+
+className="mb-6">
+
+        <h1
+
+className="tekst-3xl font-bold tekst-gray-800 mb-2">
+
+          🚐 BC Bros Road Trip Planner
+
+        </h1>
+
+        <p
+
+className="tekst-gray-600">July 2026 • 10 Days • Markus's 40th
+
+Birthday • International Legends</p>
+
+      </div>
+
+      <div
+
+className="flex gap-2 mb-6 bg-gray-100 rounded-lg p-1">
+
+        <button
+
+          onClick={()
+
+=> setCurrentSection('overview')}
+
+          className={'flex-1
+
+px-4 py-2 rounded-md font-medium transition-colors ${
+
+            currentSection
+
+=== 'overview'
+
+              ?
+
+'bg-white tekst-gray-800 shadow-sm'
+
+              :
+
+'tekst-gray-600 hover:tekst-gray-800'
+
+          }'}
+
+          Aria-label="View
+
+trip overview"
+
+        >
+
+          <Star
+
+className="w-4 h-4 inline mr-1" />
+
+          Overview
+
+        </button>
+
+        <button
+
+          onClick={()
+
+=> setCurrentSection('itinerary')}
+
+          className={'flex-1
+
+px-4 py-2 rounded-md font-medium transition-colors ${
+
+            currentSection
+
+=== 'itinerary'
+
+              ?
+
+'bg-white tekst-gray-800 shadow-sm'
+
+              :
+
+'tekst-gray-600 hover:tekst-gray-800'
+
+          }'}
+
+          Aria-label="View
+
+itinerary"
+
+        >
+
+          <Calendar
+
+className="w-4 h-4 inline mr-1" />
+
+          Itinerary
+
+        </button>
+
+        <button
+
+          onClick={()
+
+=> setCurrentSection('chat')}
+
+          className={'flex-1
+
+px-4 py-2 rounded-md font-medium transition-colors ${
+
+            currentSection
+
+=== 'chat'
+
+              ?
+
+'bg-white tekst-gray-800 shadow-sm'
+
+              :
+
+'tekst-gray-600 hover:tekst-gray-800'
+
+          }'}
+
+          Aria-label="Chat
+
+with Nanook"
+
+        >
+
+          <Coffee
+
+className="w-4 h-4 inline mr-1" />
+
+          Chat
+
+with Nanook
+
+        </button>
+
+      </div>
+
+      {currentSection
+
+=== 'overview'&& renderOverview()}
+
+      {currentSection
+
+=== 'itinerary'&& renderItinerary()}
+
+      {currentSection
+
+=== 'chat'&& renderChat()}
+
+    </div>
+
+  );
 
 };
 
+ 
 
+Export
 
-Export default BCRoadTripPlanner;
-
-
+default BCRoadTripPlanner;
 
