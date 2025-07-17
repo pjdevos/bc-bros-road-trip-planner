@@ -1,4 +1,3 @@
-```typescript
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,7 +12,7 @@ L.Icon.Default.mergeOptions({
 });
 
 const BCRoadTripPlanner = () => {
-  // State definitions (unchanged from previous version)
+  // State definitions (unchanged)
   const [currentUser, setCurrentUser] = useState('');
   const [loginCode, setLoginCode] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -61,7 +60,7 @@ const BCRoadTripPlanner = () => {
   const [newMessage, setNewMessage] = useState('');
   const [showMap, setShowMap] = useState(false);
 
-  // Constants (friends and loginCodes unchanged)
+  // Constants
   const friends = ["Markus", "Tom", "Ramon", "Churchill", "Emil", "Henning", "Paddy", "Radu", "Tudor", "P-J"];
   const loginCodes = {
     EPIC40: "Markus",
@@ -223,9 +222,552 @@ const BCRoadTripPlanner = () => {
     }
   ];
 
-  // ... (all other constants, functions, and useEffect hooks remain unchanged from previous version)
+  // Debounce hook for localStorage writes
+  const useDebounce = (callback, delay) => {
+    const timeoutRef = useRef(null);
+    return (...args) => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => callback(...args), delay);
+    };
+  };
 
-  // Render method (only itinerary section updated)
+  // Save to localStorage with error handling
+  const saveToLocalStorage = useDebounce((key, value) => {
+    try {
+      if (typeof window !== 'undefined' && localStorage) {
+        localStorage.setItem(key, JSON.stringify(value));
+        const total = Object.keys(localStorage).reduce((sum, k) => sum + ((localStorage[k].length + k.length) * 2), 0);
+        if (total > 5 * 1024 * 1024) {
+          setConversation(prev => [
+            ...prev,
+            {
+              id: Date.now(),
+              type: 'nanook',
+              content: 'Heads up, legends! Your device storage is getting full. Consider exporting chats or clearing old photos!',
+              recommendations: [],
+              insider_tip: '',
+              timestamp: Date.now(),
+              reactions: [],
+            },
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error(`localStorage error for ${key}:`, error);
+      setConversation(prev => [
+        ...prev,
+        {
+          id: Date.now(),
+          type: 'nanook',
+          content: 'Oops, legends! Trouble saving data. Your device storage might be full. Try clearing some space!',
+          recommendations: [],
+          insider_tip: '',
+          timestamp: Date.now(),
+          reactions: [],
+        },
+      ]);
+    }
+  }, 500);
+
+  // Load state from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedUser = localStorage?.getItem('bcTripUser');
+        if (savedUser) setCurrentUser(savedUser);
+        const cachedItinerary = localStorage?.getItem('bcRoadTripItinerary');
+        const cachedConversation = localStorage?.getItem('bcRoadTripConversation');
+        const cachedWeather = localStorage?.getItem('bcRoadTripWeather');
+        const cachedPolls = localStorage?.getItem('bcRoadTripPolls');
+        const cachedPhotos = localStorage?.getItem('bcRoadTripPhotos');
+        const cachedPhotoBoard = localStorage?.getItem('bcRoadTripPhotoBoard');
+        if (cachedItinerary) setEditableItinerary(JSON.parse(cachedItinerary));
+        if (cachedConversation) {
+          const parsed = JSON.parse(cachedConversation);
+          if (parsed.length > 50) {
+            setConversation(prev => [
+              ...prev,
+              {
+                id: Date.now(),
+                type: 'nanook',
+                content: 'Heads up, legends! Showing only the last 50 messages to keep things speedy. Want older chats? Ask me to export them!',
+                recommendations: [],
+                insider_tip: '',
+                timestamp: Date.now(),
+                reactions: [],
+              },
+            ]);
+          }
+          setConversation(parsed.slice(-50));
+        }
+        if (cachedWeather) setWeatherData(JSON.parse(cachedWeather));
+        if (cachedPolls) setPolls(JSON.parse(cachedPolls));
+        if (cachedPhotos) setPhotoChallenges(JSON.parse(cachedPhotos));
+        if (cachedPhotoBoard) setPhotoBoard(JSON.parse(cachedPhotoBoard));
+        const isRecent = cachedWeather && Object.values(JSON.parse(cachedWeather)).every(
+          data => Date.now() - data.lastUpdated < 60 * 60 * 1000
+        );
+        if (!isRecent) fetchWeatherData();
+      } catch (error) {
+        console.error('localStorage load error:', error);
+        setConversation(prev => [
+          ...prev,
+          {
+            id: Date.now(),
+            type: 'nanook',
+            content: 'Trouble loading data from storage. Your device might be low on space!',
+            recommendations: [],
+            insider_tip: '',
+            timestamp: Date.now(),
+            reactions: [],
+          },
+        ]);
+      }
+    }
+    window.addEventListener('online', () => setIsOnline(true));
+    window.addEventListener('offline', () => setIsOnline(false));
+    return () => {
+      window.removeEventListener('online', () => setIsOnline(true));
+      window.removeEventListener('offline', () => setIsOnline(false));
+    };
+  }, []);
+
+  // Fetch weather data
+  const fetchWeatherData = async () => {
+    if (!isOnline) return;
+    setIsLoading(true);
+    const API_KEY = 'b4852d0dab1e53207f5a738c8564f18b';
+    const newWeatherData = {};
+    try {
+      for (const loc of locations) {
+        const currentResponse = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?lat=${loc.lat}&lon=${loc.lng}&appid=${API_KEY}&units=metric`
+        );
+        if (!currentResponse.ok) throw new Error(`Weather API error for ${loc.name}`);
+        const currentData = await currentResponse.json();
+        const forecastResponse = await fetch(
+          `https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lng}&appid=${API_KEY}&units=metric`
+        );
+        if (!forecastResponse.ok) throw new Error(`Forecast API error for ${loc.name}`);
+        const forecastData = await forecastResponse.json();
+        const dailyForecast = [];
+        const seenDates = new Set();
+        for (const item of forecastData.list) {
+          const date = item.dt_txt.split(' ')[0];
+          if (!seenDates.has(date) && dailyForecast.length < 5) {
+            seenDates.add(date);
+            dailyForecast.push({
+              date,
+              temp: Math.round(item.main.temp),
+              description: item.weather[0].description,
+            });
+          }
+          if (dailyForecast.length === 5) break;
+        }
+        newWeatherData[loc.name] = {
+          current: { temp: Math.round(currentData.main.temp), description: currentData.weather[0].description },
+          forecast: dailyForecast,
+          lastUpdated: Date.now(),
+        };
+      }
+      setWeatherData(newWeatherData);
+      saveToLocalStorage('bcRoadTripWeather', newWeatherData);
+    } catch (error) {
+      console.error('Weather fetch error:', error);
+      setConversation(prev => [
+        ...prev,
+        {
+          id: Date.now(),
+          type: 'nanook',
+          content: `Whoa, legends! Couldn't fetch the latest weather for BC. Using cached data if available. Try again later!`,
+          recommendations: [],
+          insider_tip: 'Always pack a rain jacket in BC, no matter what the forecast says!',
+          timestamp: Date.now(),
+          reactions: [],
+        },
+      ]);
+    }
+    setIsLoading(false);
+  };
+
+  // Login
+  const handleLogin = () => {
+    if (!loginCode.trim()) {
+      setLoginError('Please enter a login code.');
+      return;
+    }
+    const user = loginCodes[loginCode.toUpperCase()];
+    if (user) {
+      setCurrentUser(user);
+      setLoginCode('');
+      setLoginError('');
+      saveToLocalStorage('bcTripUser', user);
+    } else {
+      setLoginError('Invalid code. Try again, legend!');
+    }
+  };
+
+  // Export conversation
+  const exportConversation = () => {
+    const dataStr = JSON.stringify(conversation, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'bc_road_trip_conversation.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Itinerary save/reset
+  const saveItinerary = () => {
+    setIsEditing(false);
+    setConversation(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        type: 'nanook',
+        content: 'Itinerary saved, legends! Ready for the road trip!',
+        recommendations: [],
+        insider_tip: '',
+        timestamp: Date.now(),
+        reactions: [],
+      },
+    ]);
+  };
+
+  const resetItinerary = () => {
+    setEditableItinerary(
+      defaultItinerary.map(day => ({
+        ...day,
+        costs: { activities: 0, accommodations: 0 },
+        assignments: {}
+      }))
+    );
+    setIsEditing(false);
+    setConversation(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        type: 'nanook',
+        content: 'Itinerary reset to default. Start planning again, legends!',
+        recommendations: [],
+        insider_tip: '',
+        timestamp: Date.now(),
+        reactions: [],
+      },
+    ]);
+  };
+
+  // Expense Tracker
+  const addExpense = () => {
+    if (
+      newExpense.description.trim() &&
+      !isNaN(newExpense.amount) &&
+      newExpense.amount > 0 &&
+      newExpense.paidBy &&
+      newExpense.splitBetween.length > 0
+    ) {
+      const expense = {
+        id: Date.now(),
+        description: newExpense.description.trim(),
+        amount: parseFloat(newExpense.amount),
+        paidBy: newExpense.paidBy,
+        splitBetween: [...newExpense.splitBetween],
+        date: newExpense.date
+      };
+      setExpenses(prev => [...prev, expense]);
+      setNewExpense({
+        description: '',
+        amount: '',
+        paidBy: '',
+        splitBetween: [...friends],
+        date: new Date().toISOString().split('T')[0]
+      });
+      setShowAddExpense(false);
+    } else {
+      alert('Please fill in all fields with valid data (amount must be a positive number).');
+    }
+  };
+
+  const calculateBalances = () => {
+    const balances = friends.reduce((acc, friend) => ({ ...acc, [friend]: 0 }), {});
+    expenses.forEach(expense => {
+      const splitAmount = expense.amount / expense.splitBetween.length;
+      balances[expense.paidBy] += expense.amount;
+      expense.splitBetween.forEach(person => {
+        balances[person] -= splitAmount;
+      });
+    });
+    return balances;
+  };
+
+  const getDebts = () => {
+    const balances = calculateBalances();
+    const debts = [];
+    const epsilon = 0.01;
+    Object.entries(balances).forEach(([creditor, balance]) => {
+      if (balance > epsilon) {
+        Object.entries(balances).forEach(([debtor, debtorBalance]) => {
+          if (debtorBalance < -epsilon) {
+            const amount = Math.min(balance, -debtorBalance);
+            if (amount > epsilon) {
+              debts.push({ from: debtor, to: creditor, amount: amount.toFixed(2) });
+              balances[creditor] -= amount;
+              balances[debtor] += amount;
+            }
+          }
+        });
+      }
+    });
+    return debts;
+  };
+
+  const calculateTotalEstimatedCosts = () => {
+    return editableItinerary.reduce((total, day) => {
+      return total + day.costs.activities + day.costs.accommodations;
+    }, 0);
+  };
+
+  const calculateActualExpensesPerDay = () => {
+    const expensesByDay = {};
+    editableItinerary.forEach(day => {
+      expensesByDay[day.day] = 0;
+    });
+    expenses.forEach(expense => {
+      const expenseDate = new Date(expense.date);
+      const itineraryDay = editableItinerary.find(day => {
+        const tripStart = new Date('2026-07-01');
+        const expenseDay = Math.floor((expenseDate - tripStart) / (1000 * 60 * 60 * 24)) + 1;
+        return expenseDay === day.day;
+      });
+      if (itineraryDay) {
+        expensesByDay[itineraryDay.day] += expense.amount / expense.splitBetween.length;
+      }
+    });
+    return expensesByDay;
+  };
+
+  // Polls
+  const createPoll = () => {
+    const validOptions = newPoll.options.filter(opt => opt.trim());
+    if (newPoll.question.trim() && validOptions.length >= 2) {
+      const poll = {
+        id: Date.now(),
+        question: newPoll.question.trim(),
+        options: validOptions,
+        votes: {},
+        active: true
+      };
+      setPolls(prev => [...prev, poll]);
+      setNewPoll({ question: '', options: ['', '', ''] });
+      setShowCreatePoll(false);
+    } else {
+      alert('Please provide a question and at least two non-empty options.');
+    }
+  };
+
+  const handleVote = (pollId, optionIndex) => {
+    if (!currentUser) return;
+    setPolls(prev =>
+      prev.map(poll =>
+        poll.id === pollId && poll.active
+          ? { ...poll, votes: { ...poll.votes, [currentUser]: optionIndex } }
+          : poll
+      )
+    );
+  };
+
+  const closePoll = (pollId) => {
+    setPolls(prev =>
+      prev.map(poll =>
+        poll.id === pollId ? { ...poll, active: false } : poll
+      )
+    );
+  };
+
+  // Photo Challenges
+  const addChallenge = () => {
+    if (newChallenge.description.trim() && newChallenge.assignedTo.length > 0) {
+      setPhotoChallenges(prev => [
+        ...prev,
+        {
+          id: Date.now(),
+          description: newChallenge.description.trim(),
+          assignedTo: [...newChallenge.assignedTo],
+          completedBy: [],
+          thumbnail: '',
+          timestamp: null
+        },
+      ]);
+      setNewChallenge({ description: '', assignedTo: [] });
+      setShowAddChallenge(false);
+    } else {
+      alert('Please provide a description and assign at least one person.');
+    }
+  };
+
+  const completeChallenge = (challengeId) => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 100;
+            canvas.height = 100;
+            ctx.drawImage(img, 0, 0, 100, 100);
+            const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+            setPhotoChallenges(prev =>
+              prev.map(challenge =>
+                challenge.id === challengeId
+                  ? { ...challenge, thumbnail, completedBy: [...challenge.completedBy, currentUser], timestamp: Date.now() }
+                  : challenge
+              )
+            );
+            setPhotoBoard(prev => ({
+              messages: [
+                ...prev.messages,
+                {
+                  id: Date.now(),
+                  content: `${currentUser} completed the "${photoChallenges.find(c => c.id === challengeId).description}" challenge! 🎉 (Full photo storage coming soon with Google Photos)`,
+                  timestamp: Date.now(),
+                  reactions: [],
+                },
+              ],
+            }));
+          };
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    fileInput.click();
+  };
+
+  const handleReaction = (messageId, emoji, isPhotoBoard = false) => {
+    if (isPhotoBoard) {
+      setPhotoBoard(prev => ({
+        messages: prev.messages.map(msg =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                reactions: msg.reactions.includes(emoji)
+                  ? msg.reactions.filter(r => r !== emoji)
+                  : [...msg.reactions, emoji]
+              }
+            : msg
+        ),
+      }));
+    } else {
+      setConversation(prev =>
+        prev.map(msg =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                reactions: msg.reactions.includes(emoji)
+                  ? msg.reactions.filter(r => r !== emoji)
+                  : [...msg.reactions, emoji]
+              }
+            : msg
+        )
+      );
+    }
+  };
+
+  // Chat with Nanook
+  const mockClaudeResponses = [
+    {
+      query: /recommend.*activity/i,
+      response: 'How about a hike in Stanley Park? Epic views and good vibes!',
+      recommendations: ['Stanley Park Seawall', 'Grouse Grind'],
+      insider_tip: 'Bring comfy shoes; the trails can be rugged!'
+    },
+    {
+      query: /food.*recommend/i,
+      response: 'You gotta try some poutine in Vancouver! It’s a Canadian classic.',
+      recommendations: ['Fritz European Fry House', 'La Belle Patate'],
+      insider_tip: 'Ask for extra cheese curds for the full experience!'
+    },
+    {
+      query: /.*/i,
+      response: 'Hmm, not sure about that one, legends! Try asking about activities or food.',
+      recommendations: [],
+      insider_tip: 'BC’s got surprises around every corner—keep exploring!'
+    }
+  ];
+
+  const handleClaude = async (message) => {
+    if (!isOnline) {
+      return {
+        content: 'I’m offline, legends! Ask me something when we’re back online.',
+        recommendations: [],
+        insider_tip: 'Always have a map handy for offline adventures!'
+      };
+    }
+    try {
+      const response = mockClaudeResponses.find(r => r.query.test(message)) || mockClaudeResponses[mockClaudeResponses.length - 1];
+      return {
+        content: response.response,
+        recommendations: response.recommendations,
+        insider_tip: response.insider_tip
+      };
+    } catch (error) {
+      console.error('Claude error:', error);
+      return {
+        content: 'Whoops, Nanook tripped over a cable! Try asking again.',
+        recommendations: [],
+        insider_tip: 'BC’s weather changes fast—pack layers!'
+      };
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !currentUser) return;
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: newMessage,
+      recommendations: [],
+      insider_tip: '',
+      timestamp: Date.now(),
+      reactions: [],
+    };
+    setConversation(prev => [...prev, userMessage]);
+    setNewMessage('');
+    const claudeResponse = await handleClaude(newMessage);
+    setConversation(prev => [
+      ...prev,
+      {
+        id: Date.now() + 1,
+        type: 'nanook',
+        content: claudeResponse.content,
+        recommendations: claudeResponse.recommendations,
+        insider_tip: claudeResponse.insider_tip,
+        timestamp: Date.now(),
+        reactions: [],
+      },
+    ]);
+  };
+
+  // Persist state to localStorage
+  useEffect(() => {
+    saveToLocalStorage('bcRoadTripItinerary', editableItinerary);
+    saveToLocalStorage('bcRoadTripConversation', conversation.slice(-50));
+    saveToLocalStorage('bcRoadTripWeather', weatherData);
+    saveToLocalStorage('bcRoadTripPolls', polls);
+    saveToLocalStorage('bcRoadTripPhotos', photoChallenges);
+    saveToLocalStorage('bcRoadTripPhotoBoard', photoBoard);
+    if (currentUser) saveToLocalStorage('bcTripUser', currentUser);
+  }, [editableItinerary, conversation, weatherData, polls, photoChallenges, photoBoard, currentUser]);
+
+  // Render
   return (
     <div className="max-w-4xl mx-auto p-4 bg-white min-h-screen">
       {!currentUser ? (
@@ -251,7 +793,415 @@ const BCRoadTripPlanner = () => {
         </div>
       ) : (
         <>
-          {/* ... (header and navigation tabs unchanged) */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">🚐 BC Bros Road Trip Planner</h1>
+                <p className="text-gray-600">July 2026 • 10 Days • Markus's 40th Birthday • International Legends</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Welcome back,</p>
+                <p className="font-bold text-blue-600">{currentUser}! 👋</p>
+                <button
+                  onClick={() => {
+                    setCurrentUser('');
+                    localStorage.removeItem('bcTripUser');
+                  }}
+                  className="text-xs text-gray-500 hover:text-gray-700 underline mt-1"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mb-6 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setCurrentSection('overview')}
+              className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                currentSection === 'overview' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              ⭐ Overview
+            </button>
+            <button
+              onClick={() => setCurrentSection('itinerary')}
+              className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                currentSection === 'itinerary' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              📅 Itinerary
+            </button>
+            <button
+              onClick={() => setCurrentSection('chat')}
+              className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                currentSection === 'chat' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              ☕ Chat with Nanook
+            </button>
+            <button
+              onClick={() => setCurrentSection('photos')}
+              className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                currentSection === 'photos' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              📸 Photos
+            </button>
+            <button
+              onClick={() => setCurrentSection('map')}
+              className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                currentSection === 'map' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              🗺️ Map
+            </button>
+          </div>
+
+          {currentSection === 'overview' && (
+            <div className="space-y-6">
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                <h3 className="font-bold text-blue-800 mb-2">🌤️ Weather Forecast</h3>
+                <div className="grid md:grid-cols-3 gap-2 text-sm">
+                  {locations.map(loc => (
+                    <div key={loc.name} className="border border-blue-200 rounded p-2 bg-white">
+                      <button
+                        onClick={() => {
+                          setShowWeatherDetails(prev => ({ ...prev, [loc.name]: !prev[loc.name] }));
+                          if (isOnline && (!weatherData[loc.name] || Date.now() - weatherData[loc.name].lastUpdated > 60 * 60 * 1000)) {
+                            fetchWeatherData();
+                          }
+                        }}
+                        className="flex items-center justify-between w-full text-left hover:bg-blue-50 p-1 rounded"
+                      >
+                        <strong className="text-blue-800">{loc.name}</strong>
+                        <span>{showWeatherDetails[loc.name] ? '▲' : '▼'}</span>
+                      </button>
+                      {showWeatherDetails[loc.name] && (
+                        <div className="mt-2 pt-2 border-t border-blue-100">
+                          {weatherData[loc.name] ? (
+                            <>
+                              <p className="text-xs">
+                                Current: {weatherData[loc.name].current.temp}°C,{' '}
+                                {weatherData[loc.name].current.description.charAt(0).toUpperCase() +
+                                  weatherData[loc.name].current.description.slice(1)}
+                              </p>
+                              <p className="mt-1 text-xs font-semibold">5-Day Forecast:</p>
+                              <ul className="text-xs list-disc pl-3">
+                                {weatherData[loc.name].forecast.map((day, idx) => (
+                                  <li key={idx}>
+                                    {new Date(day.date).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                    })}
+                                    : {day.temp}°C, {day.description.charAt(0).toUpperCase() + day.description.slice(1)}
+                                  </li>
+                                ))}
+                              </ul>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Last updated:{' '}
+                                {new Date(weatherData[loc.name].lastUpdated).toLocaleTimeString()}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-xs text-gray-600">
+                              {isOnline ? 'Loading weather data...' : 'Offline: No weather data available'}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-yellow-800">💰 Expense Tracker</h3>
+                  <button
+                    onClick={() => setShowAddExpense(!showAddExpense)}
+                    className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-sm"
+                  >
+                    {showAddExpense ? 'Cancel' : '+ Add Expense'}
+                  </button>
+                </div>
+                {showAddExpense && (
+                  <div className="mb-6 p-4 bg-white border border-yellow-200 rounded-lg">
+                    <h4 className="font-semibold text-yellow-700 mb-3">Add New Expense</h4>
+                    <div className="space-y-3">
+                      <div className="grid md:grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          placeholder="Description (e.g., Gas, Food)"
+                          value={newExpense.description}
+                          onChange={(e) => setNewExpense(prev => ({ ...prev, description: e.target.value }))}
+                          className="px-3 py-2 border border-gray-300 rounded"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Amount"
+                          value={newExpense.amount}
+                          onChange={(e) => setNewExpense(prev => ({ ...prev, amount: e.target.value }))}
+                          className="px-3 py-2 border border-gray-300 rounded"
+                        />
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-3">
+                        <input
+                          value={newExpense.paidBy}
+                          onChange={(e) => setNewExpense(prev => ({ ...prev, paidBy: e.target.value }))}
+                          className="px-3 py-2 border border-gray-300 rounded"
+                          placeholder={`${currentUser} (you) or someone else...`}
+                        />
+                        <input
+                          type="date"
+                          value={newExpense.date}
+                          onChange={(e) => setNewExpense(prev => ({ ...prev, date: e.target.value }))}
+                          className="px-3 py-2 border border-gray-300 rounded"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Split between:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {friends.map(friend => (
+                            <button
+                              key={friend}
+                              onClick={() =>
+                                setNewExpense(prev => ({
+                                  ...prev,
+                                  splitBetween: prev.splitBetween.includes(friend)
+                                    ? prev.splitBetween.filter(f => f !== friend)
+                                    : [...prev.splitBetween, friend]
+                                }))
+                              }
+                              className={`px-3 py-1 text-sm rounded transition-colors ${
+                                newExpense.splitBetween.includes(friend)
+                                  ? 'bg-yellow-600 text-white'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                            >
+                              {friend}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Split {newExpense.splitBetween.length} ways = ${newExpense.amount ? (parseFloat(newExpense.amount) / newExpense.splitBetween.length).toFixed(2) : '0.00'} each
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={addExpense}
+                          className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                        >
+                          Add Expense
+                        </button>
+                        <button
+                          onClick={() => setShowAddExpense(false)}
+                          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-3 mb-6">
+                  <h4 className="font-semibold text-yellow-700">Recent Expenses:</h4>
+                  {expenses.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No expenses yet. Add one to get started!</p>
+                  ) : (
+                    expenses.slice(-5).reverse().map(expense => (
+                      <div key={expense.id} className="bg-white p-3 rounded border border-yellow-200">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-gray-800">{expense.description}</p>
+                            <p className="text-sm text-gray-600">
+                              Paid by <strong>{expense.paidBy}</strong> • Split {expense.splitBetween.length} ways
+                            </p>
+                            <p className="text-xs text-gray-500">{expense.date}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-yellow-800">${expense.amount.toFixed(2)}</p>
+                            <p className="text-xs text-gray-600">${(expense.amount / expense.splitBetween.length).toFixed(2)} each</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="bg-white p-4 rounded border border-yellow-200">
+                  <h4 className="font-semibold text-yellow-700 mb-3">Budget Summary:</h4>
+                  <div className="space-y-4">
+                    <div className="text-sm text-gray-600">
+                      <strong>Total Estimated Costs:</strong> ${calculateTotalEstimatedCosts().toFixed(2)}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <strong>Total Actual Expenses:</strong> ${expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <strong>Difference:</strong> $
+                      {(calculateTotalEstimatedCosts() - expenses.reduce((sum, exp) => sum + exp.amount, 0)).toFixed(2)}
+                      {(calculateTotalEstimatedCosts() - expenses.reduce((sum, exp) => sum + exp.amount, 0)) > 0
+                        ? ' (under budget)'
+                        : ' (over budget)'}
+                    </div>
+                    <div>
+                      <button
+                        onClick={() => setShowBudgetBreakdown(!showBudgetBreakdown)}
+                        className="flex items-center gap-2 text-yellow-700 font-semibold hover:text-yellow-800"
+                      >
+                        {showBudgetBreakdown ? '▲' : '▼'} Individual Balances
+                      </button>
+                      {showBudgetBreakdown && (
+                        <div className="mt-2 grid md:grid-cols-2 gap-2">
+                          {Object.entries(calculateBalances()).map(([person, balance]) => (
+                            <div
+                              key={person}
+                              className={`p-2 rounded text-sm ${
+                                Math.abs(balance) < 0.01
+                                  ? 'bg-gray-100 text-gray-600'
+                                  : balance > 0
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              <strong>{person}:</strong> ${balance.toFixed(2)}
+                              {balance > 0.01 && ' (to receive)'}
+                              {balance < -0.01 && ' (to pay)'}
+                            </div>
+                          ))}
+                          {getDebts().length > 0 && (
+                            <div className="mt-4">
+                              <p className="text-sm font-semibold text-gray-700">Who Owes What:</p>
+                              <ul className="text-sm text-gray-600 list-disc pl-5">
+                                {getDebts().map((debt, idx) => (
+                                  <li key={idx}>
+                                    {debt.from} owes {debt.to} ${debt.amount}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-purple-800">📊 Polls</h3>
+                  <button
+                    onClick={() => setShowCreatePoll(!showCreatePoll)}
+                    className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
+                  >
+                    {showCreatePoll ? 'Cancel' : '+ Create Poll'}
+                  </button>
+                </div>
+                {showCreatePoll && (
+                  <div className="mb-6 p-4 bg-white border border-purple-200 rounded-lg">
+                    <h4 className="font-semibold text-purple-700 mb-3">Create New Poll</h4>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        placeholder="Poll question"
+                        value={newPoll.question}
+                        onChange={(e) => setNewPoll(prev => ({ ...prev, question: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                      />
+                      {newPoll.options.map((option, idx) => (
+                        <input
+                          key={idx}
+                          type="text"
+                          placeholder={`Option ${idx + 1}`}
+                          value={option}
+                          onChange={(e) => {
+                            const newOptions = [...newPoll.options];
+                            newOptions[idx] = e.target.value;
+                            setNewPoll(prev => ({ ...prev, options: newOptions }));
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded"
+                        />
+                      ))}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={createPoll}
+                          className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                        >
+                          Create Poll
+                        </button>
+                        <button
+                          onClick={() => setShowCreatePoll(false)}
+                          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-3">
+                  {polls.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No polls yet. Create one to vote!</p>
+                  ) : (
+                    polls.map(poll => {
+                      const totalVotes = Object.keys(poll.votes).length;
+                      return (
+                        <div key={poll.id} className="bg-white p-3 rounded border border-purple-200">
+                          <div className="flex justify-between items-start mb-2">
+                            <p className="font-medium text-gray-800">{poll.question}</p>
+                            {poll.active && (
+                              <button
+                                onClick={() => closePoll(poll.id)}
+                                className="text-xs text-gray-500 hover:text-gray-700 underline"
+                              >
+                                Close Poll
+                              </button>
+                            )}
+                          </div>
+                          {totalVotes === 0 ? (
+                            <p className="text-sm text-gray-600">No votes yet.</p>
+                          ) : (
+                            poll.options.map((option, idx) => {
+                              const voteCount = Object.values(poll.votes).filter(v => v === idx).length;
+                              const percentage = totalVotes > 0 ? (voteCount / totalVotes) * 100 : 0;
+                              return (
+                                <div key={idx} className="mb-2">
+                                  <div className="flex justify-between items-center text-sm">
+                                    <span>{option}</span>
+                                    <span>{voteCount} votes ({percentage.toFixed(0)}%)</span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div
+                                      className="bg-purple-600 h-2.5 rounded-full"
+                                      style={{ width: `${percentage}%` }}
+                                    ></div>
+                                  </div>
+                                  {poll.active && (
+                                    <button
+                                      onClick={() => handleVote(poll.id, idx)}
+                                      className={`mt-1 px-3 py-1 text-sm rounded ${
+                                        poll.votes[currentUser] === idx
+                                          ? 'bg-purple-600 text-white'
+                                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                      }`}
+                                      disabled={!poll.active}
+                                    >
+                                      Vote
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {currentSection === 'itinerary' && (
             <div className="space-y-6">
@@ -294,7 +1244,7 @@ const BCRoadTripPlanner = () => {
                   >
                     <div>
                       <h3 className="font-bold text-gray-800">Day {day.day}: {day.location}</h3>
-                      <p className="text-sm text-gray-600">{day.highlight} {day.distance ? `• ${day.distance}` : ''}</p>
+                      <p className="text-sm text-gray-600">{day.highlight} {day.distance ? `- ${day.distance}` : ''}</p>
                     </div>
                     <span>{showDaySummary[day.day] ? '▲' : '▼'}</span>
                   </button>
@@ -443,7 +1393,223 @@ const BCRoadTripPlanner = () => {
             </div>
           )}
 
-          {/* ... (all other sections: overview, chat, photos, map unchanged) */}
+          {currentSection === 'chat' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-gray-800">☕ Chat with Nanook</h2>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 h-96 overflow-y-auto">
+                {conversation.length === 0 ? (
+                  <p className="text-gray-500 text-sm">Start chatting with Nanook!</p>
+                ) : (
+                  conversation.map(msg => (
+                    <div
+                      key={msg.id}
+                      className={`mb-4 p-3 rounded-lg ${
+                        msg.type === 'user' ? 'bg-blue-100 text-right' : 'bg-green-100'
+                      }`}
+                    >
+                      <p className="text-sm font-semibold">
+                        {msg.type === 'user' ? currentUser : 'Nanook'} •{' '}
+                        {new Date(msg.timestamp).toLocaleTimeString()}
+                      </p>
+                      <p className="text-sm">{msg.content}</p>
+                      {msg.recommendations.length > 0 && (
+                        <ul className="text-sm text-gray-600 list-disc pl-5 mt-1">
+                          {msg.recommendations.map((rec, idx) => (
+                            <li key={idx}>{rec}</li>
+                          ))}
+                        </ul>
+                      )}
+                      {msg.insider_tip && (
+                        <p className="text-xs text-gray-500 mt-1">Insider Tip: {msg.insider_tip}</p>
+                      )}
+                      <div className="flex gap-2 mt-1">
+                        {['👍', '😂', '😍'].map(emoji => (
+                          <button
+                            key={emoji}
+                            onClick={() => handleReaction(msg.id, emoji)}
+                            className={`text-sm ${msg.reactions.includes(emoji) ? 'text-blue-600' : 'text-gray-500'}`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded"
+                  placeholder="Ask Nanook anything..."
+                />
+                <button
+                  onClick={sendMessage}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Send
+                </button>
+                <button
+                  onClick={exportConversation}
+                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                >
+                  Export Chat
+                </button>
+              </div>
+            </div>
+          )}
+
+          {currentSection === 'photos' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-gray-800">📸 Photo Challenges</h2>
+              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-700">
+                  Note: Full photo storage coming soon with Google Photos integration. For now, you can add photos as previews (thumbnails saved locally).
+                </p>
+              </div>
+              <div className="bg-pink-50 border-2 border-pink-200 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-pink-800">Create New Challenge</h3>
+                  <button
+                    onClick={() => setShowAddChallenge(!showAddChallenge)}
+                    className="px-3 py-1 bg-pink-600 text-white rounded hover:bg-pink-700 text-sm"
+                  >
+                    {showAddChallenge ? 'Cancel' : '+ Add Challenge'}
+                  </button>
+                </div>
+                {showAddChallenge && (
+                  <div className="mb-6 p-4 bg-white border border-pink-200 rounded-lg">
+                    <h4 className="font-semibold text-pink-700 mb-3">New Photo Challenge</h4>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        placeholder="Challenge description (e.g., Sunset in Tofino)"
+                        value={newChallenge.description}
+                        onChange={(e) => setNewChallenge(prev => ({ ...prev, description: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Assign to:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {friends.map(friend => (
+                            <button
+                              key={friend}
+                              onClick={() =>
+                                setNewChallenge(prev => ({
+                                  ...prev,
+                                  assignedTo: prev.assignedTo.includes(friend)
+                                    ? prev.assignedTo.filter(f => f !== friend)
+                                    : [...prev.assignedTo, friend]
+                                }))
+                              }
+                              className={`px-3 py-1 text-sm rounded transition-colors ${
+                                newChallenge.assignedTo.includes(friend)
+                                  ? 'bg-pink-600 text-white'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                            >
+                              {friend}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        onClick={addChallenge}
+                        className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
+                      >
+                        Add Challenge
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-3">
+                  {photoChallenges.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No photo challenges yet. Add one!</p>
+                  ) : (
+                    photoChallenges.map(challenge => (
+                      <div key={challenge.id} className="bg-white p-3 rounded border border-pink-200">
+                        <p className="font-medium text-gray-800">{challenge.description}</p>
+                        <p className="text-sm text-gray-600">
+                          Assigned to: {challenge.assignedTo.join(', ') || 'None'}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Completed by: {challenge.completedBy.join(', ') || 'None'}
+                        </p>
+                        {challenge.thumbnail && (
+                          <img
+                            src={challenge.thumbnail}
+                            alt={challenge.description}
+                            className="mt-2 w-24 h-24 object-cover rounded"
+                          />
+                        )}
+                        {challenge.assignedTo.includes(currentUser) && !challenge.completedBy.includes(currentUser) && (
+                          <button
+                            onClick={() => completeChallenge(challenge.id)}
+                            className="mt-2 px-3 py-1 bg-pink-600 text-white rounded hover:bg-pink-700 text-sm"
+                          >
+                            Complete Challenge
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+              <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
+                <h3 className="font-bold text-gray-800 mb-2">📬 Message Board</h3>
+                <div className="space-y-3">
+                  {photoBoard.messages.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No messages yet.</p>
+                  ) : (
+                    photoBoard.messages.map(msg => (
+                      <div key={msg.id} className="bg-white p-3 rounded border border-gray-200">
+                        <p className="text-sm text-gray-600">
+                          {new Date(msg.timestamp).toLocaleString()}
+                        </p>
+                        <p className="text-sm">{msg.content}</p>
+                        <div className="flex gap-2 mt-1">
+                          {['👍', '😂', '😍'].map(emoji => (
+                            <button
+                              key={emoji}
+                              onClick={() => handleReaction(msg.id, emoji, true)}
+                              className={`text-sm ${msg.reactions.includes(emoji) ? 'text-blue-600' : 'text-gray-500'}`}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentSection === 'map' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-gray-800">🗺️ Trip Map</h2>
+              <MapContainer
+                center={[49.2827, -123.1207]}
+                zoom={7}
+                style={{ height: '400px', width: '100%' }}
+                className="rounded-lg"
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                {locations.map(loc => (
+                  <Marker key={loc.name} position={[loc.lat, loc.lng]}>
+                    <Popup>{loc.name}</Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          )}
         </>
       )}
     </div>
@@ -451,4 +1617,3 @@ const BCRoadTripPlanner = () => {
 };
 
 export default BCRoadTripPlanner;
-```
