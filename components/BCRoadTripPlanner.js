@@ -1,9 +1,12 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { differenceInDays, parse } from 'date-fns';
 
-// Fix Leaflet marker icon issue (plain JavaScript, no TypeScript)
+// Fix Leaflet marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -11,13 +14,175 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+// Constants moved to top to avoid ReferenceError
+const friends = ["Markus", "Tom", "Ramon", "Churchill", "Emil", "Henning", "Paddy", "Radu", "Tudor", "P-J"];
+const loginCodes = {
+  EPIC40: "Markus",
+  COOLCAT: "Tom",
+  RADRAMON: "Ramon",
+  CHURCHILL: "Churchill",
+  EMILROCKS: "Emil",
+  HENN40: "Henning",
+  PADDYBOY: "Paddy",
+  RADU40: "Radu",
+  TUDOR: "Tudor",
+  PJPARTY: "P-J"
+};
+const locations = [
+  { name: "Vancouver", lat: 49.2827, lng: -123.1207 },
+  { name: "Osoyoos", lat: 49.0325, lng: -119.4525 },
+  { name: "Kelowna", lat: 49.8880, lng: -119.4960 },
+  { name: "Pemberton", lat: 50.3192, lng: -122.7948 },
+  { name: "Tofino", lat: 49.1533, lng: -125.9060 },
+  { name: "Victoria", lat: 48.4284, lng: -123.3656 },
+  { name: "Cultus Lake", lat: 49.0561, lng: -121.9643 }
+];
+const defaultItinerary = [
+  {
+    day: 1,
+    location: "Vancouver to Osoyoos",
+    highlight: "Desert Adventure",
+    distance: "380 km (4.5 hours)",
+    overnight: "Haynes Point Provincial Park",
+    summary: "Depart Vancouver, explore Osoyoos desert and lake.",
+    activities: [
+      "Morning: Depart Vancouver (8:00 AM), stop in Chilliwack for supplies, drive via Highway 5 to 3A",
+      "Afternoon: Arrive Osoyoos (~1:00 PM), set up at Haynes Point, visit Osoyoos Desert Centre, wine tasting",
+      "Evening: Sunset at Osoyoos Lake Beach, dinner at local restaurant"
+    ],
+    rvNotes: "Haynes Point has 41 sites, very popular in summer. Book well in advance."
+  },
+  {
+    day: 2,
+    location: "Osoyoos to Kelowna",
+    highlight: "Okanagan Lake",
+    distance: "100 km (1.5 hours)",
+    overnight: "Fintry Provincial Park",
+    summary: "Drive to Kelowna, enjoy lakeside camping and history.",
+    activities: [
+      "Morning: Visit Nk'Mip Desert Cultural Centre, depart Osoyoos (~11:00 AM), drive Highway 97",
+      "Afternoon: Arrive Kelowna (~12:30 PM), set up at Fintry, explore Fintry estate, swim in lake",
+      "Evening: Campfire by the lake, grocery shopping in Kelowna"
+    ],
+    rvNotes: "Fintry has basic sites, some with electrical hookups. Stunning lake views."
+  },
+  {
+    day: 3,
+    location: "Kelowna",
+    highlight: "Rest Day",
+    distance: "0 km",
+    overnight: "Fintry Provincial Park",
+    summary: "Relax and explore Kelowna’s wineries, lake, and culture.",
+    activities: [
+      "Full Day: Wine tours (arrange designated driver), Big White Scenic Chairlift, Kelowna Farmers Market (Saturday), kayaking/paddleboarding, Downtown Kelowna Cultural District",
+      "Maintenance: Laundry, supplies, RV servicing if needed"
+    ],
+    rvNotes: "Fintry has basic sites, some with electrical hookups. Stunning lake views."
+  },
+  {
+    day: 4,
+    location: "Kelowna to Pemberton",
+    highlight: "Mountain Journey",
+    distance: "350 km (4.5 hours)",
+    overnight: "Nairn Falls Provincial Park",
+    summary: "Drive to Pemberton, hike and enjoy mountain views.",
+    activities: [
+      "Morning: Depart Kelowna (8:00 AM), drive via Highway 97C to Merritt, then Highway 5 to 99",
+      "Afternoon: Arrive Pemberton (~1:00 PM), set up at Nairn Falls, hike to Nairn Falls (1.5 km)",
+      "Evening: Explore Pemberton village, mountain photography"
+    ],
+    rvNotes: "Nairn Falls has 94 sites with basic facilities. Mountain setting."
+  },
+  {
+    day: 5,
+    location: "Pemberton to Tofino",
+    highlight: "Pacific Coast",
+    distance: "420 km (6 hours) + 1.5 hour ferry",
+    overnight: "Pacific Rim National Park or Bella Pacifica",
+    summary: "Drive and ferry to Tofino, explore Pacific beaches.",
+    activities: [
+      "Morning: Depart Pemberton (7:00 AM), drive Sea-to-Sky Highway to Horseshoe Bay, ferry to Nanaimo",
+      "Afternoon: Drive Highway 4 through Cathedral Grove, arrive Tofino (~4:00 PM), set up camp",
+      "Evening: Visit Pacific Ocean beaches, sunset at Chesterman Beach, Tofino village dinner"
+    ],
+    rvNotes: "Make ferry reservations in advance. Limited RV camping in Tofino. Reservations essential."
+  },
+  {
+    day: 6,
+    location: "Tofino",
+    highlight: "Ocean Activities",
+    distance: "0 km",
+    overnight: "Pacific Rim National Park or Bella Pacifica",
+    summary: "Enjoy Tofino’s beaches, surfing, and wildlife.",
+    activities: [
+      "Full Day: Surfing lessons (Long Beach/Chesterman), Hot Springs Cove boat tour, whale watching, Rainforest Trail, Pacific Rim National Park trails",
+      "Evening: Storm watching (if weather permits), local seafood dinner"
+    ],
+    rvNotes: "Limited RV camping in Tofino. Reservations essential."
+  },
+  {
+    day: 7,
+    location: "Tofino to Victoria",
+    highlight: "Island Drive",
+    distance: "320 km (4.5 hours)",
+    overnight: "Goldstream Provincial Park",
+    summary: "Drive to Victoria, explore falls and Inner Harbour.",
+    activities: [
+      "Morning: Final Tofino beach walk, depart (~9:00 AM), drive Highway 4 to 1",
+      "Afternoon: Arrive Victoria (~2:00 PM), set up at Goldstream, explore Goldstream Falls",
+      "Evening: Visit Victoria Inner Harbour, dinner and stroll"
+    ],
+    rvNotes: "Goldstream has 173 sites in old-growth forest."
+  },
+  {
+    day: 8,
+    location: "Victoria",
+    highlight: "City Exploration",
+    distance: "0 km",
+    overnight: "Goldstream Provincial Park",
+    summary: "Explore Victoria’s gardens, museum, and harbour.",
+    activities: [
+      "Full Day: Butchart Gardens, Royal BC Museum, Inner Harbour (Parliament, Empress), Beacon Hill Park, whale watching",
+      "Evening: Victoria dining, sunset at Dallas Road waterfront"
+    ],
+    rvNotes: "Goldstream has 173 sites in old-growth forest."
+  },
+  {
+    day: 9,
+    location: "Victoria to Cultus Lake/Vancouver",
+    highlight: "Final Night",
+    distance: "150 km (2.5 hours) + 1.5 hour ferry",
+    overnight: "Cultus Lake Provincial Park or Vancouver",
+    summary: "Ferry to mainland, camp or return to Vancouver.",
+    activities: [
+      "Morning: Final Victoria exploration, ferry from Swartz Bay to Tsawwassen",
+      "Afternoon: Arrive mainland (~2:00 PM), option to camp at Cultus Lake or return to Vancouver",
+      "Evening: Reflection on trip, final campfire (if at Cultus Lake)"
+    ],
+    rvNotes: "Cultus Lake has 281 sites if camping. Check RV size limits."
+  },
+  {
+    day: 10,
+    location: "Cultus Lake to Vancouver",
+    highlight: "Trip Conclusion",
+    distance: "120 km (1.5 hours)",
+    overnight: "None (return RV)",
+    summary: "Return to Vancouver, conclude trip.",
+    activities: [
+      "Morning: Break camp (if at Cultus Lake), final supply stop, return to Vancouver (~11:00 AM)",
+      "Afternoon: RV return and cleanup, trip conclusion"
+    ],
+    rvNotes: "Check RV return requirements."
+  }
+];
+
 const BCRoadTripPlanner = () => {
   // State definitions
   const [currentUser, setCurrentUser] = useState('');
   const [loginCode, setLoginCode] = useState('');
   const [loginError, setLoginError] = useState('');
   const [currentSection, setCurrentSection] = useState('overview');
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? navigator.onLine : false);
   const [isLoading, setIsLoading] = useState(false);
   const [expenses, setExpenses] = useState([
     { id: 1, description: "RV Rental Deposit", amount: 500, paidBy: "Markus", splitBetween: friends, date: "2026-07-01" },
@@ -58,169 +223,6 @@ const BCRoadTripPlanner = () => {
   const [photoBoard, setPhotoBoard] = useState({ messages: [] });
   const [conversation, setConversation] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [showMap, setShowMap] = useState(false);
-
-  // Constants
-  const friends = ["Markus", "Tom", "Ramon", "Churchill", "Emil", "Henning", "Paddy", "Radu", "Tudor", "P-J"];
-  const loginCodes = {
-    EPIC40: "Markus",
-    COOLCAT: "Tom",
-    RADRAMON: "Ramon",
-    CHURCHILL: "Churchill",
-    EMILROCKS: "Emil",
-    HENN40: "Henning",
-    PADDYBOY: "Paddy",
-    RADU40: "Radu",
-    TUDOR: "Tudor",
-    PJPARTY: "P-J"
-  };
-  const locations = [
-    { name: "Vancouver", lat: 49.2827, lng: -123.1207 },
-    { name: "Osoyoos", lat: 49.0325, lng: -119.4525 },
-    { name: "Kelowna", lat: 49.8880, lng: -119.4960 },
-    { name: "Pemberton", lat: 50.3192, lng: -122.7948 },
-    { name: "Tofino", lat: 49.1533, lng: -125.9060 },
-    { name: "Victoria", lat: 48.4284, lng: -123.3656 },
-    { name: "Cultus Lake", lat: 49.0561, lng: -121.9643 }
-  ];
-  const defaultItinerary = [
-    {
-      day: 1,
-      location: "Vancouver to Osoyoos",
-      highlight: "Desert Adventure",
-      distance: "380 km (4.5 hours)",
-      overnight: "Haynes Point Provincial Park",
-      summary: "Depart Vancouver, explore Osoyoos desert and lake.",
-      activities: [
-        "Morning: Depart Vancouver (8:00 AM), stop in Chilliwack for supplies, drive via Highway 5 to 3A",
-        "Afternoon: Arrive Osoyoos (~1:00 PM), set up at Haynes Point, visit Osoyoos Desert Centre, wine tasting",
-        "Evening: Sunset at Osoyoos Lake Beach, dinner at local restaurant"
-      ],
-      rvNotes: "Haynes Point has 41 sites, very popular in summer. Book well in advance."
-    },
-    {
-      day: 2,
-      location: "Osoyoos to Kelowna",
-      highlight: "Okanagan Lake",
-      distance: "100 km (1.5 hours)",
-      overnight: "Fintry Provincial Park",
-      summary: "Drive to Kelowna, enjoy lakeside camping and history.",
-      activities: [
-        "Morning: Visit Nk'Mip Desert Cultural Centre, depart Osoyoos (~11:00 AM), drive Highway 97",
-        "Afternoon: Arrive Kelowna (~12:30 PM), set up at Fintry, explore Fintry estate, swim in lake",
-        "Evening: Campfire by the lake, grocery shopping in Kelowna"
-      ],
-      rvNotes: "Fintry has basic sites, some with electrical hookups. Stunning lake views."
-    },
-    {
-      day: 3,
-      location: "Kelowna",
-      highlight: "Rest Day",
-      distance: "0 km",
-      overnight: "Fintry Provincial Park",
-      summary: "Relax and explore Kelowna’s wineries, lake, and culture.",
-      activities: [
-        "Full Day: Wine tours (arrange designated driver), Big White Scenic Chairlift, Kelowna Farmers Market (Saturday), kayaking/paddleboarding, Downtown Kelowna Cultural District",
-        "Maintenance: Laundry, supplies, RV servicing if needed"
-      ],
-      rvNotes: "Fintry has basic sites, some with electrical hookups. Stunning lake views."
-    },
-    {
-      day: 4,
-      location: "Kelowna to Pemberton",
-      highlight: "Mountain Journey",
-      distance: "350 km (4.5 hours)",
-      overnight: "Nairn Falls Provincial Park",
-      summary: "Drive to Pemberton, hike and enjoy mountain views.",
-      activities: [
-        "Morning: Depart Kelowna (8:00 AM), drive via Highway 97C to Merritt, then Highway 5 to 99",
-        "Afternoon: Arrive Pemberton (~1:00 PM), set up at Nairn Falls, hike to Nairn Falls (1.5 km)",
-        "Evening: Explore Pemberton village, mountain photography"
-      ],
-      rvNotes: "Nairn Falls has 94 sites with basic facilities. Mountain setting."
-    },
-    {
-      day: 5,
-      location: "Pemberton to Tofino",
-      highlight: "Pacific Coast",
-      distance: "420 km (6 hours) + 1.5 hour ferry",
-      overnight: "Pacific Rim National Park or Bella Pacifica",
-      summary: "Drive and ferry to Tofino, explore Pacific beaches.",
-      activities: [
-        "Morning: Depart Pemberton (7:00 AM), drive Sea-to-Sky Highway to Horseshoe Bay, ferry to Nanaimo",
-        "Afternoon: Drive Highway 4 through Cathedral Grove, arrive Tofino (~4:00 PM), set up camp",
-        "Evening: Visit Pacific Ocean beaches, sunset at Chesterman Beach, Tofino village dinner"
-      ],
-      rvNotes: "Make ferry reservations in advance. Limited RV camping in Tofino. Reservations essential."
-    },
-    {
-      day: 6,
-      location: "Tofino",
-      highlight: "Ocean Activities",
-      distance: "0 km",
-      overnight: "Pacific Rim National Park or Bella Pacifica",
-      summary: "Enjoy Tofino’s beaches, surfing, and wildlife.",
-      activities: [
-        "Full Day: Surfing lessons (Long Beach/Chesterman), Hot Springs Cove boat tour, whale watching, Rainforest Trail, Pacific Rim National Park trails",
-        "Evening: Storm watching (if weather permits), local seafood dinner"
-      ],
-      rvNotes: "Limited RV camping in Tofino. Reservations essential."
-    },
-    {
-      day: 7,
-      location: "Tofino to Victoria",
-      highlight: "Island Drive",
-      distance: "320 km (4.5 hours)",
-      overnight: "Goldstream Provincial Park",
-      summary: "Drive to Victoria, explore falls and Inner Harbour.",
-      activities: [
-        "Morning: Final Tofino beach walk, depart (~9:00 AM), drive Highway 4 to 1",
-        "Afternoon: Arrive Victoria (~2:00 PM), set up at Goldstream, explore Goldstream Falls",
-        "Evening: Visit Victoria Inner Harbour, dinner and stroll"
-      ],
-      rvNotes: "Goldstream has 173 sites in old-growth forest."
-    },
-    {
-      day: 8,
-      location: "Victoria",
-      highlight: "City Exploration",
-      distance: "0 km",
-      overnight: "Goldstream Provincial Park",
-      summary: "Explore Victoria’s gardens, museum, and harbour.",
-      activities: [
-        "Full Day: Butchart Gardens, Royal BC Museum, Inner Harbour (Parliament, Empress), Beacon Hill Park, whale watching",
-        "Evening: Victoria dining, sunset at Dallas Road waterfront"
-      ],
-      rvNotes: "Goldstream has 173 sites in old-growth forest."
-    },
-    {
-      day: 9,
-      location: "Victoria to Cultus Lake/Vancouver",
-      highlight: "Final Night",
-      distance: "150 km (2.5 hours) + 1.5 hour ferry",
-      overnight: "Cultus Lake Provincial Park or Vancouver",
-      summary: "Ferry to mainland, camp or return to Vancouver.",
-      activities: [
-        "Morning: Final Victoria exploration, ferry from Swartz Bay to Tsawwassen",
-        "Afternoon: Arrive mainland (~2:00 PM), option to camp at Cultus Lake or return to Vancouver",
-        "Evening: Reflection on trip, final campfire (if at Cultus Lake)"
-      ],
-      rvNotes: "Cultus Lake has 281 sites if camping. Check RV size limits."
-    },
-    {
-      day: 10,
-      location: "Cultus Lake to Vancouver",
-      highlight: "Trip Conclusion",
-      distance: "120 km (1.5 hours)",
-      overnight: "None (return RV)",
-      summary: "Return to Vancouver, conclude trip.",
-      activities: [
-        "Morning: Break camp (if at Cultus Lake), final supply stop, return to Vancouver (~11:00 AM)",
-        "Afternoon: RV return and cleanup, trip conclusion"
-      ],
-      rvNotes: "Check RV return requirements."
-    }
-  ];
 
   // Debounce hook for localStorage writes
   const useDebounce = (callback, delay) => {
@@ -233,8 +235,8 @@ const BCRoadTripPlanner = () => {
 
   // Save to localStorage with error handling
   const saveToLocalStorage = useDebounce((key, value) => {
-    try {
-      if (typeof window !== 'undefined' && localStorage) {
+    if (typeof window !== 'undefined' && localStorage) {
+      try {
         localStorage.setItem(key, JSON.stringify(value));
         const total = Object.keys(localStorage).reduce((sum, k) => sum + ((localStorage[k].length + k.length) * 2), 0);
         if (total > 5 * 1024 * 1024) {
@@ -251,36 +253,36 @@ const BCRoadTripPlanner = () => {
             },
           ]);
         }
+      } catch (error) {
+        console.error(`localStorage error for ${key}:`, error);
+        setConversation(prev => [
+          ...prev,
+          {
+            id: Date.now(),
+            type: 'nanook',
+            content: 'Oops, legends! Trouble saving data. Your device storage might be full. Try clearing some space!',
+            recommendations: [],
+            insider_tip: '',
+            timestamp: Date.now(),
+            reactions: [],
+          },
+        ]);
       }
-    } catch (error) {
-      console.error(`localStorage error for ${key}:`, error);
-      setConversation(prev => [
-        ...prev,
-        {
-          id: Date.now(),
-          type: 'nanook',
-          content: 'Oops, legends! Trouble saving data. Your device storage might be full. Try clearing some space!',
-          recommendations: [],
-          insider_tip: '',
-          timestamp: Date.now(),
-          reactions: [],
-        },
-      ]);
     }
   }, 500);
 
   // Load state from localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && localStorage) {
       try {
-        const savedUser = localStorage?.getItem('bcTripUser');
+        const savedUser = localStorage.getItem('bcTripUser');
         if (savedUser) setCurrentUser(savedUser);
-        const cachedItinerary = localStorage?.getItem('bcRoadTripItinerary');
-        const cachedConversation = localStorage?.getItem('bcRoadTripConversation');
-        const cachedWeather = localStorage?.getItem('bcRoadTripWeather');
-        const cachedPolls = localStorage?.getItem('bcRoadTripPolls');
-        const cachedPhotos = localStorage?.getItem('bcRoadTripPhotos');
-        const cachedPhotoBoard = localStorage?.getItem('bcRoadTripPhotoBoard');
+        const cachedItinerary = localStorage.getItem('bcRoadTripItinerary');
+        const cachedConversation = localStorage.getItem('bcRoadTripConversation');
+        const cachedWeather = localStorage.getItem('bcRoadTripWeather');
+        const cachedPolls = localStorage.getItem('bcRoadTripPolls');
+        const cachedPhotos = localStorage.getItem('bcRoadTripPhotos');
+        const cachedPhotoBoard = localStorage.getItem('bcRoadTripPhotoBoard');
         if (cachedItinerary) setEditableItinerary(JSON.parse(cachedItinerary));
         if (cachedConversation) {
           const parsed = JSON.parse(cachedConversation);
@@ -324,12 +326,14 @@ const BCRoadTripPlanner = () => {
         ]);
       }
     }
-    window.addEventListener('online', () => setIsOnline(true));
-    window.addEventListener('offline', () => setIsOnline(false));
-    return () => {
-      window.removeEventListener('online', () => setIsOnline(true));
-      window.removeEventListener('offline', () => setIsOnline(false));
-    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => setIsOnline(true));
+      window.addEventListener('offline', () => setIsOnline(false));
+      return () => {
+        window.removeEventListener('online', () => setIsOnline(true));
+        window.removeEventListener('offline', () => setIsOnline(false));
+      };
+    }
   }, []);
 
   // Fetch weather data
@@ -409,14 +413,16 @@ const BCRoadTripPlanner = () => {
 
   // Export conversation
   const exportConversation = () => {
-    const dataStr = JSON.stringify(conversation, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'bc_road_trip_conversation.json';
-    link.click();
-    URL.revokeObjectURL(url);
+    if (typeof window !== 'undefined') {
+      const dataStr = JSON.stringify(conversation, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'bc_road_trip_conversation.json';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   // Itinerary save/reset
@@ -466,7 +472,9 @@ const BCRoadTripPlanner = () => {
       !isNaN(newExpense.amount) &&
       newExpense.amount > 0 &&
       newExpense.paidBy &&
-      newExpense.splitBetween.length > 0
+      friends.includes(newExpense.paidBy) &&
+      newExpense.splitBetween.length > 0 &&
+      newExpense.date
     ) {
       const expense = {
         id: Date.now(),
@@ -486,7 +494,7 @@ const BCRoadTripPlanner = () => {
       });
       setShowAddExpense(false);
     } else {
-      alert('Please fill in all fields with valid data (amount must be a positive number).');
+      alert('Please fill in all fields correctly: valid description, positive amount, valid payer (from friends list), and at least one person to split with.');
     }
   };
 
@@ -525,7 +533,7 @@ const BCRoadTripPlanner = () => {
 
   const calculateTotalEstimatedCosts = () => {
     return editableItinerary.reduce((total, day) => {
-      return total + day.costs.activities + day.costs.accommodations;
+      return total + (day.costs.activities || 0) + (day.costs.accommodations || 0);
     }, 0);
   };
 
@@ -535,12 +543,10 @@ const BCRoadTripPlanner = () => {
       expensesByDay[day.day] = 0;
     });
     expenses.forEach(expense => {
-      const expenseDate = new Date(expense.date);
-      const itineraryDay = editableItinerary.find(day => {
-        const tripStart = new Date('2026-07-01');
-        const expenseDay = Math.floor((expenseDate - tripStart) / (1000 * 60 * 60 * 24)) + 1;
-        return expenseDay === day.day;
-      });
+      const expenseDate = parse(expense.date, 'yyyy-MM-dd', new Date());
+      const tripStart = parse('2026-07-01', 'yyyy-MM-dd', new Date());
+      const expenseDay = differenceInDays(expenseDate, tripStart) + 1;
+      const itineraryDay = editableItinerary.find(day => expenseDay === day.day);
       if (itineraryDay) {
         expensesByDay[itineraryDay.day] += expense.amount / expense.splitBetween.length;
       }
@@ -608,47 +614,49 @@ const BCRoadTripPlanner = () => {
   };
 
   const completeChallenge = (challengeId) => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = new Image();
-          img.src = event.target.result;
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = 100;
-            canvas.height = 100;
-            ctx.drawImage(img, 0, 0, 100, 100);
-            const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
-            setPhotoChallenges(prev =>
-              prev.map(challenge =>
-                challenge.id === challengeId
-                  ? { ...challenge, thumbnail, completedBy: [...challenge.completedBy, currentUser], timestamp: Date.now() }
-                  : challenge
-              )
-            );
-            setPhotoBoard(prev => ({
-              messages: [
-                ...prev.messages,
-                {
-                  id: Date.now(),
-                  content: `${currentUser} completed the "${photoChallenges.find(c => c.id === challengeId).description}" challenge! 🎉 (Full photo storage coming soon with Google Photos)`,
-                  timestamp: Date.now(),
-                  reactions: [],
-                },
-              ],
-            }));
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              canvas.width = 100;
+              canvas.height = 100;
+              ctx.drawImage(img, 0, 0, 100, 100);
+              const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+              setPhotoChallenges(prev =>
+                prev.map(challenge =>
+                  challenge.id === challengeId
+                    ? { ...challenge, thumbnail, completedBy: [...challenge.completedBy, currentUser], timestamp: Date.now() }
+                    : challenge
+                )
+              );
+              setPhotoBoard(prev => ({
+                messages: [
+                  ...prev.messages,
+                  {
+                    id: Date.now(),
+                    content: `${currentUser} completed the "${photoChallenges.find(c => c.id === challengeId).description}" challenge! 🎉 (Full photo storage coming soon with Google Photos)`,
+                    timestamp: Date.now(),
+                    reactions: [],
+                  },
+                ],
+              }));
+            };
           };
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    fileInput.click();
+          reader.readAsDataURL(file);
+        }
+      };
+      fileInput.click();
+    }
   };
 
   const handleReaction = (messageId, emoji, isPhotoBoard = false) => {
@@ -777,7 +785,7 @@ const BCRoadTripPlanner = () => {
             <input
               type="text"
               placeholder="Enter your login code"
-              value={loginCode}
+              value={loginCode ?? ''}
               onChange={(e) => setLoginCode(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
               className="w-full px-3 py-2 border border-gray-300 rounded mb-3"
@@ -805,7 +813,9 @@ const BCRoadTripPlanner = () => {
                 <button
                   onClick={() => {
                     setCurrentUser('');
-                    localStorage.removeItem('bcTripUser');
+                    if (typeof window !== 'undefined' && localStorage) {
+                      localStorage.removeItem('bcTripUser');
+                    }
                   }}
                   className="text-xs text-gray-500 hover:text-gray-700 underline mt-1"
                 >
@@ -890,7 +900,7 @@ const BCRoadTripPlanner = () => {
                               <p className="mt-1 text-xs font-semibold">5-Day Forecast:</p>
                               <ul className="text-xs list-disc pl-3">
                                 {weatherData[loc.name].forecast.map((day, idx) => (
-                                  <li key={idx}>
+                                  <li key={day.date}>
                                     {new Date(day.date).toLocaleDateString('en-US', {
                                       month: 'short',
                                       day: 'numeric',
@@ -934,28 +944,34 @@ const BCRoadTripPlanner = () => {
                         <input
                           type="text"
                           placeholder="Description (e.g., Gas, Food)"
-                          value={newExpense.description}
+                          value={newExpense.description ?? ''}
                           onChange={(e) => setNewExpense(prev => ({ ...prev, description: e.target.value }))}
                           className="px-3 py-2 border border-gray-300 rounded"
                         />
                         <input
                           type="number"
                           placeholder="Amount"
-                          value={newExpense.amount}
+                          value={newExpense.amount ?? ''}
                           onChange={(e) => setNewExpense(prev => ({ ...prev, amount: e.target.value }))}
                           className="px-3 py-2 border border-gray-300 rounded"
+                          min="0"
+                          step="0.01"
                         />
                       </div>
                       <div className="grid md:grid-cols-2 gap-3">
-                        <input
-                          value={newExpense.paidBy}
+                        <select
+                          value={newExpense.paidBy ?? ''}
                           onChange={(e) => setNewExpense(prev => ({ ...prev, paidBy: e.target.value }))}
                           className="px-3 py-2 border border-gray-300 rounded"
-                          placeholder={`${currentUser} (you) or someone else...`}
-                        />
+                        >
+                          <option value="" disabled>Select payer</option>
+                          {friends.map(friend => (
+                            <option key={friend} value={friend}>{friend}</option>
+                          ))}
+                        </select>
                         <input
                           type="date"
-                          value={newExpense.date}
+                          value={newExpense.date ?? new Date().toISOString().split('T')[0]}
                           onChange={(e) => setNewExpense(prev => ({ ...prev, date: e.target.value }))}
                           className="px-3 py-2 border border-gray-300 rounded"
                         />
@@ -985,7 +1001,7 @@ const BCRoadTripPlanner = () => {
                           ))}
                         </div>
                         <p className="text-xs text-gray-500 mt-1">
-                          Split {newExpense.splitBetween.length} ways = ${newExpense.amount ? (parseFloat(newExpense.amount) / newExpense.splitBetween.length).toFixed(2) : '0.00'} each
+                          Split {newExpense.splitBetween.length} ways = ${newExpense.amount && !isNaN(newExpense.amount) ? (parseFloat(newExpense.amount) / newExpense.splitBetween.length).toFixed(2) : '0.00'} each
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -1036,12 +1052,12 @@ const BCRoadTripPlanner = () => {
                       <strong>Total Estimated Costs:</strong> ${calculateTotalEstimatedCosts().toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-600">
-                      <strong>Total Actual Expenses:</strong> ${expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}
+                      <strong>Total Actual Expenses:</strong> ${expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0).toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-600">
                       <strong>Difference:</strong> $
-                      {(calculateTotalEstimatedCosts() - expenses.reduce((sum, exp) => sum + exp.amount, 0)).toFixed(2)}
-                      {(calculateTotalEstimatedCosts() - expenses.reduce((sum, exp) => sum + exp.amount, 0)) > 0
+                      {(calculateTotalEstimatedCosts() - expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0)).toFixed(2)}
+                      {(calculateTotalEstimatedCosts() - expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0)) > 0
                         ? ' (under budget)'
                         : ' (over budget)'}
                     </div>
@@ -1106,7 +1122,7 @@ const BCRoadTripPlanner = () => {
                       <input
                         type="text"
                         placeholder="Poll question"
-                        value={newPoll.question}
+                        value={newPoll.question ?? ''}
                         onChange={(e) => setNewPoll(prev => ({ ...prev, question: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded"
                       />
@@ -1115,7 +1131,7 @@ const BCRoadTripPlanner = () => {
                           key={idx}
                           type="text"
                           placeholder={`Option ${idx + 1}`}
-                          value={option}
+                          value={option ?? ''}
                           onChange={(e) => {
                             const newOptions = [...newPoll.options];
                             newOptions[idx] = e.target.value;
@@ -1167,7 +1183,7 @@ const BCRoadTripPlanner = () => {
                               const voteCount = Object.values(poll.votes).filter(v => v === idx).length;
                               const percentage = totalVotes > 0 ? (voteCount / totalVotes) * 100 : 0;
                               return (
-                                <div key={idx} className="mb-2">
+                                <div key={option} className="mb-2">
                                   <div className="flex justify-between items-center text-sm">
                                     <span>{option}</span>
                                     <span>{voteCount} votes ({percentage.toFixed(0)}%)</span>
@@ -1256,7 +1272,7 @@ const BCRoadTripPlanner = () => {
                           <>
                             <input
                               type="text"
-                              value={day.summary}
+                              value={day.summary ?? ''}
                               onChange={(e) =>
                                 setEditableItinerary(prev =>
                                   prev.map(d =>
@@ -1267,7 +1283,7 @@ const BCRoadTripPlanner = () => {
                               className="w-full px-3 py-2 border border-gray-300 rounded mb-2"
                             />
                             <textarea
-                              value={day.activities.join('\n')}
+                              value={day.activities.join('\n') ?? ''}
                               onChange={(e) =>
                                 setEditableItinerary(prev =>
                                   prev.map(d =>
@@ -1283,7 +1299,7 @@ const BCRoadTripPlanner = () => {
                             />
                             <input
                               type="text"
-                              value={day.distance}
+                              value={day.distance ?? ''}
                               onChange={(e) =>
                                 setEditableItinerary(prev =>
                                   prev.map(d =>
@@ -1296,7 +1312,7 @@ const BCRoadTripPlanner = () => {
                             />
                             <input
                               type="text"
-                              value={day.overnight}
+                              value={day.overnight ?? ''}
                               onChange={(e) =>
                                 setEditableItinerary(prev =>
                                   prev.map(d =>
@@ -1308,7 +1324,7 @@ const BCRoadTripPlanner = () => {
                               placeholder="Overnight location"
                             />
                             <textarea
-                              value={day.rvNotes}
+                              value={day.rvNotes ?? ''}
                               onChange={(e) =>
                                 setEditableItinerary(prev =>
                                   prev.map(d =>
@@ -1323,16 +1339,16 @@ const BCRoadTripPlanner = () => {
                           </>
                         ) : (
                           <>
-                            <p className="text-sm text-gray-600"><strong>Summary:</strong> {day.summary}</p>
-                            <p className="text-sm text-gray-600"><strong>Overnight:</strong> {day.overnight}</p>
+                            <p className="text-sm text-gray-600"><strong>Summary:</strong> {day.summary || 'No summary'}</p>
+                            <p className="text-sm text-gray-600"><strong>Overnight:</strong> {day.overnight || 'None'}</p>
                             {day.distance && <p className="text-sm text-gray-600"><strong>Distance:</strong> {day.distance}</p>}
                             <p className="text-sm text-gray-600"><strong>Activities:</strong></p>
                             <ul className="mt-2 text-sm text-gray-700 list-disc pl-5">
-                              {day.activities.map((activity, idx) => (
-                                <li key={idx}>{activity}</li>
+                              {day.activities.map((activity) => (
+                                <li key={activity}>{activity}</li>
                               ))}
                             </ul>
-                            <p className="text-sm text-gray-600 mt-2"><strong>RV Notes:</strong> {day.rvNotes}</p>
+                            <p className="text-sm text-gray-600 mt-2"><strong>RV Notes:</strong> {day.rvNotes || 'None'}</p>
                           </>
                         )}
                       </div>
@@ -1343,7 +1359,7 @@ const BCRoadTripPlanner = () => {
                             <label className="text-sm text-gray-600">Activities ($)</label>
                             <input
                               type="number"
-                              value={day.costs.activities}
+                              value={day.costs.activities ?? 0}
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value) || 0;
                                 setEditableItinerary(prev =>
@@ -1357,13 +1373,15 @@ const BCRoadTripPlanner = () => {
                               className="w-full px-3 py-2 border border-gray-300 rounded"
                               placeholder="e.g., 100"
                               disabled={!isEditing}
+                              min="0"
+                              step="0.01"
                             />
                           </div>
                           <div>
                             <label className="text-sm text-gray-600">Accommodations ($)</label>
                             <input
                               type="number"
-                              value={day.costs.accommodations}
+                              value={day.costs.accommodations ?? 0}
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value) || 0;
                                 setEditableItinerary(prev =>
@@ -1377,11 +1395,13 @@ const BCRoadTripPlanner = () => {
                               className="w-full px-3 py-2 border border-gray-300 rounded"
                               placeholder="e.g., 200"
                               disabled={!isEditing}
+                              min="0"
+                              step="0.01"
                             />
                           </div>
                         </div>
                         <p className="text-sm text-gray-600 mt-2">
-                          Total Estimated: ${(day.costs.activities + day.costs.accommodations).toFixed(2)}
+                          Total Estimated: ${((day.costs.activities || 0) + (day.costs.accommodations || 0)).toFixed(2)}
                         </p>
                         <p className="text-sm text-gray-600">
                           Actual Expenses: ${(calculateActualExpensesPerDay()[day.day] || 0).toFixed(2)}
@@ -1416,7 +1436,7 @@ const BCRoadTripPlanner = () => {
                       {msg.recommendations.length > 0 && (
                         <ul className="text-sm text-gray-600 list-disc pl-5 mt-1">
                           {msg.recommendations.map((rec, idx) => (
-                            <li key={idx}>{rec}</li>
+                            <li key={rec}>{rec}</li>
                           ))}
                         </ul>
                       )}
@@ -1441,7 +1461,7 @@ const BCRoadTripPlanner = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={newMessage}
+                  value={newMessage ?? ''}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded"
@@ -1463,7 +1483,7 @@ const BCRoadTripPlanner = () => {
             </div>
           )}
 
-          {currentSection === 'photos' && (
+          {currentSection === 'photosManagers' && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-800">📸 Photo Challenges</h2>
               <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
@@ -1488,7 +1508,7 @@ const BCRoadTripPlanner = () => {
                       <input
                         type="text"
                         placeholder="Challenge description (e.g., Sunset in Tofino)"
-                        value={newChallenge.description}
+                        value={newChallenge.description ?? ''}
                         onChange={(e) => setNewChallenge(prev => ({ ...prev, description: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded"
                       />
