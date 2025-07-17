@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix Leaflet marker icon issue (simplified, no TypeScript assertion)
+// Fix Leaflet marker icon issue (plain JavaScript, no TypeScript)
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -12,7 +12,7 @@ L.Icon.Default.mergeOptions({
 });
 
 const BCRoadTripPlanner = () => {
-  // State definitions (unchanged)
+  // State definitions
   const [currentUser, setCurrentUser] = useState('');
   const [loginCode, setLoginCode] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -884,8 +884,8 @@ const BCRoadTripPlanner = () => {
                               <p className="text-xs">
                                 Current: {weatherData[loc.name].current.temp}°C,{' '}
                                 {weatherData[loc.name].current.description.charAt(0).toUpperCase() +
-                                  weatherData[loc.name].current.description.slice(1 various
-                                )}
+                                  weatherData[loc.name].current.description.slice(1)
+                                }
                               </p>
                               <p className="mt-1 text-xs font-semibold">5-Day Forecast:</p>
                               <ul className="text-xs list-disc pl-3">
