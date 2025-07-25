@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC Bros Road Trip Planner - Test</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+
+        const BCRoadTripPlanner = () => {
+            const [currentUser, setCurrentUser] = useState(null);
+            
+            if (!currentUser) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
+                            <div className="text-center mb-8">
+                                <h1 className="text-3xl font-bold text-gray-800 mb-2">🚐 BC Bros Road Trip</h1>
+                                <p className="text-gray-600">Markus's Epic 40th Birthday Adventure</p>
+                                <p className="text-sm text-gray-500 mt-2">July 2026 • 10 International Legends</p>
+                            </div>
+                            
+                            <button
+                                onClick={() => setCurrentUser("Test User")}
+                                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-bold text-lg"
+                            >
+                                Join The Adventure! 🎉
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="max-w-4xl mx-auto p-4 bg-white min-h-screen">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                        🚐 BC Bros Road Trip Planner
+                    </h1>
+                    <p className="text-gray-600 mb-6">Welcome back, {currentUser}!</p>
+                    
+                    <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 text-white">
+                        <h2 className="text-2xl font-bold mb-2">
+                            <h2 className="text-2xl font-bold mb-2">🏔️ The Ultimate BC Bro-Trip</h2>
+                        <p className="text-lg">Markus's epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
+                    </div>
+                    
+                    <div className="mt-6 grid md:grid-cols-3 gap-4">
+                        <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+                            <h3 className="font-bold text-orange-800">Diverse Landscapes</h3>
+                            <p className="text-sm text-orange-700">From deserts and mountains to rainforests and ocean coastlines</p>
+                        </div>
+                        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                            <h3 className="font-bold text-blue-800">Hidden Gems</h3>
+                            <p className="text-sm text-blue-700">Discover secret beaches, hot springs, and local favorites</p>
+                        </div>
+                        <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+                            <h3 className="font-bold text-purple-800">Memorable Experiences</h3>
+                            <p className="text-sm text-purple-700">Activities perfect for creating lasting memories</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<BCRoadTripPlanner />, document.getElementById('root'));
+    </script>
+</body>
+</html>
