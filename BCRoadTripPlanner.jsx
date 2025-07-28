@@ -1411,22 +1411,18 @@ const BCRoadTripPlanner = () => {
                   </a>
                 </div>
               </div>
-              <div className="w-full h-96 rounded-b-xl border border-gray-200 bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
-                <div className="text-center p-8">
-                  <p className="text-lg font-semibold mb-2 text-gray-700">🗺️ Interactive BC Route Map</p>
-                  <p className="text-sm text-gray-600 mb-4">Your epic journey visualization</p>
-                  <div className="text-left bg-white rounded-lg p-4 shadow-sm max-w-sm mx-auto">
-                    <div className="text-xs space-y-1 text-gray-700">
-                      <div>📍 Vancouver → Osoyoos (Desert)</div>
-                      <div>📍 Osoyoos → Kelowna (Wine Country)</div>
-                      <div>📍 Kelowna → Pemberton (Mountains)</div>
-                      <div>📍 Pemberton → Tofino (Ocean)</div>
-                      <div>📍 Tofino → Victoria (Islands)</div>
-                      <div>📍 Victoria → Vancouver (Home)</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div className="w-full h-96 rounded-b-xl border border-gray-200 bg-gradient-to-br from-green-100 to-blue-100 relative overflow-hidden">
+                <iframe
+                   src="https://www.google.com/maps/embed?pb=!1m76!1m12!1m3!1d2633026.251099999!2d-125.5!3d49.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m61!3e0!4m5!1s0x548673f143a94fb3%3A0xbb9196ea9b81f38b!2sVancouver%2C%20BC!3m2!1d49.2827291!2d-123.1207375!4m5!1s0x548963de2d8c34a9%3A0x29f9e9d6be644!2sOsoyoos%2C%20BC!3m2!1d49.0324982!2d-119.4524493!4m5!1s0x537d8cb6e3c730b3%3A0x4ef8e53ddab4c4f7!2sKelowna%2C%20BC!3m2!1d49.8880334!2d-119.4960106!4m5!1s0x5484e8b92a5d0b4b%3A0x8394e3d0f0d8b3!2sPemberton%2C%20BC!3m2!1d50.3192!2d-122.7948!4m5!1s0x548695c4b71ece33%3A0x3d7d1a7b8f4e123!2sTofino%2C%20BC!3m2!1d49.1533!2d-125.906!4m5!1s0x548f738be7c04525%3A0x2b7fd3a8d8d46c4d!2sVictoria%2C%20BC!3m2!1d48.4284207!2d-123.3656444!4m5!1s0x548673f143a94fb3%3A0xbb9196ea9b81f38b!2sVancouver%2C%20BC!3m2!1d49.2827291!2d-123.1207375!5e0!3m2!1sen!2sca!4v1621234567890!5m2!1sen!2sca"
+    width="100%"
+    height="100%"
+    style={{ border: 0 }}
+    allowFullScreen=""
+    loading="lazy"
+    referrerPolicy="no-referrer-when-downgrade"
+    title="BC Road Trip Route"
+  ></iframe>
+               
             </div>
           )}
 
@@ -1538,14 +1534,92 @@ const BCRoadTripPlanner = () => {
             </div>
           </div>
 
-          <div className="text-center text-gray-500 py-8">
-            <p>👋 Hey {currentUser}! The chat feature is coming soon - Nanook is getting ready to help you plan your epic BC adventure!</p>
-            <p className="text-sm mt-2">For now, use the overview and itinerary sections to explore your trip.</p>
-          </div>
+          
         </div>
       )}
     </div>
-  );
+  );<div className="bg-white border-2 border-gray-200 rounded-lg">
+  <div className="p-4 border-b border-gray-200">
+    <h3 className="font-semibold text-gray-800">💬 Group Chat</h3>
+  </div>
+  
+  <div className="h-64 overflow-y-auto p-4 space-y-3">
+    {conversation.map(message => (
+      <div key={message.id} className={`p-3 rounded-lg ${
+        message.type === 'user' ? 'bg-blue-100 ml-8' : 'bg-gray-100 mr-8'
+      }`}>
+        <div className="flex justify-between items-start mb-1">
+          <span className="font-medium text-sm">
+            {message.type === 'user' ? currentUser : 'Nanook 🤙'}
+          </span>
+          <span className="text-xs text-gray-500">
+            {new Date(message.timestamp).toLocaleTimeString()}
+          </span>
+        </div>
+        <p className="text-sm">{message.content}</p>
+      </div>
+    ))}
+    
+    {conversation.length === 0 && (
+      <div className="text-center text-gray-500 py-8">
+        <p>👋 Hey {currentUser}! Start the conversation!</p>
+        <p className="text-sm mt-2">Ask about BC destinations, share trip updates, or just chat with the crew!</p>
+      </div>
+    )}
+  </div>
+  
+  <div className="p-4 border-t border-gray-200">
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      if (customQuestion.trim()) {
+        const newMessage = {
+          id: Date.now(),
+          type: 'user',
+          content: customQuestion.trim(),
+          timestamp: Date.now()
+        };
+        setConversation(prev => [...prev, newMessage]);
+        
+        // Simple auto-reply from Nanook
+        setTimeout(() => {
+          const replies = [
+            "Great question! BC has so much to offer - what specific area interests you most?",
+            "That sounds like an awesome plan! Don't forget to check the weather before you go.",
+            "Pro tip: Always carry bear spray and know how to use it properly!",
+            "The locals will love that you're exploring the real BC - not just the tourist spots!",
+            "Make sure to try some authentic BC wine while you're in the Okanagan!",
+            "That reminds me of the time I saw three bears having a family meeting on the highway...",
+          ];
+          const randomReply = replies[Math.floor(Math.random() * replies.length)];
+          
+          setConversation(prev => [...prev, {
+            id: Date.now(),
+            type: 'guide',
+            content: randomReply,
+            timestamp: Date.now()
+          }]);
+        }, 1000);
+        
+        setCustomQuestion('');
+      }
+    }} className="flex gap-2">
+      <input
+        type="text"
+        value={customQuestion}
+        onChange={(e) => setCustomQuestion(e.target.value)}
+        placeholder="Type your message..."
+        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        type="submit"
+        disabled={!customQuestion.trim()}
+        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+      >
+        Send
+      </button>
+    </form>
+  </div>
+</div>
 };
 
 export default BCRoadTripPlanner;

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 
 const BCRoadTripPlanner = () => {
@@ -12,8 +11,6 @@ const BCRoadTripPlanner = () => {
   const [customQuestion, setCustomQuestion] = useState('');
   const [showMap, setShowMap] = useState(false);
   const [currentFunFact, setCurrentFunFact] = useState(null);
-  const [isOnline, setIsOnline] = useState(true);
-  const [weatherData, setWeatherData] = useState({});
   const [showBudgetBreakdown, setShowBudgetBreakdown] = useState(false);
   const [showWeatherDetails, setShowWeatherDetails] = useState({});
   const [showCreatePoll, setShowCreatePoll] = useState(false);
@@ -120,7 +117,7 @@ const BCRoadTripPlanner = () => {
     { name: "Victoria", lat: 48.4284, lng: -123.3656 }
   ];
 
-  const [editableItinerary, setEditableItinerary] = useState(
+  const [editableItinerary] = useState(
     defaultItinerary.map(day => ({ ...day, costs: { activities: 0, accommodations: 0 }, assignments: {}, votes: {} }))
   );
 
@@ -187,6 +184,29 @@ const BCRoadTripPlanner = () => {
     ]
   });
 
+  useEffect(() => {
+    if (currentUser && conversation.length === 0) {
+      setConversation([
+        {
+          id: Date.now(),
+          type: 'guide',
+          content: `Hey ${currentUser}! 🤙 Welcome to your BC adventure planning hub, legend! I'm Nanook, your cheeky BC guide and former number-cruncher turned wilderness enthusiast. 
+
+Whether you need tips on the best surf spots in Tofino (Tom, looking at you!), wine recommendations in the Okanagan, or just want to know where Churchill can get his fancy Dubai-style coffee in the Canadian wilderness, I've got you covered!
+
+What can I help you international adventure seekers with today? 🏔️🌊`,
+          recommendations: [
+            "Ask about hidden gems along your route",
+            "Get tips for the best photo spots (Churchill will thank me)",
+            "Learn about can't-miss activities for each destination"
+          ],
+          insider_tip: "Pro tip: Start with the Okanagan wine questions - P-J's Belgian taste buds will appreciate the quality!",
+          timestamp: Date.now()
+        }
+      ]);
+    }
+  }, [currentUser, conversation.length]);
+
   const bcFunFacts = [
     {
       title: "Raincouver Is Real",
@@ -197,6 +217,11 @@ const BCRoadTripPlanner = () => {
       title: "'Sorry' Is a Way of Life",
       fact: "In BC, if someone steps on your foot, you say sorry.",
       tip: "🙇‍♂️ Politeness levels are so high, it's practically a competitive sport."
+    },
+    {
+      title: "Bears Know Traffic Rules",
+      fact: "BC has around 120,000-160,000 black bears, and they've learned that highways provide easy travel routes. Some bears have been spotted 'hitchhiking' by following cars on mountain roads!",
+      tip: "🐻 Always keep food locked up when camping, and yes, that includes toothpaste!"
     },
     {
       title: "You Can Ski and Tan in One Day",
@@ -214,29 +239,19 @@ const BCRoadTripPlanner = () => {
       tip: "🐻 BC: where wildlife comes to you."
     },
     {
-      title: "BC Has Its Own Time Zone... Sort Of",
-      fact: "Most of BC is on Pacific Time, but a tiny chunk in the northeast runs on Mountain Time. It's like BC couldn't decide what time zone it wanted to be in, so it said 'why not both?'",
-      tip: "🕐 Don't be late for dinner in Fort St. John — you might be in the wrong time zone."
+      title: "World's Longest Coastline Secret",
+      fact: "BC's coastline is so complex and fjord-filled that if you straightened it out, it would stretch for over 25,000 kilometers - longer than the distance around the entire Earth!",
+      tip: "🌊 This means endless hidden coves and secret beaches to discover."
+    },
+    {
+      title: "The Ultimate Weather Forecast",
+      fact: "If you can see the mountains, it's going to rain. If you can't see the mountains, it's already raining. This is the only weather forecast you need in BC.",
+      tip: "🌧️ Forget the weather app. Just look at the mountains and pack accordingly."
     },
     {
       title: "Tim Hortons vs. Local Coffee Wars",
       fact: "BC has the most intense coffee shop loyalty in Canada. You're either a 'Timmies' person or a 'local roastery' person. There is no middle ground, and friendships have ended over it.",
       tip: "☕ Saying 'double-double' at a craft coffee shop will get you the stink eye of a lifetime."
-    },
-    {
-      title: "Weed Was Legal Before It Was Legal",
-      fact: "Let's be honest: BC Bud was famous worldwide long before Canada made cannabis legal. There were dispensaries operating before laws even caught up.",
-      tip: "🌿 They call it 'the B.C. Bud loophole' — or just 'a Wednesday.'"
-    },
-    {
-      title: "Bike Lanes Are Sacred",
-      fact: "Don't you dare walk in the bike lane in Vancouver. You will be silently judged, politely warned, and possibly run over by a Lululemon-clad cyclist sipping oat milk.",
-      tip: "🚴‍♀️ Respect the spandex warriors."
-    },
-    {
-      title: "We Have Towns Named Peculiar Things",
-      fact: "There's a small BC town called '100 Mile House', and it's exactly 100 miles from... something. Nobody's quite sure what anymore.",
-      tip: "🏘️ Don't forget: Spuzzum, Skookumchuck, Funky Creek, and Osoyoos (which visitors can't pronounce)."
     },
     {
       title: "Real Estate Is a National Joke",
@@ -247,41 +262,6 @@ const BCRoadTripPlanner = () => {
       title: "Everyone Hikes, Even if They Hate It",
       fact: "If you live in BC and don't hike, you'll be gently shamed until you do. It's practically a religion.",
       tip: "⛰️ Haven't done the Grouse Grind? Get thee to the stairs, sinner."
-    },
-    {
-      title: "The Unholy Love Affair with Sushi",
-      fact: "Vancouver has more sushi restaurants per capita than Tokyo (really). It's totally normal to get sushi at gas stations or budget grocery stores. And sometimes… it's actually good.",
-      tip: "🍣 BC Roll? Invented here — complete with imitation crab and cucumber, no shame."
-    },
-    {
-      title: "People Treat Kale Like Currency",
-      fact: "Farmers markets sell 10 kinds of kale. 'Would you like that smoothie with organic kale, local kale, or biodynamic ancestral kale?'",
-      tip: "🥬 Don't insult kale in BC. Someone will overhear and uninvite you to their yoga retreat."
-    },
-    {
-      title: "Salmon Is Basically a Religion",
-      fact: "Smoked, candied, grilled, sockeye, chinook, you name it. There's even salmon candy (yes, sweet smoked fish), which is somehow delicious and confusing at the same time.",
-      tip: "🐟 First Nations cuisine centers around wild salmon and it's treated with deep respect."
-    },
-    {
-      title: "Weird Pizza Toppings Are Normal",
-      fact: "Ever had pizza with smoked salmon and goat cheese? Or blueberries and arugula? In BC, that's just 'Tuesday.'",
-      tip: "🍕 Pineapple on pizza is old news here. Bring on the fennel pollen and caramelized leeks."
-    },
-    {
-      title: "Coffee Snobbery Is Next Level",
-      fact: "You can't just say 'coffee.' It's a single-origin Guatemalan pour-over with oat milk, served in a reusable cup made of recycled hemp and vibes.",
-      tip: "☕ Tim Hortons? Fine. But the third-wave, ethically-sourced café is where the soul lives."
-    },
-    {
-      title: "Orcas Are Basically Local Celebrities",
-      fact: "BC's orcas have names, fan clubs, and Instagram accounts. People track them like celebrities and get genuinely excited when J35 or K25 shows up for a photo op.",
-      tip: "🐋 Yes, you will be expected to know which pod you saw. No, 'the black and white one' is not specific enough."
-    },
-    {
-      title: "Ferry Lineups Are a Social Event",
-      fact: "BC Ferries lineups aren't just waiting — they're networking opportunities. People bring lawn chairs, barbecues, and full picnics. Some travelers have made lifelong friends in the Horseshoe Bay parking lot.",
-      tip: "⛴️ Pro tip: The car deck coffee is surprisingly good, and the gift shop sells everything you forgot to pack."
     },
     {
       title: "Fleece Is Formal Wear",
@@ -299,44 +279,39 @@ const BCRoadTripPlanner = () => {
       tip: "🍷 Just nod and say 'terroir' — it works every time."
     },
     {
-      title: "Everyone's a Weather Expert",
-      fact: "BC residents can predict weather with supernatural accuracy. They'll tell you it's going to rain in exactly 23 minutes based on 'the way the mountains look' and be absolutely right.",
-      tip: "🌧️ If a local says 'better bring a jacket,' you bring the jacket. No questions asked."
+      title: "Ferry Lineups Are a Social Event",
+      fact: "BC Ferries lineups aren't just waiting — they're networking opportunities. People bring lawn chairs, barbecues, and full picnics. Some travelers have made lifelong friends in the Horseshoe Bay parking lot.",
+      tip: "⛴️ Pro tip: The car deck coffee is surprisingly good, and the gift shop sells everything you forgot to pack."
     },
     {
-      title: "Cottage Cheese is Surprisingly Controversial",
-      fact: "Ask for cottage cheese on your breakfast in BC and prepare for judgment. It's been replaced by Greek yogurt, chia seeds, and things with unpronounceable superfood names.",
-      tip: "🥛 Hemp hearts are the new cottage cheese. Don't ask why."
+      title: "Orcas Are Basically Local Celebrities",
+      fact: "BC's orcas have names, fan clubs, and Instagram accounts. People track them like celebrities and get genuinely excited when J35 or K25 shows up for a photo op.",
+      tip: "🐋 Yes, you will be expected to know which pod you saw. No, 'the black and white one' is not specific enough."
+    },
+    {
+      title: "BC Has Its Own Time Zone... Sort Of",
+      fact: "Most of BC is on Pacific Time, but a tiny chunk in the northeast runs on Mountain Time. It's like BC couldn't decide what time zone it wanted to be in, so it said 'why not both?'",
+      tip: "🕐 Don't be late for dinner in Fort St. John — you might be in the wrong time zone."
+    },
+    {
+      title: "We Have Towns Named Peculiar Things",
+      fact: "There's a small BC town called '100 Mile House', and it's exactly 100 miles from... something. Nobody's quite sure what anymore.",
+      tip: "🏘️ Don't forget: Spuzzum, Skookumchuck, Funky Creek, and Osoyoos (which visitors can't pronounce)."
+    },
+    {
+      title: "The Unholy Love Affair with Sushi",
+      fact: "Vancouver has more sushi restaurants per capita than Tokyo (really). It's totally normal to get sushi at gas stations or budget grocery stores. And sometimes… it's actually good.",
+      tip: "🍣 BC Roll? Invented here — complete with imitation crab and cucumber, no shame."
+    },
+    {
+      title: "Salmon Is Basically a Religion",
+      fact: "Smoked, candied, grilled, sockeye, chinook, you name it. There's even salmon candy (yes, sweet smoked fish), which is somehow delicious and confusing at the same time.",
+      tip: "🐟 First Nations cuisine centers around wild salmon and it's treated with deep respect."
     },
     {
       title: "BC Day Long Weekend Is Sacred",
       fact: "The first Monday in August (BC Day) isn't just a holiday — it's a mass exodus to camping spots. Book your site a year in advance or prepare to sleep in your car.",
       tip: "🏕️ If you don't have a reservation, your only hope is arriving at a campground at 6 AM and bribing someone with Tim Hortons."
-    },
-    {
-      title: "Surrey Has the World's Longest Beard",
-      fact: "BC resident Sarwan Singh holds the world record for 'Longest Beard' at over 2.33 metres. That's longer than most people are tall, and definitely longer than your attention span.",
-      tip: "🧔 Don't ask him for beard care tips unless you have 3 hours to spare."
-    },
-    {
-      title: "Pamela Anderson Was Canada's Birthday Baby",
-      fact: "Pamela Anderson was born in Ladysmith, BC at 4:08 AM on July 1st, 1967 — making her Canada's official 'Centennial Baby' for the 100th Canada Day celebration.",
-      tip: "🎂 Peak Canadian timing: being born exactly on Canada's birthday."
-    },
-    {
-      title: "BC Once Banned Alcohol (It Didn't Go Well)",
-      fact: "Between 1917 and 1921, BC tried prohibition. Spoiler alert: it lasted about as long as a snowball in a Kelowna vineyard.",
-      tip: "🍻 Good thing they figured out wine country was a better idea."
-    },
-    {
-      title: "Nanaimo: Bathtub Racing Capital of the World",
-      fact: "Since 1967, Nanaimo has hosted the World Championship Bathtub Race. Yes, people race actual bathtubs across the ocean. No, nobody questions this.",
-      tip: "🛁 Peak BC: turning bathroom fixtures into competitive water sports."
-    },
-    {
-      title: "BC Is Ridiculously Huge",
-      fact: "At just under 950,000 square kilometers, BC is bigger than France, Italy, Ukraine, and Japan. It's the 4th largest province/state in North America after Alaska, Quebec, and Texas.",
-      tip: "📏 When locals say 'it's just down the road,' they might mean 8 hours of driving."
     },
     {
       title: "Vancouver Has a Nightly Cannon Ritual",
@@ -354,6 +329,31 @@ const BCRoadTripPlanner = () => {
       tip: "🚇 Don't panic if you don't see a driver. The robots have it handled."
     },
     {
+      title: "BC Is Ridiculously Huge",
+      fact: "At just under 950,000 square kilometers, BC is bigger than France, Italy, Ukraine, and Japan. It's the 4th largest province/state in North America after Alaska, Quebec, and Texas.",
+      tip: "📏 When locals say 'it's just down the road,' they might mean 8 hours of driving."
+    },
+    {
+      title: "Nanaimo: Bathtub Racing Capital of the World",
+      fact: "Since 1967, Nanaimo has hosted the World Championship Bathtub Race. Yes, people race actual bathtubs across the ocean. No, nobody questions this.",
+      tip: "🛁 Peak BC: turning bathroom fixtures into competitive water sports."
+    },
+    {
+      title: "BC Once Banned Alcohol (It Didn't Go Well)",
+      fact: "Between 1917 and 1921, BC tried prohibition. Spoiler alert: it lasted about as long as a snowball in a Kelowna vineyard.",
+      tip: "🍻 Good thing they figured out wine country was a better idea."
+    },
+    {
+      title: "Pamela Anderson Was Canada's Birthday Baby",
+      fact: "Pamela Anderson was born in Ladysmith, BC at 4:08 AM on July 1st, 1967 — making her Canada's official 'Centennial Baby' for the 100th Canada Day celebration.",
+      tip: "🎂 Peak Canadian timing: being born exactly on Canada's birthday."
+    },
+    {
+      title: "Surrey Has the World's Longest Beard",
+      fact: "BC resident Sarwan Singh holds the world record for 'Longest Beard' at over 2.33 metres. That's longer than most people are tall, and definitely longer than your attention span.",
+      tip: "🧔 Don't ask him for beard care tips unless you have 3 hours to spare."
+    },
+    {
       title: "California Roll? More Like Vancouver Roll",
       fact: "Some say the California Roll was actually invented in Vancouver. California just had better marketing. Classic BC: inventing things and letting other places take credit.",
       tip: "🍣 Yet another reason to side-eye California at wine tastings."
@@ -369,25 +369,164 @@ const BCRoadTripPlanner = () => {
       tip: "🏆 In BC, if it's weird and nobody's tried it yet, someone will make it a world record."
     },
     {
-      title: "Bears Know Traffic Rules",
-      fact: "BC has around 120,000-160,000 black bears, and they've learned that highways provide easy travel routes. Some bears have been spotted 'hitchhiking' by following cars on mountain roads!",
-      tip: "🐻 Always keep food locked up when camping, and yes, that includes toothpaste!"
+      title: "Weird Pizza Toppings Are Normal",
+      fact: "Ever had pizza with smoked salmon and goat cheese? Or blueberries and arugula? In BC, that's just 'Tuesday.'",
+      tip: "🍕 Pineapple on pizza is old news here. Bring on the fennel pollen and caramelized leeks."
     },
     {
-      title: "World's Longest Coastline Secret",
-      fact: "BC's coastline is so complex and fjord-filled that if you straightened it out, it would stretch for over 25,000 kilometers - longer than the distance around the entire Earth!",
-      tip: "🌊 This means endless hidden coves and secret beaches to discover."
+      title: "Coffee Snobbery Is Next Level",
+      fact: "You can't just say 'coffee.' It's a single-origin Guatemalan pour-over with oat milk, served in a reusable cup made of recycled hemp and vibes.",
+      tip: "☕ Tim Hortons? Fine. But the third-wave, ethically-sourced café is where the soul lives."
     },
     {
-      title: "The Ultimate Weather Forecast",
-      fact: "If you can see the mountains, it's going to rain. If you can't see the mountains, it's already raining. This is the only weather forecast you need in BC.",
-      tip: "🌧️ Forget the weather app. Just look at the mountains and pack accordingly."
+      title: "People Treat Kale Like Currency",
+      fact: "Farmers markets sell 10 kinds of kale. 'Would you like that smoothie with organic kale, local kale, or biodynamic ancestral kale?'",
+      tip: "🥬 Don't insult kale in BC. Someone will overhear and uninvite you to their yoga retreat."
+    },
+    {
+      title: "Weed Was Legal Before It Was Legal",
+      fact: "Let's be honest: BC Bud was famous worldwide long before Canada made cannabis legal. There were dispensaries operating before laws even caught up.",
+      tip: "🌿 They call it 'the B.C. Bud loophole' — or just 'a Wednesday.'"
+    },
+    {
+      title: "Bike Lanes Are Sacred",
+      fact: "Don't you dare walk in the bike lane in Vancouver. You will be silently judged, politely warned, and possibly run over by a Lululemon-clad cyclist sipping oat milk.",
+      tip: "🚴‍♀️ Respect the spandex warriors."
+    },
+    {
+      title: "Everyone's a Weather Expert",
+      fact: "BC residents can predict weather with supernatural accuracy. They'll tell you it's going to rain in exactly 23 minutes based on 'the way the mountains look' and be absolutely right.",
+      tip: "🌧️ If a local says 'better bring a jacket,' you bring the jacket. No questions asked."
+    },
+    {
+      title: "Cottage Cheese is Surprisingly Controversial",
+      fact: "Ask for cottage cheese on your breakfast in BC and prepare for judgment. It's been replaced by Greek yogurt, chia seeds, and things with unpronounceable superfood names.",
+      tip: "🥛 Hemp hearts are the new cottage cheese. Don't ask why."
+    },
+    {
+      title: "BC Has the Most Expensive Gas",
+      fact: "BC consistently has Canada's highest gas prices. Locals cope by pretending their Subaru runs on good vibes and mountain air.",
+      tip: "⛽ Pro tip: Always fill up before crossing into BC. Your wallet will thank you."
+    },
+    {
+      title: "The Sea-to-Sky Highway Is Both Beautiful and Terrifying",
+      fact: "The Sea-to-Sky Highway offers breathtaking views and heart-stopping drops. It's like BC couldn't decide between a scenic route and an extreme sport, so they made it both.",
+      tip: "🚗 Don't look down. Seriously. Eyes on the road, not the 500-foot drop."
+    },
+    {
+      title: "Stanley Park Is Bigger Than Central Park",
+      fact: "Vancouver's Stanley Park is about 10% larger than NYC's Central Park. But locals will tell you it's at least 1000% better because it has ocean views, mountains, and fewer tourists.",
+      tip: "🌲 Get lost on purpose. The best spots are where the tour buses can't go."
     }
+  ];
+
+  const quickQuestions = [
+    "What are the must-see hidden gems between stops?",
+    "Best restaurants for our crew of 10?",
+    "Where can we find the best craft beer?",
+    "Tips for ferry bookings and timing?",
+    "Wildlife safety tips for city boys?",
+    "Best photo spots for Churchill's Instagram?"
   ];
 
   const getRandomFunFact = () => {
     const randomIndex = Math.floor(Math.random() * bcFunFacts.length);
     setCurrentFunFact(bcFunFacts[randomIndex]);
+  };
+
+  const handleChat = async (question) => {
+    if (!question.trim()) return;
+    
+    setIsLoading(true);
+    
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: question,
+      timestamp: Date.now()
+    };
+    
+    setConversation(prev => [...prev, userMessage]);
+    setCustomQuestion('');
+    
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-3-sonnet-20240229",
+          max_tokens: 1000,
+          messages: [
+            { 
+              role: "user", 
+              content: `You are Nanook, a cheeky and enthusiastic BC tour guide helping plan an epic road trip. You're a former accountant turned wilderness guide with a great sense of humor and genuine love for BC's wild beauty. You're helping Markus's legendary 40th birthday crew (THE INTERNATIONAL LEGENDS: Markus Canadian/German birthday boy, Tom French/Irish party animal, Ramon Dutch/Peruvian UFC fan, Churchill Dubai expat, Emil Swedish leftie, Henning German/Dutch sailing enthusiast, Paddy Irish Peter Pan, Radu youngest crypto enthusiast, Tudor Romanian/Dutch liberal, P-J oldest Belgian government worker) plan their epic BC road trip in July 2026. 
+
+Be fun, cheeky, and enthusiastic! Call them "legends," "dudes," "international adventure seekers," etc. Reference the guys by name with playful jabs that fit their personalities - tease Radu about crypto, joke about Churchill's Dubai lifestyle, reference the philosophical debate club (Tudor, Patrick, Emil, Ramon, Henning), make sailing jokes about Henning, party jokes about Tom, etc. 
+
+Focus on outdoor adventures perfect for this eclectic international crew. Keep it energetic and fun - less backstory, more awesome BC advice with personality! 
+
+Here's their question: ${question}
+
+Respond with a JSON object:
+{
+  "response": "Your cheeky, enthusiastic response with crew references and BC wisdom",
+  "recommendations": ["specific recommendation 1", "specific recommendation 2", "specific recommendation 3"],
+  "insider_tip": "A cheeky insider tip mentioning one of the guys by name/personality"
+}
+
+Your entire response MUST be valid JSON only.`
+            }
+          ]
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.content && data.content[0] && data.content[0].text) {
+        try {
+          const nanookResponse = JSON.parse(data.content[0].text);
+          
+          const guideMessage = {
+            id: Date.now() + 1,
+            type: 'guide',
+            content: nanookResponse.response,
+            recommendations: nanookResponse.recommendations || [],
+            insider_tip: nanookResponse.insider_tip || "",
+            timestamp: Date.now()
+          };
+          
+          setConversation(prev => [...prev, guideMessage]);
+        } catch (parseError) {
+          const guideMessage = {
+            id: Date.now() + 1,
+            type: 'guide',
+            content: data.content[0].text,
+            recommendations: [],
+            insider_tip: "",
+            timestamp: Date.now()
+          };
+          
+          setConversation(prev => [...prev, guideMessage]);
+        }
+      }
+    } catch (error) {
+      console.error('Error calling API:', error);
+      
+      const fallbackMessage = {
+        id: Date.now() + 1,
+        type: 'guide',
+        content: "Whoa legends, looks like my wilderness WiFi is acting up! 🏔️📡 Try asking again in a moment - I've got tons of BC wisdom to share!",
+        recommendations: [],
+        insider_tip: "Sometimes the best adventures happen when technology fails!",
+        timestamp: Date.now()
+      };
+      
+      setConversation(prev => [...prev, fallbackMessage]);
+    }
+    
+    setIsLoading(false);
   };
 
   const addPhotoChallenge = () => {
@@ -480,6 +619,7 @@ const BCRoadTripPlanner = () => {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    setConversation([]);
   };
 
   const handleVote = (pollId, optionIndex) => {
@@ -528,9 +668,7 @@ const BCRoadTripPlanner = () => {
 
     expenses.forEach(expense => {
       const shareAmount = expense.amount / expense.splitBetween.length;
-      
       balances[expense.paidBy] += expense.amount;
-      
       expense.splitBetween.forEach(person => {
         balances[person] -= shareAmount;
       });
@@ -599,7 +737,6 @@ const BCRoadTripPlanner = () => {
     }
   };
 
-  // Login Screen
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
@@ -719,15 +856,6 @@ const BCRoadTripPlanner = () => {
             <p className="text-lg">Markus's epic 40th birthday adventure! Desert wine country → Okanagan lakes → Pacific Ocean → Island paradise. 10 international legends, 10 unforgettable days!</p>
           </div>
 
-          <div className="flex justify-center">
-            <img
-              src="https://i.imgur.com/nG9m1vO.png"
-              alt="Markus's 40th Birthday BC Adventure"
-              className="rounded-xl shadow-lg max-w-full h-auto"
-              style={{ maxHeight: '400px' }}
-            />
-          </div>
-
           <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-yellow-800">💰 Expense Tracker</h3>
@@ -746,7 +874,7 @@ const BCRoadTripPlanner = () => {
                   <div className="grid md:grid-cols-2 gap-3">
                     <input
                       type="text"
-                      placeholder="Description (e.g., Gas, Food, etc.)"
+                      placeholder="Description"
                       value={newExpense.description}
                       onChange={(e) => setNewExpense(prev => ({ ...prev, description: e.target.value }))}
                       className="px-3 py-2 border border-gray-300 rounded"
@@ -761,12 +889,16 @@ const BCRoadTripPlanner = () => {
                   </div>
                   
                   <div className="grid md:grid-cols-2 gap-3">
-                    <input
+                    <select
                       value={newExpense.paidBy}
                       onChange={(e) => setNewExpense(prev => ({ ...prev, paidBy: e.target.value }))}
                       className="px-3 py-2 border border-gray-300 rounded"
-                      placeholder={`${currentUser} (you) or someone else...`}
-                    />
+                    >
+                      <option value="">Who paid?</option>
+                      {friends.map(friend => (
+                        <option key={friend} value={friend}>{friend}</option>
+                      ))}
+                    </select>
                     <input
                       type="date"
                       value={newExpense.date}
@@ -793,113 +925,156 @@ const BCRoadTripPlanner = () => {
                         </button>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Split {newExpense.splitBetween.length} ways = ${newExpense.amount && !isNaN(parseFloat(newExpense.amount)) ? (parseFloat(newExpense.amount) / newExpense.splitBetween.length).toFixed(2) : '0.00'} each
-                    </p>
                   </div>
 
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={addExpense}
-                      className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
-                    >
-                      Add Expense
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddExpense(false)}
-                      className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                  <button
+                    onClick={addExpense}
+                    className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                  >
+                    Add Expense
+                  </button>
                 </div>
               </div>
             )}
 
             <div className="space-y-3 mb-6">
               <h4 className="font-semibold text-yellow-700">Recent Expenses:</h4>
-              {expenses.length === 0 ? (
-                <p className="text-gray-500 text-sm">No expenses yet. Add one to get started!</p>
-              ) : (
-                expenses.slice(-5).reverse().map(expense => (
-                  <div key={expense.id} className="bg-white p-3 rounded border border-yellow-200">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium text-gray-800">{expense.description}</p>
-                        <p className="text-sm text-gray-600">
-                          Paid by <strong>{expense.paidBy}</strong> • Split {expense.splitBetween.length} ways
-                        </p>
-                        <p className="text-xs text-gray-500">{expense.date}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-yellow-800">${expense.amount.toFixed(2)}</p>
-                        <p className="text-xs text-gray-600">${(expense.amount / expense.splitBetween.length).toFixed(2)} each</p>
-                      </div>
+              {expenses.slice(-3).reverse().map(expense => (
+                <div key={expense.id} className="bg-white p-3 rounded border border-yellow-200">
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="font-medium">{expense.description}</p>
+                      <p className="text-sm text-gray-600">Paid by {expense.paidBy}</p>
                     </div>
+                    <p className="font-bold">${expense.amount.toFixed(2)}</p>
                   </div>
-                ))
-              )}
+                </div>
+              ))}
             </div>
 
             <div className="bg-white p-4 rounded border border-yellow-200">
               <h4 className="font-semibold text-yellow-700 mb-3">Who Owes What:</h4>
-              
-              {(() => {
-                const debts = getDebts();
-                const balances = calculateBalances();
-                const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-                
-                return (
-                  <div className="space-y-4">
-                    <div className="text-sm text-gray-600">
-                      <strong>Total Expenses:</strong> ${totalExpenses.toFixed(2)}
+              {getDebts().length === 0 ? (
+                <p className="text-green-600">Everyone's even!</p>
+              ) : (
+                <div className="space-y-2">
+                  {getDebts().map((debt, idx) => (
+                    <div key={idx} className="flex justify-between">
+                      <span>{debt.from} owes {debt.to}</span>
+                      <span className="font-bold">${debt.amount.toFixed(2)}</span>
                     </div>
-
-                    {debts.length === 0 ? (
-                      <p className="text-green-600 font-medium">🎉 Everyone's even! No debts to settle.</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {debts.map((debt, idx) => (
-                          <div key={idx} className="flex items-center justify-between p-2 bg-red-50 rounded border border-red-200">
-                            <span className="text-sm">
-                              <strong>{debt.from}</strong> owes <strong>{debt.to}</strong>
-                            </span>
-                            <span className="font-bold text-red-600">${debt.amount.toFixed(2)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => setShowBudgetBreakdown(!showBudgetBreakdown)}
-                        className="flex items-center gap-2 text-yellow-700 font-semibold hover:text-yellow-800"
-                      >
-                        {showBudgetBreakdown ? '▲' : '▼'} Individual Balances
-                      </button>
-                      {showBudgetBreakdown && (
-                        <div className="mt-2 grid md:grid-cols-2 gap-2">
-                          {Object.entries(balances).map(([person, balance]) => (
-                            <div key={person} className={`p-2 rounded text-sm ${
-                              Math.abs(balance) < 0.01 ? 'bg-gray-100 text-gray-600' :
-                              balance > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              <strong>{person}:</strong> ${balance.toFixed(2)}
-                              {balance > 0.01 && ' (to receive)'}
-                              {balance < -0.01 && ' (to pay)'}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+
+          <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-purple-800">🗳️ Group Polls</h3>
+              <button
+                onClick={() => setShowCreatePoll(!showCreatePoll)}
+                className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
+              >
+                {showCreatePoll ? 'Cancel' : '+ New Poll'}
+              </button>
+            </div>
+
+            {showCreatePoll && (
+              <div className="mb-6 p-4 bg-white border border-purple-200 rounded-lg">
+                <input
+                  type="text"
+                  placeholder="Poll question..."
+                  value={newPoll.question}
+                  onChange={(e) => setNewPoll(prev => ({ ...prev, question: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded mb-3"
+                />
+                {newPoll.options.map((option, idx) => (
+                  <input
+                    key={idx}
+                    type="text"
+                    placeholder={`Option ${idx + 1}...`}
+                    value={option}
+                    onChange={(e) => {
+                      const newOptions = [...newPoll.options];
+                      newOptions[idx] = e.target.value;
+                      setNewPoll(prev => ({ ...prev, options: newOptions }));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded mb-2"
+                  />
+                ))}
+                <button
+                  onClick={createPoll}
+                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                >
+                  Create Poll
+                </button>
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              {polls.map(poll => (
+                <div key={poll.id} className="bg-white p-4 rounded border border-purple-200">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="font-semibold">{poll.question}</h4>
+                    {poll.active && (
+                      <button
+                        onClick={() => closePoll(poll.id)}
+                        className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded"
+                      >
+                        Close
+                      </button>
+                    )}
+                  </div>
+                  {poll.options.map((option, idx) => (
+                    <div key={idx} className="mb-2">
+                      <div className="flex justify-between">
+                        <span>{option}</span>
+                        <span className="text-sm text-gray-500">
+                          {Object.values(poll.votes).filter(v => v === idx).length} votes
+                        </span>
+                      </div>
+                      {poll.active && (
+                        <button
+                          onClick={() => handleVote(poll.id, idx)}
+                          className={`mt-1 text-xs px-3 py-1 rounded ${
+                            poll.votes[currentUser] === idx
+                              ? 'bg-purple-600 text-white'
+                              : 'bg-purple-100 text-purple-700'
+                          }`}
+                        >
+                          {poll.votes[currentUser] === idx ? '✓ Voted' : 'Vote'}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <button
+              onClick={getRandomFunFact}
+              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              🤯 BC Fun Facts
+            </button>
+          </div>
+
+          {currentFunFact && (
+            <div className="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-purple-200 rounded-xl p-6">
+              <h3 className="text-xl font-bold text-purple-800 mb-2">{currentFunFact.title}</h3>
+              <p className="text-purple-700 mb-3">{currentFunFact.fact}</p>
+              <p className="text-purple-800 font-medium">{currentFunFact.tip}</p>
+              <button
+                onClick={() => setCurrentFunFact(null)}
+                className="mt-4 text-purple-600 hover:text-purple-800"
+              >
+                Close
+              </button>
+            </div>
+          )}
 
           <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
             <h3 className="font-bold text-blue-800 mb-2">🌤️ Weather Forecast</h3>
@@ -917,196 +1092,22 @@ const BCRoadTripPlanner = () => {
                   
                   {showWeatherDetails[loc.name] && (
                     <div className="mt-2 pt-2 border-t border-blue-100">
-                      <p className="text-xs">Current: 22°C, Sunny</p>
+                      <p className="text-xs">Current: 22°C, Sunny ☀️</p>
                       <p className="mt-1 text-xs font-semibold">5-Day Forecast:</p>
                       <ul className="text-xs list-disc pl-3">
-                        <li>Jul 15: 24°C, Sunny</li>
-                        <li>Jul 16: 26°C, Partly Cloudy</li>
-                        <li>Jul 17: 23°C, Rain</li>
-                        <li>Jul 18: 25°C, Sunny</li>
-                        <li>Jul 19: 27°C, Sunny</li>
+                        <li>Day 1: 24°C, Sunny</li>
+                        <li>Day 2: 26°C, Partly Cloudy</li>
+                        <li>Day 3: 23°C, Light Rain</li>
+                        <li>Day 4: 25°C, Sunny</li>
+                        <li>Day 5: 27°C, Clear</li>
                       </ul>
                     </div>
                   )}
                 </div>
               ))}
             </div>
+            <p className="text-xs text-gray-500 mt-2">* Weather data is simulated for demo purposes</p>
           </div>
-
-          <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-purple-800">🗳️ Group Polls</h3>
-              <button
-                type="button"
-                onClick={() => setShowCreatePoll(!showCreatePoll)}
-                className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
-              >
-                {showCreatePoll ? 'Cancel' : '+ New Poll'}
-              </button>
-            </div>
-
-            {showCreatePoll && (
-              <div className="mb-6 p-4 bg-white border border-purple-200 rounded-lg">
-                <h4 className="font-semibold text-purple-700 mb-3">Create New Poll</h4>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Poll question..."
-                    value={newPoll.question}
-                    onChange={(e) => setNewPoll(prev => ({ ...prev, question: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded"
-                  />
-                  {newPoll.options.map((option, idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      placeholder={`Option ${idx + 1}...`}
-                      value={option}
-                      onChange={(e) => {
-                        const newOptions = [...newPoll.options];
-                        newOptions[idx] = e.target.value;
-                        setNewPoll(prev => ({ ...prev, options: newOptions }));
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
-                    />
-                  ))}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={createPoll}
-                      className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-                    >
-                      Create Poll
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowCreatePoll(false)}
-                      className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div className="space-y-6">
-              {polls.map(poll => {
-                const totalVotes = Object.keys(poll.votes).length;
-                const voteCounts = poll.options.map((_, idx) => 
-                  Object.values(poll.votes).filter(vote => vote === idx).length
-                );
-
-                return (
-                  <div key={poll.id} className={`p-4 rounded-lg border-2 ${poll.active ? 'bg-white border-purple-200' : 'bg-gray-50 border-gray-200'}`}>
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-semibold text-gray-800">{poll.question}</h4>
-                      {poll.active && (
-                        <button
-                          type="button"
-                          onClick={() => closePoll(poll.id)}
-                          className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200"
-                        >
-                          Close Poll
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="space-y-3">
-                      {poll.options.map((option, optionIndex) => {
-                        const voteCount = voteCounts[optionIndex];
-                        const percentage = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
-                        
-                        return (
-                          <div key={optionIndex} className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="font-medium text-gray-700">{option}</span>
-                              <span className="text-sm text-gray-500">{voteCount}/{totalVotes} votes ({percentage}%)</span>
-                            </div>
-                            
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${percentage}%` }}
-                              ></div>
-                            </div>
-
-                            {poll.active && (
-                              <div className="flex gap-1 flex-wrap">
-                                <button
-                                  type="button"
-                                  onClick={() => handleVote(poll.id, optionIndex)}
-                                  className={`text-sm px-3 py-1 rounded transition-colors ${
-                                    currentUser && poll.votes[currentUser] === optionIndex
-                                      ? 'bg-purple-600 text-white font-bold'
-                                      : currentUser && poll.votes[currentUser] !== undefined
-                                        ? 'bg-gray-200 text-gray-500'
-                                        : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                                  }`}
-                                  disabled={!poll.active}
-                                >
-                                  {currentUser && poll.votes[currentUser] === optionIndex ? '✓ Your Vote' : 'Vote for This'}
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <div className="text-xs text-gray-500">
-                        <strong>Voted:</strong> {Object.keys(poll.votes).join(', ') || 'No votes yet'}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        <strong>Pending:</strong> {friends.filter(friend => !(friend in poll.votes)).join(', ') || 'Everyone voted!'}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={getRandomFunFact}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
-            >
-              <span className="text-xl">🤯</span>
-              <span className="font-semibold">BC Fun Facts</span>
-              <span className="text-sm opacity-90">(Prepare to be amused)</span>
-            </button>
-          </div>
-
-          {currentFunFact && (
-            <div className="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-purple-200 rounded-xl p-6">
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-xl font-bold text-purple-800">{currentFunFact.title}</h3>
-                <button
-                  type="button"
-                  onClick={() => setCurrentFunFact(null)}
-                  className="text-purple-600 hover:text-purple-800 text-xl"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-purple-700 mb-3 leading-relaxed">{currentFunFact.fact}</p>
-              <div className="bg-purple-100 rounded-lg p-3 border-l-4 border-purple-400">
-                <p className="text-purple-800 font-medium">{currentFunFact.tip}</p>
-              </div>
-              <div className="mt-4 flex justify-center">
-                <button
-                  type="button"
-                  onClick={getRandomFunFact}
-                  className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-sm"
-                >
-                  🎲 Another Fun Fact!
-                </button>
-              </div>
-            </div>
-          )}
 
           <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
             <h3 className="font-bold text-red-800 mb-4">🚨 Emergency Contacts & Important Info</h3>
@@ -1168,212 +1169,12 @@ const BCRoadTripPlanner = () => {
                   BC Emergency Tips
                 </h4>
                 <ul className="text-sm text-yellow-800 space-y-1">
-                  <li>• <strong>No cell service?</strong> Many BC areas have spotty coverage - plan accordingly</li>
-                  <li>• <strong>Weather changes fast:</strong> Always carry emergency supplies in your RV</li>
-                  <li>• <strong>Ferry delays:</strong> Check BC Ferries app for real-time updates</li>
+                  <li>• <strong>No cell service?</strong> Many BC areas have spotty coverage - download offline maps!</li>
                   <li>• <strong>Wildlife encounters:</strong> Never approach bears - make noise, back away slowly</li>
+                  <li>• <strong>Ferry delays:</strong> Check BC Ferries app for real-time updates</li>
                   <li>• <strong>Medical:</strong> Nearest hospitals may be hours away in remote areas</li>
+                  <li>• <strong>Weather changes fast:</strong> Always carry emergency supplies in your vehicle</li>
                 </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-pink-50 border-2 border-pink-200 rounded-lg p-4">
-            <h3 className="font-bold text-pink-800 mb-4">📸 Photo Challenges & Message Board</h3>
-            
-            <div className="space-y-6">
-              <div className="bg-white p-4 rounded border border-pink-200">
-                <h4 className="font-semibold text-pink-700 mb-3">📱 Photo Sharing Setup</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Shared Album Link:</label>
-                    <input
-                      type="url"
-                      value={photoBoard.sharedAlbumLink}
-                      onChange={(e) => setPhotoBoard(prev => ({ ...prev, sharedAlbumLink: e.target.value }))}
-                      placeholder="https://photos.google.com/share/..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Instagram Hashtag:</label>
-                    <input
-                      type="text"
-                      value={photoBoard.instagramHashtag}
-                      onChange={(e) => setPhotoBoard(prev => ({ ...prev, instagramHashtag: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-pink-700">🎯 Photo Challenges</h4>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddChallenge(!showAddChallenge)}
-                    className="px-3 py-1 bg-pink-600 text-white rounded hover:bg-pink-700 text-sm"
-                  >
-                    {showAddChallenge ? 'Cancel' : '+ Add Challenge'}
-                  </button>
-                </div>
-
-                {showAddChallenge && (
-                  <div className="mb-4 p-3 bg-white border border-pink-200 rounded">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newChallenge}
-                        onChange={(e) => setNewChallenge(e.target.value)}
-                        placeholder="New photo challenge..."
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded"
-                      />
-                      <button
-                        type="button"
-                        onClick={addPhotoChallenge}
-                        className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {photoBoard.challenges.map(challenge => (
-                    <div key={challenge.id} className={`p-4 rounded border-2 ${
-                      challenge.completed 
-                        ? 'bg-green-50 border-green-200' 
-                        : 'bg-white border-pink-200'
-                    }`}>
-                      <div className="flex justify-between items-start mb-2">
-                        <p className={`font-medium ${challenge.completed ? 'text-green-800 line-through' : 'text-gray-800'}`}>
-                          {challenge.challenge}
-                        </p>
-                        {challenge.completed && (
-                          <span className="text-green-600 font-bold text-sm">✓ DONE!</span>
-                        )}
-                      </div>
-
-                      {challenge.completed ? (
-                        <div className="text-sm text-green-700">
-                          <strong>Completed by:</strong> {challenge.completedBy}
-                          {challenge.proof && (
-                            <div className="mt-1">
-                              <strong>Proof:</strong> {challenge.proof}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          <div className="text-sm text-gray-600">
-                            {challenge.assignedTo ? (
-                              <span><strong>Assigned to:</strong> {challenge.assignedTo}</span>
-                            ) : (
-                              <span className="text-gray-500">Not assigned yet</span>
-                            )}
-                          </div>
-                          
-                          <div className="flex gap-1 flex-wrap">
-                            {friends.map(friend => (
-                              <button
-                                key={friend}
-                                type="button"
-                                onClick={() => assignChallenge(challenge.id, friend)}
-                                className={`text-xs px-2 py-1 rounded transition-colors ${
-                                  challenge.assignedTo === friend
-                                    ? 'bg-pink-600 text-white'
-                                    : 'bg-pink-100 text-pink-700 hover:bg-pink-200'
-                                }`}
-                              >
-                                {friend}
-                              </button>
-                            ))}
-                          </div>
-                          
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const completedBy = prompt('Who completed this challenge?', challenge.assignedTo);
-                              if (completedBy) {
-                                const proof = prompt('Any proof/description? (optional)');
-                                completeChallenge(challenge.id, completedBy, proof || '');
-                              }
-                            }}
-                            className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                          >
-                            Mark Complete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-pink-700 mb-3">💬 Message Board</h4>
-                
-                <div className="bg-white border border-pink-200 rounded-lg">
-                  <div className="max-h-64 overflow-y-auto p-4 space-y-3">
-                    {photoBoard.messages.map(message => (
-                      <div key={message.id} className={`p-3 rounded ${
-                        message.author === 'App' ? 'bg-pink-100' : 'bg-gray-100'
-                      }`}>
-                        <div className="flex justify-between items-start mb-1">
-                          <span className="font-medium text-sm text-gray-800">{message.author}</span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(message.timestamp).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-700">{message.message}</p>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="border-t border-pink-200 p-4">
-                    <form onSubmit={addMessage} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Share an update, spotted Bigfoot, found the best poutine..."
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded"
-                      />
-                      <button
-                        type="submit"
-                        className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
-                      >
-                        Post
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-4 rounded border border-pink-200">
-                <h4 className="font-semibold text-pink-700 mb-2">🏆 Challenge Progress</h4>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm"><strong>Total Challenges:</strong> {photoBoard.challenges.length}</p>
-                    <p className="text-sm"><strong>Completed:</strong> {photoBoard.challenges.filter(c => c.completed).length}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm"><strong>Top Challenger:</strong> 
-                      {(() => {
-                        const completions = {};
-                        photoBoard.challenges.forEach(c => {
-                          if (c.completed && c.completedBy) {
-                            completions[c.completedBy] = (completions[c.completedBy] || 0) + 1;
-                          }
-                        });
-                        const top = Object.entries(completions).sort((a, b) => b[1] - a[1])[0];
-                        return top ? ` ${top[0]} (${top[1]})` : ' Nobody yet!';
-                      })()}
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -1383,9 +1184,8 @@ const BCRoadTripPlanner = () => {
       {currentSection === 'itinerary' && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-800">🗺️ Your 10-Day Adventure Map</h2>
+            <h2 className="text-xl font-bold text-gray-800">🗺️ Your 10-Day Adventure</h2>
             <button
-              type="button"
               onClick={() => setShowMap(!showMap)}
               className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-2"
             >
@@ -1394,8 +1194,8 @@ const BCRoadTripPlanner = () => {
           </div>
 
           {showMap && (
-            <div className="mb-6">
-              <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-t-xl p-4 text-white">
+            <div className="mb-6 bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 to-blue-600 p-4 text-white">
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="text-lg font-bold">🗺️ Your BC Adventure Route</h3>
@@ -1412,83 +1212,126 @@ const BCRoadTripPlanner = () => {
                   </a>
                 </div>
               </div>
-              <div className="w-full h-96 rounded-b-xl border border-gray-200 bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
-                <div className="text-center p-8">
-                  <p className="text-lg font-semibold mb-2 text-gray-700">🗺️ Interactive BC Route Map</p>
-                  <p className="text-sm text-gray-600 mb-4">Your epic journey visualization</p>
-                  <div className="text-left bg-white rounded-lg p-4 shadow-sm max-w-sm mx-auto">
-                    <div className="text-xs space-y-1 text-gray-700">
-                      <div>📍 Vancouver → Osoyoos (Desert)</div>
-                      <div>📍 Osoyoos → Kelowna (Wine Country)</div>
-                      <div>📍 Kelowna → Pemberton (Mountains)</div>
-                      <div>📍 Pemberton → Tofino (Ocean)</div>
-                      <div>📍 Tofino → Victoria (Islands)</div>
-                      <div>📍 Victoria → Vancouver (Home)</div>
+              <div className="w-full h-96 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center p-8">
+                <div className="text-center max-w-2xl">
+                  <p className="text-2xl font-bold mb-4 text-gray-800">🗺️ Epic BC Road Trip Route</p>
+                  <p className="text-lg text-gray-600 mb-6">Your legendary 2,200km journey through British Columbia!</p>
+                  
+                  <div className="bg-white rounded-lg p-6 shadow-md">
+                    <div className="grid md:grid-cols-2 gap-4 text-left">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-gray-800 mb-2">📍 Route Breakdown:</h4>
+                        <div className="text-sm space-y-1 text-gray-700">
+                          <div className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">•</span>
+                            <span><strong>Day 1:</strong> Vancouver → Osoyoos<br/>
+                            <span className="text-xs text-gray-500">400km, 5 hours - Desert wine country</span></span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">•</span>
+                            <span><strong>Day 2:</strong> Osoyoos → Kelowna<br/>
+                            <span className="text-xs text-gray-500">120km, 2 hours - Lake paradise</span></span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">•</span>
+                            <span><strong>Day 4:</strong> Kelowna → Pemberton<br/>
+                            <span className="text-xs text-gray-500">330km, 4 hours - Mountain valleys</span></span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">•</span>
+                            <span><strong>Day 5:</strong> Pemberton → Tofino<br/>
+                            <span className="text-xs text-gray-500">280km + ferry, 6 hours - Pacific Ocean</span></span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">•</span>
+                            <span><strong>Day 7:</strong> Tofino → Victoria<br/>
+                            <span className="text-xs text-gray-500">315km, 4.5 hours - Capital city</span></span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">•</span>
+                            <span><strong>Day 9:</strong> Victoria → Vancouver<br/>
+                            <span className="text-xs text-gray-500">Ferry crossing, 3.5 hours - Journey's end</span></span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="bg-blue-50 rounded-lg p-4">
+                          <h4 className="font-semibold text-blue-800 mb-2">📊 Trip Statistics:</h4>
+                          <div className="text-sm space-y-1">
+                            <p><strong>Total Distance:</strong> ~2,200 km</p>
+                            <p><strong>Driving Time:</strong> ~25 hours</p>
+                            <p><strong>Ferry Crossings:</strong> 2 major routes</p>
+                            <p><strong>Elevation Change:</strong> Sea level to 2,000m+</p>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-yellow-50 rounded-lg p-4">
+                          <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Important Notes:</h4>
+                          <ul className="text-sm text-yellow-700 space-y-1">
+                            <li>• Book ferries in advance!</li>
+                            <li>• Check road conditions</li>
+                            <li>• Download offline maps</li>
+                            <li>• Keep gas tank above 1/2</li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
-
-          {defaultItinerary.map((day, dayIndex) => (
+          
+          {editableItinerary.map((day) => (
             <div
               key={day.day}
-              className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${
+              className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                 selectedDay === day.day
-                  ? 'border-blue-500 bg-blue-50 shadow-lg'
+                  ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
               onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1">
+                <div className="flex items-center gap-3">
                   <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
                     {day.day}
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-800">{day.location}</h3>
+                  <div>
+                    <h3 className="font-bold">{day.location}</h3>
                     <p className="text-sm text-gray-600">{day.highlight}</p>
                   </div>
                 </div>
-                <span className="text-gray-400">📍</span>
               </div>
 
               {selectedDay === day.day && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-semibold text-gray-700">Today's Adventures:</h4>
-                  </div>
-
-                  <div className="grid md:grid-cols-3 gap-2">
+                <div className="mt-4 pt-4 border-t">
+                  <h4 className="font-semibold mb-2">Activities:</h4>
+                  <ul className="list-disc list-inside text-sm text-gray-700 mb-4">
                     {day.activities.map((activity, idx) => (
-                      <div key={idx} className="bg-white rounded px-3 py-2 text-sm border border-gray-200">
-                        {activity}
-                      </div>
+                      <li key={idx}>{activity}</li>
                     ))}
-                  </div>
-
-                  <div className="mt-3 space-y-3">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowDaySummary(prev => ({
-                          ...prev,
-                          [day.day]: !prev[day.day]
-                        }));
-                      }}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
-                    >
-                      {showDaySummary[day.day] ? 'Hide Day Summary' : `Get Day ${day.day} Summary`}
-                    </button>
-                    
-                    {showDaySummary[day.day] && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p className="text-blue-800 leading-relaxed">{day.summary}</p>
-                      </div>
-                    )}
-                  </div>
+                  </ul>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowDaySummary(prev => ({
+                        ...prev,
+                        [day.day]: !prev[day.day]
+                      }));
+                    }}
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                  >
+                    {showDaySummary[day.day] ? 'Hide' : 'Show'} Day Summary
+                  </button>
+                  
+                  {showDaySummary[day.day] && (
+                    <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-blue-800">{day.summary}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1499,49 +1342,92 @@ const BCRoadTripPlanner = () => {
       {currentSection === 'chat' && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
-            <div className="flex items-center gap-4">
-              <img
-                src="https://i.imgur.com/xtAl4ow.png"
-                alt="Nanook - Your BC Guide"
-                className="w-16 h-16 rounded-full border-3 border-white shadow-lg"
-              />
-              <div>
-                <h2 className="text-xl font-bold mb-1">🤙 Chat with Nanook!</h2>
-                <p className="text-lg mb-1">Your cheeky BC guide with insider knowledge!</p>
-                <p className="text-sm opacity-90">Former number-cruncher turned wilderness enthusiast. Ready to help you legends plan the most epic BC adventure ever!</p>
-              </div>
-            </div>
+            <h2 className="text-xl font-bold mb-1">🤙 Chat with Nanook!</h2>
+            <p className="text-lg">Your cheeky BC guide with insider knowledge!</p>
           </div>
 
-          <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-800 mb-3">Ask Nanook Anything:</h3>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={customQuestion}
-                onChange={(e) => setCustomQuestion(e.target.value)}
-                placeholder="Type your question (e.g., @Tom, book the ferry?)..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  if (customQuestion.trim()) {
-                    setCustomQuestion('');
-                  }
-                }}
-                disabled={isLoading || !customQuestion.trim()}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+            {conversation.map((msg) => (
+              <div
+                key={msg.id}
+                className={`mb-4 ${
+                  msg.type === 'user' ? 'text-right' : 'text-left'
+                }`}
               >
-                Ask
-              </button>
-            </div>
+                <div
+                  className={`inline-block p-3 rounded-lg max-w-3xl ${
+                    msg.type === 'user'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white border border-gray-200'
+                  }`}
+                >
+                  <p className={msg.type === 'user' ? 'text-white' : 'text-gray-800'}>
+                    {msg.content}
+                  </p>
+                  
+                  {msg.recommendations && msg.recommendations.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <p className="font-semibold text-sm mb-2">Recommendations:</p>
+                      <ul className="list-disc list-inside text-sm">
+                        {msg.recommendations.map((rec, idx) => (
+                          <li key={idx}>{rec}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {msg.insider_tip && (
+                    <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded p-2">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Insider Tip:</strong> {msg.insider_tip}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="text-center text-gray-500">
+                <p>Nanook is thinking... 🤔</p>
+              </div>
+            )}
           </div>
 
-          <div className="text-center text-gray-500 py-8">
-            <p>👋 Hey {currentUser}! The chat feature is coming soon - Nanook is getting ready to help you plan your epic BC adventure!</p>
-            <p className="text-sm mt-2">For now, use the overview and itinerary sections to explore your trip.</p>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {quickQuestions.map((question, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleChat(question)}
+                className="text-left p-2 bg-gray-100 rounded hover:bg-gray-200 text-sm"
+                disabled={isLoading}
+              >
+                {question}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={customQuestion}
+              onChange={(e) => setCustomQuestion(e.target.value)}
+              placeholder="Ask Nanook anything..."
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+              disabled={isLoading}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && customQuestion.trim()) {
+                  handleChat(customQuestion);
+                }
+              }}
+            />
+            <button
+              onClick={() => handleChat(customQuestion)}
+              disabled={isLoading || !customQuestion.trim()}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+            >
+              Ask
+            </button>
           </div>
         </div>
       )}
