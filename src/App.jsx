@@ -3,9 +3,9 @@ import BCRoadTripPlanner from './BCRoadTripPlanner'
 
 function App() {
   return (
-    <div className="App">
-      <BCRoadTripPlanner />
-    </div>
+<div className="min-h-screen bg-gray-100 p-6">
+  <BCRoadTripPlanner />
+</div>
   )
 }
 

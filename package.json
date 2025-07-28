@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Interactive road trip planner for Markus's epic 40th birthday BC adventure",
   "main": "index.html",
+  "homepage": "https://pjdevos.github.io/bc-bros-road-trip-planner",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
