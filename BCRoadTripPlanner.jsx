@@ -19,6 +19,7 @@ const BCRoadTripPlanner = () => {
   const [newMessage, setNewMessage] = useState("");
   const [newChallenge, setNewChallenge] = useState("");
   const [showAddChallenge, setShowAddChallenge] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   const friends = ["Markus", "Tom", "Ramon", "Churchill", "Emil", "Henning", "Paddy", "Radu", "Tudor", "P-J"];
 
@@ -184,6 +185,7 @@ const BCRoadTripPlanner = () => {
     ]
   });
 
+  // Online/offline detection and initial conversation setup
   useEffect(() => {
     if (currentUser && conversation.length === 0) {
       setConversation([
@@ -204,6 +206,21 @@ What can I help you international adventure seekers with today? 🏔️🌊`,
           timestamp: Date.now()
         }
       ]);
+    }
+
+    // Online/offline detection
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      setIsOnline(navigator?.onLine || true);
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
     }
   }, [currentUser, conversation.length]);
 
@@ -237,186 +254,6 @@ What can I help you international adventure seekers with today? 🏔️🌊`,
       title: "Wildlife Is... a Bit Too Local",
       fact: "It's not unusual to see raccoons committing petty crimes in your garbage, seagulls stealing your fries with surgical precision, or a bear using your backyard as a shortcut to work.",
       tip: "🐻 BC: where wildlife comes to you."
-    },
-    {
-      title: "World's Longest Coastline Secret",
-      fact: "BC's coastline is so complex and fjord-filled that if you straightened it out, it would stretch for over 25,000 kilometers - longer than the distance around the entire Earth!",
-      tip: "🌊 This means endless hidden coves and secret beaches to discover."
-    },
-    {
-      title: "The Ultimate Weather Forecast",
-      fact: "If you can see the mountains, it's going to rain. If you can't see the mountains, it's already raining. This is the only weather forecast you need in BC.",
-      tip: "🌧️ Forget the weather app. Just look at the mountains and pack accordingly."
-    },
-    {
-      title: "Tim Hortons vs. Local Coffee Wars",
-      fact: "BC has the most intense coffee shop loyalty in Canada. You're either a 'Timmies' person or a 'local roastery' person. There is no middle ground, and friendships have ended over it.",
-      tip: "☕ Saying 'double-double' at a craft coffee shop will get you the stink eye of a lifetime."
-    },
-    {
-      title: "Real Estate Is a National Joke",
-      fact: "A 500 sq ft condo in Vancouver costs more than a literal castle in Scotland. But hey — it comes with a shared laundry room and a 'peekaboo' view of the ocean if you lean out the window dangerously.",
-      tip: "🏠💸 At least the air is free... for now."
-    },
-    {
-      title: "Everyone Hikes, Even if They Hate It",
-      fact: "If you live in BC and don't hike, you'll be gently shamed until you do. It's practically a religion.",
-      tip: "⛰️ Haven't done the Grouse Grind? Get thee to the stairs, sinner."
-    },
-    {
-      title: "Fleece Is Formal Wear",
-      fact: "In BC, you can wear hiking boots and a Patagonia fleece to a wedding, and nobody bats an eye. In fact, you'll probably be overdressed if you wear actual dress shoes.",
-      tip: "🧥 When in doubt, layer. Always layer. Even in summer."
-    },
-    {
-      title: "The Grouse Grind Is a Cult",
-      fact: "Vancouverites treat the Grouse Grind (a brutal 2.9km uphill hike) like a religion. People do it daily, track their times obsessively, and judge you based on your personal best.",
-      tip: "⛰️ Under 45 minutes = respectable. Under 30 minutes = you're probably not human."
-    },
-    {
-      title: "BC Wine Snobs Are Real",
-      fact: "BC produces world-class wine, and locals will fight you about it. Mention California wine at an Okanagan tasting and watch the temperature drop faster than a Whistler chairlift.",
-      tip: "🍷 Just nod and say 'terroir' — it works every time."
-    },
-    {
-      title: "Ferry Lineups Are a Social Event",
-      fact: "BC Ferries lineups aren't just waiting — they're networking opportunities. People bring lawn chairs, barbecues, and full picnics. Some travelers have made lifelong friends in the Horseshoe Bay parking lot.",
-      tip: "⛴️ Pro tip: The car deck coffee is surprisingly good, and the gift shop sells everything you forgot to pack."
-    },
-    {
-      title: "Orcas Are Basically Local Celebrities",
-      fact: "BC's orcas have names, fan clubs, and Instagram accounts. People track them like celebrities and get genuinely excited when J35 or K25 shows up for a photo op.",
-      tip: "🐋 Yes, you will be expected to know which pod you saw. No, 'the black and white one' is not specific enough."
-    },
-    {
-      title: "BC Has Its Own Time Zone... Sort Of",
-      fact: "Most of BC is on Pacific Time, but a tiny chunk in the northeast runs on Mountain Time. It's like BC couldn't decide what time zone it wanted to be in, so it said 'why not both?'",
-      tip: "🕐 Don't be late for dinner in Fort St. John — you might be in the wrong time zone."
-    },
-    {
-      title: "We Have Towns Named Peculiar Things",
-      fact: "There's a small BC town called '100 Mile House', and it's exactly 100 miles from... something. Nobody's quite sure what anymore.",
-      tip: "🏘️ Don't forget: Spuzzum, Skookumchuck, Funky Creek, and Osoyoos (which visitors can't pronounce)."
-    },
-    {
-      title: "The Unholy Love Affair with Sushi",
-      fact: "Vancouver has more sushi restaurants per capita than Tokyo (really). It's totally normal to get sushi at gas stations or budget grocery stores. And sometimes… it's actually good.",
-      tip: "🍣 BC Roll? Invented here — complete with imitation crab and cucumber, no shame."
-    },
-    {
-      title: "Salmon Is Basically a Religion",
-      fact: "Smoked, candied, grilled, sockeye, chinook, you name it. There's even salmon candy (yes, sweet smoked fish), which is somehow delicious and confusing at the same time.",
-      tip: "🐟 First Nations cuisine centers around wild salmon and it's treated with deep respect."
-    },
-    {
-      title: "BC Day Long Weekend Is Sacred",
-      fact: "The first Monday in August (BC Day) isn't just a holiday — it's a mass exodus to camping spots. Book your site a year in advance or prepare to sleep in your car.",
-      tip: "🏕️ If you don't have a reservation, your only hope is arriving at a campground at 6 AM and bribing someone with Tim Hortons."
-    },
-    {
-      title: "Vancouver Has a Nightly Cannon Ritual",
-      fact: "Every night at 9pm sharp, a cannon fires in Vancouver aimed at downtown. It's been happening for over 150 years, and somehow people still jump.",
-      tip: "💥 Don't worry, it's just Vancouver saying goodnight. Very loudly."
-    },
-    {
-      title: "The Famous Steam Clock Isn't Actually Steam-Powered",
-      fact: "Vancouver's famous Gastown Steam Clock? It's mostly electric. The 'steam' is just for show. Peak tourist trap energy.",
-      tip: "⏰ Don't tell the Instagram influencers — they're having too much fun posing with 'authentic Victorian steam technology.'"
-    },
-    {
-      title: "SkyTrain Drives Itself",
-      fact: "Vancouver's SkyTrain has no driver or pilot — it's fully automated. The trains just... know where to go. Very BC: even public transit is chill and independent.",
-      tip: "🚇 Don't panic if you don't see a driver. The robots have it handled."
-    },
-    {
-      title: "BC Is Ridiculously Huge",
-      fact: "At just under 950,000 square kilometers, BC is bigger than France, Italy, Ukraine, and Japan. It's the 4th largest province/state in North America after Alaska, Quebec, and Texas.",
-      tip: "📏 When locals say 'it's just down the road,' they might mean 8 hours of driving."
-    },
-    {
-      title: "Nanaimo: Bathtub Racing Capital of the World",
-      fact: "Since 1967, Nanaimo has hosted the World Championship Bathtub Race. Yes, people race actual bathtubs across the ocean. No, nobody questions this.",
-      tip: "🛁 Peak BC: turning bathroom fixtures into competitive water sports."
-    },
-    {
-      title: "BC Once Banned Alcohol (It Didn't Go Well)",
-      fact: "Between 1917 and 1921, BC tried prohibition. Spoiler alert: it lasted about as long as a snowball in a Kelowna vineyard.",
-      tip: "🍻 Good thing they figured out wine country was a better idea."
-    },
-    {
-      title: "Pamela Anderson Was Canada's Birthday Baby",
-      fact: "Pamela Anderson was born in Ladysmith, BC at 4:08 AM on July 1st, 1967 — making her Canada's official 'Centennial Baby' for the 100th Canada Day celebration.",
-      tip: "🎂 Peak Canadian timing: being born exactly on Canada's birthday."
-    },
-    {
-      title: "Surrey Has the World's Longest Beard",
-      fact: "BC resident Sarwan Singh holds the world record for 'Longest Beard' at over 2.33 metres. That's longer than most people are tall, and definitely longer than your attention span.",
-      tip: "🧔 Don't ask him for beard care tips unless you have 3 hours to spare."
-    },
-    {
-      title: "California Roll? More Like Vancouver Roll",
-      fact: "Some say the California Roll was actually invented in Vancouver. California just had better marketing. Classic BC: inventing things and letting other places take credit.",
-      tip: "🍣 Yet another reason to side-eye California at wine tastings."
-    },
-    {
-      title: "Legendary Creatures Have Legal Protection",
-      fact: "Ogopogo, Sasquatch/Bigfoot, and other legendary creatures are legally protected as 'endangered species' in BC — just in case they're real. Only in BC would mythical beings get government paperwork.",
-      tip: "🦶 If you see Bigfoot, don't disturb him. He's got legal rights and probably better healthcare than you."
-    },
-    {
-      title: "BC Loves Weird World Records",
-      fact: "Victoria resident Josiah Plett holds the record for solving Rubik's cubes while hula-hooping (531 one-handed!). Meanwhile, 320 people in Chetwynd painted blindfolded simultaneously. Peak BC energy.",
-      tip: "🏆 In BC, if it's weird and nobody's tried it yet, someone will make it a world record."
-    },
-    {
-      title: "Weird Pizza Toppings Are Normal",
-      fact: "Ever had pizza with smoked salmon and goat cheese? Or blueberries and arugula? In BC, that's just 'Tuesday.'",
-      tip: "🍕 Pineapple on pizza is old news here. Bring on the fennel pollen and caramelized leeks."
-    },
-    {
-      title: "Coffee Snobbery Is Next Level",
-      fact: "You can't just say 'coffee.' It's a single-origin Guatemalan pour-over with oat milk, served in a reusable cup made of recycled hemp and vibes.",
-      tip: "☕ Tim Hortons? Fine. But the third-wave, ethically-sourced café is where the soul lives."
-    },
-    {
-      title: "People Treat Kale Like Currency",
-      fact: "Farmers markets sell 10 kinds of kale. 'Would you like that smoothie with organic kale, local kale, or biodynamic ancestral kale?'",
-      tip: "🥬 Don't insult kale in BC. Someone will overhear and uninvite you to their yoga retreat."
-    },
-    {
-      title: "Weed Was Legal Before It Was Legal",
-      fact: "Let's be honest: BC Bud was famous worldwide long before Canada made cannabis legal. There were dispensaries operating before laws even caught up.",
-      tip: "🌿 They call it 'the B.C. Bud loophole' — or just 'a Wednesday.'"
-    },
-    {
-      title: "Bike Lanes Are Sacred",
-      fact: "Don't you dare walk in the bike lane in Vancouver. You will be silently judged, politely warned, and possibly run over by a Lululemon-clad cyclist sipping oat milk.",
-      tip: "🚴‍♀️ Respect the spandex warriors."
-    },
-    {
-      title: "Everyone's a Weather Expert",
-      fact: "BC residents can predict weather with supernatural accuracy. They'll tell you it's going to rain in exactly 23 minutes based on 'the way the mountains look' and be absolutely right.",
-      tip: "🌧️ If a local says 'better bring a jacket,' you bring the jacket. No questions asked."
-    },
-    {
-      title: "Cottage Cheese is Surprisingly Controversial",
-      fact: "Ask for cottage cheese on your breakfast in BC and prepare for judgment. It's been replaced by Greek yogurt, chia seeds, and things with unpronounceable superfood names.",
-      tip: "🥛 Hemp hearts are the new cottage cheese. Don't ask why."
-    },
-    {
-      title: "BC Has the Most Expensive Gas",
-      fact: "BC consistently has Canada's highest gas prices. Locals cope by pretending their Subaru runs on good vibes and mountain air.",
-      tip: "⛽ Pro tip: Always fill up before crossing into BC. Your wallet will thank you."
-    },
-    {
-      title: "The Sea-to-Sky Highway Is Both Beautiful and Terrifying",
-      fact: "The Sea-to-Sky Highway offers breathtaking views and heart-stopping drops. It's like BC couldn't decide between a scenic route and an extreme sport, so they made it both.",
-      tip: "🚗 Don't look down. Seriously. Eyes on the road, not the 500-foot drop."
-    },
-    {
-      title: "Stanley Park Is Bigger Than Central Park",
-      fact: "Vancouver's Stanley Park is about 10% larger than NYC's Central Park. But locals will tell you it's at least 1000% better because it has ocean views, mountains, and fewer tourists.",
-      tip: "🌲 Get lost on purpose. The best spots are where the tour buses can't go."
     }
   ];
 
@@ -434,8 +271,21 @@ What can I help you international adventure seekers with today? 🏔️🌊`,
     setCurrentFunFact(bcFunFacts[randomIndex]);
   };
 
+  // Working chat function based on the "Fixed" version
   const handleChat = async (question) => {
     if (!question.trim()) return;
+    
+    if (!isOnline) {
+      setConversation(prev => [...prev, {
+        id: Date.now(),
+        type: 'guide',
+        content: "Whoa, legends! Looks like we're offline. Check back when you've got signal, and I'll hook you up with epic BC advice!",
+        recommendations: [],
+        insider_tip: "",
+        timestamp: Date.now()
+      }]);
+      return;
+    }
     
     setIsLoading(true);
     
@@ -482,55 +332,64 @@ Your entire response MUST be valid JSON only.`
         })
       });
       
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+      
       const data = await response.json();
       
-  if (data.content && data.content[0] && data.content[0].text) {
-  try {
-    // Handle Claude API JSON responses with markdown stripping
-    let responseText = data.content[0].text;
-    responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    const nanookResponse = JSON.parse(responseText);
-    
-    const guideMessage = {
-      id: Date.now() + 1,
-      type: 'guide',
-      content: nanookResponse.response,
-      recommendations: nanookResponse.recommendations || [],
-      insider_tip: nanookResponse.insider_tip || "",
-      timestamp: Date.now()
-    };
-    
-    setConversation(prev => [...prev, guideMessage]);
-  } catch (parseError) {
-    console.error('JSON Parse Error:', parseError);
-    // If JSON parsing fails, use the raw response
-    const guideMessage = {
-      id: Date.now() + 1,
-      type: 'guide',
-      content: data.content[0].text,
-      recommendations: [],
-      insider_tip: "",
-      timestamp: Date.now()
-    };
-    
-    setConversation(prev => [...prev, guideMessage]);
-  }
-} else {
-  throw new Error('Invalid response structure');
-}
+      if (data.content && data.content[0] && data.content[0].text) {
+        try {
+          // Handle Claude API JSON responses with markdown stripping
+          let responseText = data.content[0].text;
+          responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+          const nanookResponse = JSON.parse(responseText);
+          
+          const guideMessage = {
+            id: Date.now() + 1,
+            type: 'guide',
+            content: nanookResponse.response,
+            recommendations: nanookResponse.recommendations || [],
+            insider_tip: nanookResponse.insider_tip || "",
+            timestamp: Date.now()
+          };
+          
+          setConversation(prev => [...prev, guideMessage]);
+        } catch (parseError) {
+          console.error('JSON Parse Error:', parseError);
+          // If JSON parsing fails, use the raw response
+          const guideMessage = {
+            id: Date.now() + 1,
+            type: 'guide',
+            content: data.content[0].text,
+            recommendations: [],
+            insider_tip: "",
+            timestamp: Date.now()
+          };
+          
+          setConversation(prev => [...prev, guideMessage]);
+        }
+      } else {
+        throw new Error('Invalid response structure');
+      }
     } catch (error) {
-      console.error('Error calling API:', error);
+      console.error('Error calling Claude API:', error);
       
-      const fallbackMessage = {
+      // Show a helpful message that encourages trying again
+      const helpMessage = {
         id: Date.now() + 1,
         type: 'guide',
-        content: "Whoa legends, looks like my wilderness WiFi is acting up! 🏔️📡 Try asking again in a moment - I've got tons of BC wisdom to share!",
-        recommendations: [],
-        insider_tip: "Sometimes the best adventures happen when technology fails!",
+        content: `Hey ${currentUser}! 🤙 My connection to the BC wisdom database got a bit wobbly there. Give it another shot, legend - I've got tons of epic advice waiting for you international adventure seekers!`,
+        recommendations: [
+          "Try asking your question again",
+          "Check one of the quick questions below",
+          "Browse the itinerary for detailed trip info"
+        ],
+        insider_tip: "Sometimes the best adventures need a second attempt!",
         timestamp: Date.now()
       };
       
-      setConversation(prev => [...prev, fallbackMessage]);
+      setConversation(prev => [...prev, helpMessage]);
     }
     
     setIsLoading(false);
@@ -1360,6 +1219,11 @@ Your entire response MUST be valid JSON only.`
           <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
             <h2 className="text-xl font-bold mb-1">🤙 Chat with Nanook!</h2>
             <p className="text-lg">Your cheeky BC guide with insider knowledge!</p>
+            {!isOnline && (
+              <div className="mt-2 p-2 bg-red-500 bg-opacity-20 rounded">
+                ⚠️ You're offline! Chat will work once you're back online.
+              </div>
+            )}
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
