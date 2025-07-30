@@ -456,7 +456,7 @@ What can I help you international adventure seekers with today? 🏔️🌊`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-3-sonnet-20240229",
+          model: "claude-sonnet-4-20250514",
           max_tokens: 1000,
           messages: [
             { 
@@ -484,33 +484,40 @@ Your entire response MUST be valid JSON only.`
       
       const data = await response.json();
       
-      if (data.content && data.content[0] && data.content[0].text) {
-        try {
-          const nanookResponse = JSON.parse(data.content[0].text);
-          
-          const guideMessage = {
-            id: Date.now() + 1,
-            type: 'guide',
-            content: nanookResponse.response,
-            recommendations: nanookResponse.recommendations || [],
-            insider_tip: nanookResponse.insider_tip || "",
-            timestamp: Date.now()
-          };
-          
-          setConversation(prev => [...prev, guideMessage]);
-        } catch (parseError) {
-          const guideMessage = {
-            id: Date.now() + 1,
-            type: 'guide',
-            content: data.content[0].text,
-            recommendations: [],
-            insider_tip: "",
-            timestamp: Date.now()
-          };
-          
-          setConversation(prev => [...prev, guideMessage]);
-        }
-      }
+  if (data.content && data.content[0] && data.content[0].text) {
+  try {
+    // Handle Claude API JSON responses with markdown stripping
+    let responseText = data.content[0].text;
+    responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const nanookResponse = JSON.parse(responseText);
+    
+    const guideMessage = {
+      id: Date.now() + 1,
+      type: 'guide',
+      content: nanookResponse.response,
+      recommendations: nanookResponse.recommendations || [],
+      insider_tip: nanookResponse.insider_tip || "",
+      timestamp: Date.now()
+    };
+    
+    setConversation(prev => [...prev, guideMessage]);
+  } catch (parseError) {
+    console.error('JSON Parse Error:', parseError);
+    // If JSON parsing fails, use the raw response
+    const guideMessage = {
+      id: Date.now() + 1,
+      type: 'guide',
+      content: data.content[0].text,
+      recommendations: [],
+      insider_tip: "",
+      timestamp: Date.now()
+    };
+    
+    setConversation(prev => [...prev, guideMessage]);
+  }
+} else {
+  throw new Error('Invalid response structure');
+}
     } catch (error) {
       console.error('Error calling API:', error);
       

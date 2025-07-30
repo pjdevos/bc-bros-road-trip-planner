@@ -3,5 +3,6 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/bc-bros-road-trip-planner/',
+  // Remove the base path for Vercel
+  // base: '/bc-bros-road-trip-planner/'
 })
