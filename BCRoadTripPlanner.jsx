@@ -612,6 +612,10 @@ Your entire response MUST be valid JSON only.`
             <p className="text-gray-600">Markus's Epic 40th Birthday Adventure</p>
             <p className="text-sm text-gray-500 mt-2">July 2026 • 10 International Legends</p>
           </div>
+
+          <div className="mt-8 text-center text-xs text-gray-400">
+            Version 2.1 • Created July 30, 2025 at 3:47 PM UTC
+          </div>
           
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
